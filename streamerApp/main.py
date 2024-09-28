@@ -8,8 +8,6 @@ import time
 password =                                                                                                                'Wqol0UimYRPwZttn'  # Use the password set in OBS WebSocket settings
 ws = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
 IDs = []
-width = 1920
-height = 1080
 
 def getSceneItems(sceneName):
     raw_request = {
@@ -94,6 +92,7 @@ def on_message(ws, message):
     if 'Hello Server!' in message:
         # Receive new x and y positions
         for windowId in IDs:
+            print(f"running for id {windowId}")
             sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
             ws.send(json.dumps({"data":[
                 {
@@ -141,21 +140,21 @@ def getUserIdFromName(name):
     response = requests.get(url)
     return response.text
 
-def main():
-    width, height = getVideoOutputSettings()
-    # print(f"player native width: {width}, height: {height}")
+# def main():
+width, height = getVideoOutputSettings()
+print(f"player native width: {width}, height: {height}")
 
-    sceneItems = getSceneItems("Scene")
-    # print(sceneItems)
+sceneItems = getSceneItems("Scene")
+print(sceneItems)
 
-    IDs = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
-    # print(IDs)
+IDs = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
+print(IDs)
 
-    userId = getUserIdFromName("matissetec")
-    # print(userId)
+userId = getUserIdFromName("matissetec")
+print(userId)
 
-    listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
-    listener_thread.start()
+listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
+listener_thread.start()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
