@@ -287,6 +287,10 @@
         });
 
         socket.addEventListener("message", (event) => {
+          if(event.data === "ping") {
+            console.log("ping received");
+            return;
+          }
           let data = JSON.parse(event.data);
 
           if (data.data.hasOwnProperty("reset")) {
