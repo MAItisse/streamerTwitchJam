@@ -8,6 +8,8 @@
     - name of sources to effect
 
 
+Make sure that secret.py is set to your obs websocket password (for now)
+
 # interesting suggestions
 - You can use this to have multiple obs windows on different computers to output 1 screen onto another and modify all sources from 1 place
     - even allowing chat to help
