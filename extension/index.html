@@ -48,24 +48,25 @@
         border: 1px solid #ccc;
         padding: 10px;
         max-width: 200px;
+        max-height: 200px;
         z-index: 1000; /* Ensure it appears above other elements */
         border-radius: 5px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        /* Additional styles for customization */
         opacity: 0;
         transition: opacity 0.2s ease-in-out;
+        overflow-y: auto; /* Enable vertical scrolling */
       }
 
       #info-popup:not(.hidden) {
-        opacity: 1;
-        pointer-events: auto; /* Enable clicks when visible */
+          opacity: 1;
+          pointer-events: auto; /* Enable clicks when visible */
       }
+
 
       .hidden {
         display: none;
       }
       
-
       .infoIcon {
         position: absolute;
         top: 5px;
@@ -336,10 +337,10 @@
           const x = parseFloat(draggedElement.style.left) / 100;
           const y = parseFloat(draggedElement.style.top) / 100;
           const data = {
-              name: draggedElement.id, // Assuming each draggableWindow has a unique id
-              x: x,
-              y: y,
-              // userId: userId,
+            name: draggedElement.id, // Assuming each draggableWindow has a unique id
+            x: x,
+            y: y,
+            // userId: userId,
           };
           sendMessage(JSON.stringify(data));
         }
