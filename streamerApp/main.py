@@ -107,11 +107,21 @@ def on_message(ws, message):
         x = data.get('x', .5)
         y = data.get('y', .5)
         windowId = int(data.get('name', 0))
+        sizeOfWindow, _ = getWindowDetails("Scene", windowId)
         
         print("Getting new location for ID:", windowId)
 
         # get id from name off list we create at beginning
         transformId(x*float(width), y*float(height), windowId)
+        ws.send(json.dumps({"data":[
+                {
+                    "name": windowId,
+                    "x": x*float(width),
+                    "y": y*float(height),
+                    "width": f"{sizeOfWindow[0]}px",
+                    "height": f"{sizeOfWindow[1]}px",
+                    "info": "some data to register later"
+                }]}))
         print("Moved window to", x, y)
     except json.JSONDecodeError:
         print("Received non-JSON message" + message)
