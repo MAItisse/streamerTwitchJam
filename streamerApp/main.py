@@ -4,8 +4,8 @@ import json
 import threading
 import requests
 import time
+from secret import password
 
-password =                                                                                                                                   'Wqol0UimYRPwZttn'  # Use the password set in OBS WebSocket settings
 ws = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
 IDs = []
 
