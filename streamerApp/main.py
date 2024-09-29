@@ -87,10 +87,11 @@ def on_message(ws, message):
     # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
         # Receive new x and y positions
+        wholeData = {'data': []}
         for windowId in IDs:
             print(f"running for id {windowId}")
             sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
-            ws.send(json.dumps({"data":[
+            wholeData['data'].append({"data":[
                 {
                     "name": windowId,
                     "x": locationOfWindow[0],
@@ -98,7 +99,8 @@ def on_message(ws, message):
                     "width": f"{sizeOfWindow[0]}px",
                     "height": f"{sizeOfWindow[1]}px",
                     "info": "some data to register later"
-                }]}))
+                }]})
+        ws.send(json.dumps(wholeData))
         return
     try:
         data = json.loads(message)

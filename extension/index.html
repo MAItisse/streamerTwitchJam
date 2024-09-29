@@ -128,7 +128,16 @@
 
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
-      for (const obsWindow of data) {
+      for (let obsWindow of data) {
+        // console.log(obsWindow);
+        // console.log(obsWindow['data']);
+        if (Array.isArray(obsWindow['data'])) {
+          console.log(obsWindow['data'][0]);
+          obsWindow = obsWindow['data'][0];
+          console.log("obsWindow is an array, using first element", obsWindow);
+        }
+
+        console.log("obsWindow", obsWindow);
         let node = document.getElementById(obsWindow.name);
         if (node === null) {
           console.log("creating new node for", obsWindow.name);
@@ -165,6 +174,7 @@
 
         node.style.left = x;
         node.style.top = y;
+        console.log(obsWindow);
         console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0]/1920*playerWidth);
         console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0]/1080*playerHeight);
         node.style.width = obsWindow.width.split('p')[0]/1920*playerWidth + "px"; // obsWindow.width;
@@ -300,6 +310,7 @@
           }
           if (Array.isArray(data.data)) {
             obsScreenData = data.data;
+            console.log("obsScreenData", obsScreenData);
             updateObsScreen(obsScreenData);
           }
         });
