@@ -129,7 +129,8 @@
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
       for (let obsWindow of data) {
-        // console.log(obsWindow);
+
+        console.log("obsWindow", obsWindow);
         // console.log(obsWindow['data']);
         if (Array.isArray(obsWindow['data'])) {
           console.log(obsWindow['data'][0]);
@@ -147,8 +148,10 @@
 
           node.id = obsWindow.name;
           node.classList.add("draggableWindow");
-          
 
+          if (obsWindow["parent"]) {
+            node.dataset.parent = obsWindow.parent;
+          }
           // Add the new class for info popups
           if (obsWindow.hasOwnProperty("info")) {
             node.classList.add("infoWindow");
@@ -172,8 +175,12 @@
         let x = `${(obsWindow.x/1920) * 100}%`;
         let y = `${(obsWindow.y/1080) * 100}%`;
 
+        if (obsWindow.isParent) {
+          node.style.backgroundColor = "#5a8a1e33";
+        }
         node.style.left = x;
         node.style.top = y;
+        node.style.zIndex = obsWindow.zIndex;
         console.log(obsWindow);
         console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0]/1920*playerWidth);
         console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0]/1080*playerHeight);
@@ -377,28 +384,44 @@
 
     // Function to handle dragging
     document.addEventListener("mousedown", (e) => {
-        // if the mouse is over a draggable window, start dragging
-        if (dragCooldown) return; // Prevent starting a new drag too quickly after releasing
+      if (dragCooldown) return;
 
-        if (e.target.classList.contains("draggableWindow")) {
-            isDragging = true;
-            draggedElement = e.target; // Keep track of which element is being dragged
-            obsCont = document.getElementById("obs-container");
-            rect = obsCont.getBoundingClientRect();
-            document.body.style.cursor = 'grabbing'; // Set cursor
-            
-            // Calculate the offset
-            const elemRect = draggedElement.getBoundingClientRect();
-            offsetX = e.clientX - elemRect.left;
-            offsetY = e.clientY - elemRect.top;
-            
-            const windowID = draggedElement.id;
-            draggedElementBounds = windowBounds[windowID] || defaultBounds;
+      if (e.target.classList.contains("draggableWindow")) {
+        isDragging = true;
+        draggedElement = e.target;
+        obsCont = document.getElementById("obs-container");
+        rect = obsCont.getBoundingClientRect();
+        document.body.style.cursor = 'grabbing';
 
-            // Prevent text selection
-            // e.preventDefault();
+        // Calculate the offset
+        const elemRect = draggedElement.getBoundingClientRect();
+        offsetX = e.clientX - elemRect.left;
+        offsetY = e.clientY - elemRect.top;
+
+        const windowID = draggedElement.id;
+        const parentID = draggedElement.dataset.parent;
+
+        if (parentID) {
+          const parentElement = document.getElementById(parentID);
+          if (parentElement) {
+            const parentRect = parentElement.getBoundingClientRect();
+            const containerRect = obsCont.getBoundingClientRect();
+
+            const left = (parentRect.left - containerRect.left) / containerRect.width;
+            const top = (parentRect.top - containerRect.top) / containerRect.height;
+            const right = (parentRect.right - containerRect.left) / containerRect.width;
+            const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
+
+            draggedElementBounds = { left, top, right, bottom };
+          } else {
+            draggedElementBounds = defaultBounds;
+          }
+        } else {
+          draggedElementBounds = windowBounds[windowID] || defaultBounds;
         }
+      }
     });
+
 
     document.addEventListener("mousemove", (e) => {
       if (isDragging && draggedElement) {

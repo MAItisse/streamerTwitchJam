@@ -93,13 +93,27 @@ def on_message(ws, message):
             sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
             wholeData['data'].append({"data":[
                 {
+                    "parent": 69 if int(windowId) == 97 else 0,
                     "name": windowId,
                     "x": locationOfWindow[0],
                     "y": locationOfWindow[1],
                     "width": f"{sizeOfWindow[0]}px",
                     "height": f"{sizeOfWindow[1]}px",
-                    "info": "some data to register later"
+                    "info": "some data to register later",
+                    "zIndex": 10,
+                    "isParent": False
                 }]})
+        
+        wholeData['data'].append({"data":[
+            {
+                "name": 69,
+                "x": 500,
+                "y": 500,
+                "width": "712px",
+                "height": "712px",
+                "zIndex": 1,
+                "isParent": True
+            }]})
         ws.send(json.dumps(wholeData))
         return
     try:
@@ -114,14 +128,14 @@ def on_message(ws, message):
         # get id from name off list we create at beginning
         transformId(x*float(width), y*float(height), windowId)
         ws.send(json.dumps({"data":[
-                {
-                    "name": windowId,
-                    "x": x*float(width),
-                    "y": y*float(height),
-                    "width": f"{sizeOfWindow[0]}px",
-                    "height": f"{sizeOfWindow[1]}px",
-                    "info": "some data to register later"
-                }]}))
+            {
+                "name": windowId,
+                "x": x*float(width),
+                "y": y*float(height),
+                "width": f"{sizeOfWindow[0]}px",
+                "height": f"{sizeOfWindow[1]}px",
+                "info": "some data to register later"
+            }]}))
         print("Moved window to", x, y)
     except json.JSONDecodeError:
         print("Received non-JSON message" + message)
