@@ -15,7 +15,6 @@ def getSceneItems(sceneName):
         "sceneName": sceneName,
     }
     response = ws.send('GetSceneItemList', data=raw_request, raw=True)
-    # print(response)
     return response
 
 def getSelectedSceneItems(itemList, itemsToSelect):
@@ -58,7 +57,6 @@ def getWindowDetails(sceneName, sceneItemId):
     print(f"locationOfWindow: {locationOfWindow}")
     return (sizeOfWindow, locationOfWindow)
 
-
 def getVideoOutputSettings():
     raw_request = {
         "requestType": "GetVideoSettings",
@@ -66,7 +64,6 @@ def getVideoOutputSettings():
     print(f"transform Id request: {raw_request}")
     response = ws.send('GetVideoSettings', data=raw_request, raw=True)
     return (response['baseWidth'], response['baseHeight'])
-
 
 def startWebsocketRoom(userId):
     print("Starting WebSocket room with ID:", userId)
@@ -84,7 +81,6 @@ def startWebsocketRoom(userId):
         on_close=on_close
     )
     ws_app.run_forever()
-
 
 def on_message(ws, message):
     print("Received message:", message)
@@ -140,21 +136,15 @@ def getUserIdFromName(name):
     response = requests.get(url)
     return response.text
 
-# def main():
-width, height = getVideoOutputSettings()
-print(f"player native width: {width}, height: {height}")
+if __name__ == '__main__':
+    width, height = getVideoOutputSettings()
+    # print(f"player native width: {width}, height: {height}")
+    sceneItems = getSceneItems("Scene")
+    # print(sceneItems)
+    IDs = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
+    # print(IDs)
+    userId = getUserIdFromName("matissetec")
+    # print(userId)
 
-sceneItems = getSceneItems("Scene")
-print(sceneItems)
-
-IDs = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
-print(IDs)
-
-userId = getUserIdFromName("matissetec")
-print(userId)
-
-listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
-listener_thread.start()
-
-# if __name__ == '__main__':
-#     main()
+    listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
+    listener_thread.start()
