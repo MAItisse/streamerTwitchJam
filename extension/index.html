@@ -177,6 +177,7 @@
 
         if (obsWindow.isParent) {
           node.style.backgroundColor = "#5a8a1e33";
+          node.classList.add("parentWindow");
         }
         node.style.left = x;
         node.style.top = y;
@@ -361,6 +362,20 @@
             // userId: userId,
           };
           sendMessage(JSON.stringify(data));
+
+          // If the dragged element is a parent, send positions of child elements
+          if (draggedElement.childElements && draggedElement.childElements.length > 0) {
+            draggedElement.childElements.forEach(childData => {
+              const childX = parseFloat(childData.element.style.left) / 100;
+              const childY = parseFloat(childData.element.style.top) / 100;
+              const childDataToSend = {
+                name: childData.element.id,
+                x: childX,
+                y: childY,
+              };
+              sendMessage(JSON.stringify(childDataToSend));
+            });
+          }
         }
         isDragging = false;
         draggedElement = null;
@@ -398,6 +413,10 @@
         offsetX = e.clientX - elemRect.left;
         offsetY = e.clientY - elemRect.top;
 
+        // Store the initial position of the draggedElement
+        draggedElement.initialX = parseFloat(draggedElement.style.left) / 100;
+        draggedElement.initialY = parseFloat(draggedElement.style.top) / 100;
+
         const windowID = draggedElement.id;
         const parentID = draggedElement.dataset.parent;
 
@@ -419,14 +438,28 @@
         } else {
           draggedElementBounds = windowBounds[windowID] || defaultBounds;
         }
+
+        // If the dragged element is a parent, collect child elements
+        if (draggedElement.classList.contains("parentWindow")) {
+          // Collect child elements
+          const childElements = Array.from(document.querySelectorAll(".draggableWindow"))
+            .filter(el => el.dataset.parent === draggedElement.id);
+          // Store the initial positions of the child elements
+          draggedElement.childElements = childElements.map(child => {
+            const x = parseFloat(child.style.left) / 100;
+            const y = parseFloat(child.style.top) / 100;
+            return { element: child, initialX: x, initialY: y };
+          });
+        } else {
+          draggedElement.childElements = [];
+        }
       }
     });
-
 
     document.addEventListener("mousemove", (e) => {
       if (isDragging && draggedElement) {
           const x = (e.clientX - rect.left - offsetX) / rect.width;
-          const y = ((e.clientY - rect.top - offsetY) / rect.height);
+          const y = (e.clientY - rect.top - offsetY) / rect.height;
 
           // Get the element's size relative to the container
           const elemWidth = draggedElement.offsetWidth / rect.width;
@@ -445,6 +478,23 @@
           // Update the position of the dragged element
           draggedElement.style.left = constrainedX * 100 + "%";
           draggedElement.style.top = constrainedY * 100 + "%";
+
+          // If the dragged element is a parent, update child positions
+          if (draggedElement.childElements && draggedElement.childElements.length > 0) {
+            // Calculate the delta movement
+            const deltaX = constrainedX - draggedElement.initialX;
+            const deltaY = constrainedY - draggedElement.initialY;
+
+            // Move each child element by the delta
+            draggedElement.childElements.forEach(childData => {
+              const childConstrainedX = childData.initialX + deltaX;
+              const childConstrainedY = childData.initialY + deltaY;
+
+              // Update the position of the child element
+              childData.element.style.left = childConstrainedX * 100 + "%";
+              childData.element.style.top = childConstrainedY * 100 + "%";
+            });
+          }
       }
     });
 
