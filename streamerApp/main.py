@@ -21,13 +21,19 @@ def getSceneItems(sceneName):
 
 def getSelectedSceneItems(itemList, itemsToSelect):
     selectedIds = []
+    jsonData = []
     for sceneItem in itemList['sceneItems']:
-        # sceneTransform = sceneItem['sceneItemTransform']
-        print(sceneItem['sceneItemId'], sceneItem['sourceName'])
-        print(getWindowDetails('Scene', sceneItem['sceneItemId']))
+
         if sceneItem['sourceName'] in itemsToSelect:
+            sceneWindowData = getWindowDetails('Scene', sceneItem['sceneItemId'])
+            jsonData.append({"windowId": sceneItem['sceneItemId'], "windowName": sceneItem['sourceName'],
+                             'width': sceneWindowData[0][0], 'height': sceneWindowData[0][1],
+                             'xLocation': sceneWindowData[1][0], 'yLocation': sceneWindowData[1][1]})
             # print(sceneItem)
             selectedIds.append(sceneItem['sceneItemId'])
+    with open("obsConfig.json", "w+") as f:
+        json.dump(jsonData, f)
+
     return selectedIds
 
 def transformId(x: int, y: int, windowId: int):
@@ -47,7 +53,7 @@ def getSizeOfWindow(sceneResponse) -> Tuple[float, float]:
     return ((float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * sceneResponse['scaleX'],
             (float(sceneResponse['sourceHeight']) - float(sceneResponse['cropTop'] + sceneResponse['cropBottom'])) * sceneResponse['scaleY'])
 
-def getWindowDetails(sceneName, sceneItemId):
+def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple[float, float]]:
     raw_request = {
         "requestType": "GetSceneItemTransform",
         "sceneName": sceneName,
@@ -59,11 +65,11 @@ def getWindowDetails(sceneName, sceneItemId):
     sceneResponse = response['sceneItemTransform']
     # print(sceneResponse)
     sizeOfWindow = getSizeOfWindow(sceneResponse)
-    locationOfWindow = (sceneResponse['positionX'], sceneResponse['positionY'])
+    locationOfWindow = (float(sceneResponse['positionX']), float(sceneResponse['positionY']))
 
-    print(f"sizeOfWindow: {sizeOfWindow}")
-    print(f"locationOfWindow: {locationOfWindow}")
-    return (sizeOfWindow, locationOfWindow)
+    # print(f"sizeOfWindow: {sizeOfWindow}")
+    # print(f"locationOfWindow: {locationOfWindow}")
+    return sizeOfWindow, locationOfWindow
 
 def getVideoOutputSettings():
     raw_request = {
@@ -71,7 +77,7 @@ def getVideoOutputSettings():
     }
     print(f"transform Id request: {raw_request}")
     response = ws.send('GetVideoSettings', data=raw_request, raw=True)
-    return (response['baseWidth'], response['baseHeight'])
+    return response['baseWidth'], response['baseHeight']
 
 def startWebsocketRoom(userId):
     print("Starting WebSocket room with ID:", userId)
@@ -174,6 +180,11 @@ if __name__ == '__main__':
     width, height = getVideoOutputSettings()
     # print(f"player native width: {width}, height: {height}")
     sceneItems = getSceneItems("Scene")
+    # for scene in sceneItems:
+    #     print(scene)
+    #     windowData = getWindowDetails('Scene', scene['sceneItemId'])
+    #     print({"windowId": scene['sceneItemId'], "windowName": scene['sourceName'], 'width': windowData[0][1], 'height': windowData[0][0],'xLocation': windowData[1][0], 'yLocation': windowData[1][1]})
+    #     print(scene['sceneItemId'], scene['sourceName'])
     IDs = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
     # print(IDs)
     userId = getUserIdFromName("matissetec")
