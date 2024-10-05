@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OBS Window Boundaries with Parenting and Resizing</title>
     <style>
         body {
@@ -22,11 +21,17 @@
         .boundary {
             position: absolute;
             border: 2px dashed red;
+            cursor: pointer;
+        }
+        .boundary-selected {
+            border-color: blue !important; /* Change border color when selected */
+            background-color: rgba(0, 0, 255, 0.1); /* Optional: Add slight background color */
         }
         .new-parent {
             position: absolute;
             border: 2px dashed green;
             background-color: rgba(0, 255, 0, 0.1);
+            cursor: move;
         }
         .resize-handle {
             position: absolute;
@@ -47,14 +52,23 @@
             padding: 10px;
             background-color: white;
             border-bottom: 1px solid #ccc;
+            z-index: 1000;
+        }
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
         }
     </style>
+    <!-- Include marked.js for Markdown conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="ui-controls">
         <button id="select-item-btn">Select Item</button>
         <button id="draw-boundary-btn">Draw Boundary</button>
-        <button id="assign-child-btn">Assign Child</button>
+        <button id="assign-child-btn">Assign Child to Parent</button>
+        <button id="assign-child-boundary-btn">Assign Child to Boundary</button>
         <button id="create-parent-box">Create New Parent Box</button>
         <button id="assign-parent-boundary-btn">Assign Parent to Boundary</button>
         <button id="save-boundaries">Save Boundaries</button>
@@ -65,18 +79,22 @@
 
     <script>
         let selectedElement = null;
+        let selectedChild = null;
+        let selectedBoundary = null;
         let parentItem = null;
-        let parentIdCounter = 1000;  // Start parent IDs from 1000
+        let parentIdCounter = 1000; // Start parent IDs from 1000
         let boundaries = [];
-        let assignedChildren = []; // To track children assigned to the parent
+        let assignedChildren = {};  // Track children for each parent
+        let childBoundaries = {};   // Track child boundary assignments
         let isDrawingBoundary = false;
         let currentBoundaryDiv = null;
+        let isResizing = false;     // Flag to differentiate between resizing and dragging
 
         // Function to fetch and dynamically create HTML elements based on obsConfig.json
         async function loadObsConfig() {
             try {
                 const response = await fetch('obsConfig.json'); // Fetch JSON file
-                const config = await response.json(); // Parse JSON
+                const config = await response.json();           // Parse JSON
 
                 // Loop through each window config and create corresponding div elements
                 config.forEach(windowData => {
@@ -86,11 +104,21 @@
                     windowDiv.style.height = `${windowData.height}px`;
                     windowDiv.style.left = `${windowData.xLocation}px`;
                     windowDiv.style.top = `${windowData.yLocation}px`;
-                    windowDiv.innerHTML = `<strong>${windowData.windowName}</strong>`;
                     windowDiv.style.zIndex = windowData.windowId;
 
+                    // Use textContent or DOM methods instead of innerHTML
+                    const titleDiv = document.createElement('div');
+                    // Convert window name to Markdown and then to HTML safely
+                    const markdownTitle = `**${windowData.windowName}**`;
+                    const renderedTitle = marked.parse(markdownTitle);
+                    titleDiv.innerHTML = renderedTitle;
+                    windowDiv.appendChild(titleDiv);
+
                     // Attach a click event for selecting the item
-                    windowDiv.addEventListener('click', () => selectItem(windowDiv, windowData.windowId));
+                    windowDiv.addEventListener('click', (event) => {
+                        event.stopPropagation(); // Stop event propagation to avoid global click handling
+                        selectChild(windowDiv, windowData.windowId);
+                    });
 
                     document.getElementById('container').appendChild(windowDiv);
                 });
@@ -99,14 +127,24 @@
             }
         }
 
-        // Function to select an item
-        function selectItem(element, windowId) {
-            if (selectedElement) {
-                selectedElement.classList.remove('selected');
+        // Function to select a child
+        function selectChild(element, windowId) {
+            if (selectedChild) {
+                selectedChild.classList.remove('selected');
             }
-            selectedElement = element;
-            selectedElement.classList.add('selected');
-            console.log(`Selected windowId: ${windowId}`);
+            selectedChild = element;
+            selectedChild.classList.add('selected');
+            console.log(`Selected child windowId: ${windowId}`);
+        }
+
+        // Function to select a boundary
+        function selectBoundary(element, boundaryId) {
+            if (selectedBoundary) {
+                selectedBoundary.classList.remove('boundary-selected');
+            }
+            selectedBoundary = element;
+            selectedBoundary.classList.add('boundary-selected'); // Add boundary-selected class for visual feedback
+            console.log(`Selected boundary with id: ${boundaryId}`);
         }
 
         // Function to start drawing a boundary
@@ -143,9 +181,19 @@
                 document.removeEventListener('mousemove', draw);
                 document.removeEventListener('mouseup', stopDrawingBoundary);
 
+                // Assign a unique ID to the boundary
+                const boundaryId = `boundary-${Date.now()}`;
+                currentBoundaryDiv.dataset.boundaryId = boundaryId;
+
+                // Add click event for selecting the boundary
+                currentBoundaryDiv.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Stop event propagation to avoid global click handling
+                    selectBoundary(event.currentTarget, boundaryId); // Use event.currentTarget
+                });
+
                 // Store the boundary details
                 boundaries.push({
-                    windowId: null,  // No windowId since it's a custom boundary
+                    windowId: boundaryId,  // Use boundaryId as windowId
                     xLocation: currentBoundaryDiv.style.left,
                     yLocation: currentBoundaryDiv.style.top,
                     width: currentBoundaryDiv.style.width,
@@ -157,134 +205,76 @@
             }
         }
 
-        // Assign a child to the parent
-        function assignChild() {
-            if (!parentItem || !selectedElement) {
-                alert("Please select a parent and a child.");
+        // Assign a child directly to a boundary
+        function assignChildToBoundary() {
+            if (!selectedChild) {
+                alert("Please select a child to assign to a boundary.");
                 return;
             }
-            if (parentItem === selectedElement) {
-                alert("You can't assign the parent to itself!");
+            if (!selectedBoundary) {
+                alert("Please select a boundary to assign the child to.");
                 return;
             }
 
-            // Add child to the assignedChildren list
-            assignedChildren.push(selectedElement);
-
-            console.log(`Assigned child with windowId: ${selectedElement.style.zIndex} to parent with windowId: ${parentItem.style.zIndex}`);
-        }
-
-        // Assign parent to boundary
-        function assignParentToBoundary() {
-            if (!parentItem || !selectedElement) {
-                alert("Please select a boundary and a parent.");
-                return;
+            const boundaryId = selectedBoundary.dataset.boundaryId;
+            if (!childBoundaries[boundaryId]) {
+                childBoundaries[boundaryId] = [];
             }
-            if (selectedElement.classList.contains('boundary')) {
-                const boundaryRect = selectedElement.getBoundingClientRect();
-                const parentRect = parentItem.getBoundingClientRect();
 
-                // Adjust the parent to fit inside the boundary
-                if (parentRect.left < boundaryRect.left || parentRect.top < boundaryRect.top ||
-                    parentRect.right > boundaryRect.right || parentRect.bottom > boundaryRect.bottom) {
-                    parentItem.style.left = `${boundaryRect.left}px`;
-                    parentItem.style.top = `${boundaryRect.top}px`;
-                    parentItem.style.width = `${boundaryRect.width}px`;
-                    parentItem.style.height = `${boundaryRect.height}px`;
-                }
+            // Assign the child to this boundary
+            childBoundaries[boundaryId].push(selectedChild);
 
-                console.log(`Assigned parent with windowId: ${parentItem.style.zIndex} to boundary`);
-            }
+            console.log(`Assigned child with windowId: ${selectedChild.style.zIndex} to boundary with boundaryId: ${boundaryId}`);
         }
 
-        // Create a new empty parent box
-        function createNewParentBox() {
-            const newParentDiv = document.createElement('div');
-            newParentDiv.classList.add('new-parent');
-            newParentDiv.style.width = '200px';
-            newParentDiv.style.height = '200px';
-            newParentDiv.style.left = '50px';
-            newParentDiv.style.top = '50px';
-            newParentDiv.style.zIndex = parentIdCounter;  // Assign a new parent ID starting from 1000
-            newParentDiv.innerHTML = `<strong>Parent ${parentIdCounter}</strong>`;
-            parentIdCounter++;  // Increment parent ID counter
-
-            const resizeHandle = document.createElement('div');
-            resizeHandle.classList.add('resize-handle');
-            newParentDiv.appendChild(resizeHandle);
-
-            // Allow the new parent to be selected
-            newParentDiv.addEventListener('click', () => {
-                if (selectedElement) {
-                    selectedElement.classList.remove('selected');
-                }
-                newParentDiv.classList.add('selected');
-                selectedElement = newParentDiv;
-                parentItem = newParentDiv;
-                console.log(`Selected parent with windowId: ${newParentDiv.style.zIndex}`);
-            });
-
-            // Enable resizing using the handle
-            enableResize(newParentDiv, resizeHandle);
-
-            document.getElementById('container').appendChild(newParentDiv);
-
-            // Store the new parent boundary details
-            boundaries.push({
-                windowId: newParentDiv.style.zIndex,  // The new parent ID
-                xLocation: newParentDiv.style.left,
-                yLocation: newParentDiv.style.top,
-                width: newParentDiv.style.width,
-                height: newParentDiv.style.height,
-                isBoundary: false
-            });
-        }
-
-        // Enable resizing functionality
-        function enableResize(parentDiv, resizeHandle) {
-            resizeHandle.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                document.addEventListener('mousemove', resize);
-                document.addEventListener('mouseup', stopResize);
-
-                function resize(e) {
-                    const newWidth = e.clientX - parentDiv.getBoundingClientRect().left;
-                    const newHeight = e.clientY - parentDiv.getBoundingClientRect().top;
-                    parentDiv.style.width = `${newWidth}px`;
-                    parentDiv.style.height = `${newHeight}px`;
-
-                    // Ensure assigned children remain within the resized parent
-                    assignedChildren.forEach(child => {
-                        const childRect = child.getBoundingClientRect();
-                        const parentRect = parentDiv.getBoundingClientRect();
-
-                        if (childRect.right > parentRect.right) {
-                            child.style.left = `${parentRect.width - childRect.width}px`;
-                        }
-                        if (childRect.bottom > parentRect.bottom) {
-                            child.style.top = `${parentRect.height - childRect.height}px`;
-                        }
-                    });
-                }
-
-                function stopResize() {
-                    document.removeEventListener('mousemove', resize);
-                    document.removeEventListener('mouseup', stopResize);
-                }
-            });
-        }
-
-        // Save boundaries and output as JSON
+        // Save boundaries and include child elements
         document.getElementById('save-boundaries').addEventListener('click', () => {
-            const boundariesConfig = JSON.stringify(boundaries, null, 4);
-            document.getElementById('output').textContent = boundariesConfig;
+            // Update boundaries with current positions and sizes
+            boundaries = boundaries.map(boundary => {
+                const element = document.querySelector(`[data-boundary-id='${boundary.windowId}']`) || document.querySelector(`[style*='z-index: ${boundary.windowId};']`);
+                if (element) {
+                    boundary.xLocation = element.style.left;
+                    boundary.yLocation = element.style.top;
+                    boundary.width = element.style.width;
+                    boundary.height = element.style.height;
+                }
+                return boundary;
+            });
+
+            // Loop through each parent and store its children
+            boundaries.forEach(boundary => {
+                if (assignedChildren[boundary.windowId]) {
+                    boundary.children = assignedChildren[boundary.windowId].map(child => ({
+                        windowId: child.style.zIndex,
+                        xLocation: child.style.left,
+                        yLocation: child.style.top,
+                        width: child.style.width,
+                        height: child.style.height
+                    }));
+                }
+            });
+
+            // Store child-boundary assignments (for children without parents)
+            Object.keys(childBoundaries).forEach(boundaryId => {
+                const children = childBoundaries[boundaryId];
+                children.forEach(child => {
+                    boundaries.push({
+                        windowId: child.style.zIndex,
+                        boundaryId: boundaryId,
+                        xLocation: child.style.left,
+                        yLocation: child.style.top,
+                        width: child.style.width,
+                        height: child.style.height
+                    });
+                });
+            });
+
+            document.getElementById('output').textContent = JSON.stringify(boundaries, null, 4);
         });
 
         // Button event listeners
         document.getElementById('draw-boundary-btn').addEventListener('click', drawBoundary);
-        document.getElementById('assign-child-btn').addEventListener('click', assignChild);
-        document.getElementById('assign-parent-boundary-btn').addEventListener('click', assignParentToBoundary);
-        document.getElementById('create-parent-box').addEventListener('click', createNewParentBox);
+        document.getElementById('assign-child-boundary-btn').addEventListener('click', assignChildToBoundary);
 
         // Call the function to load and generate the HTML
         loadObsConfig();
