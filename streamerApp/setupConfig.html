@@ -3,115 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OBS Config Creator</title>
+    <title>OBS Window Boundaries with Parenting</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            position: relative;
         }
-        .config-item {
-            margin-bottom: 20px;
-        }
-        label {
-            display: inline-block;
-            width: 120px;
-        }
-        input, select {
-            margin-bottom: 10px;
-        }
-        .parent, .child {
-            padding: 10px;
+        .window {
+            position: absolute;
             border: 1px solid #000;
-            margin-bottom: 15px;
+            background-color: rgba(0, 0, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .boundary {
+            position: absolute;
+            border: 2px dashed red;
+        }
+        .new-parent {
+            position: absolute;
+            border: 2px dashed green;
+            background-color: rgba(0, 255, 0, 0.1);
+        }
+        .selected {
+            border-color: green !important;
+        }
+        .ui-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 10px;
+            background-color: white;
+            border-bottom: 1px solid #ccc;
         }
     </style>
 </head>
 <body>
-    <h1>OBS Scene Config Creator</h1>
-
-    <div id="config-form">
-        <!-- Parent item setup -->
-        <div class="parent config-item">
-            <h2>Parent Item</h2>
-            <label for="parent-name">Name:</label>
-            <input type="text" id="parent-name" placeholder="Parent ID or Name"><br>
-            <label for="parent-x">X:</label>
-            <input type="number" id="parent-x" placeholder="X position"><br>
-            <label for="parent-y">Y:</label>
-            <input type="number" id="parent-y" placeholder="Y position"><br>
-            <label for="parent-width">Width:</label>
-            <input type="text" id="parent-width" placeholder="e.g., 712px"><br>
-            <label for="parent-height">Height:</label>
-            <input type="text" id="parent-height" placeholder="e.g., 712px"><br>
-        </div>
-
-        <!-- Child item setup -->
-        <div class="child config-item">
-            <h2>Child Item</h2>
-            <label for="child-name">Name:</label>
-            <input type="text" id="child-name" placeholder="Child ID or Name"><br>
-            <label for="child-parent">Parent ID:</label>
-            <input type="text" id="child-parent" placeholder="Parent ID"><br>
-            <label for="child-x">X:</label>
-            <input type="number" id="child-x" placeholder="X position"><br>
-            <label for="child-y">Y:</label>
-            <input type="number" id="child-y" placeholder="Y position"><br>
-            <label for="child-width">Width:</label>
-            <input type="text" id="child-width" placeholder="e.g., 100px"><br>
-            <label for="child-height">Height:</label>
-            <input type="text" id="child-height" placeholder="e.g., 100px"><br>
-        </div>
-
-        <button id="generate-config">Generate Config</button>
+    <div class="ui-controls">
+        <button id="select-item-btn">Select Item</button>
+        <button id="draw-boundary-btn">Draw Boundary</button>
+        <button id="parent-item-btn">Set as Parent</button>
+        <button id="create-parent-box">Create New Parent Box</button>
+        <button id="save-boundaries">Save Boundaries</button>
+        <pre id="output"></pre>
     </div>
 
-    <h2>Generated Config</h2>
-    <pre id="generated-config"></pre>
+    <div id="container"></div>
 
     <script>
-        // Config generation logic
-        document.getElementById('generate-config').addEventListener('click', () => {
-            const parentName = document.getElementById('parent-name').value;
-            const parentX = document.getElementById('parent-x').value;
-            const parentY = document.getElementById('parent-y').value;
-            const parentWidth = document.getElementById('parent-width').value;
-            const parentHeight = document.getElementById('parent-height').value;
+        let selectedElement = null;
+        let boundaries = [];
+        let parentItem = null;
+        let isDrawingBoundary = false;
+        let isCreatingNewParent = false;
+        let currentBoundaryDiv = null;
 
-            const childName = document.getElementById('child-name').value;
-            const childParent = document.getElementById('child-parent').value;
-            const childX = document.getElementById('child-x').value;
-            const childY = document.getElementById('child-y').value;
-            const childWidth = document.getElementById('child-width').value;
-            const childHeight = document.getElementById('child-height').value;
+        // Function to fetch and dynamically create HTML elements based on obsConfig.json
+        async function loadObsConfig() {
+            try {
+                const response = await fetch('obsConfig.json'); // Fetch JSON file
+                const config = await response.json(); // Parse JSON
 
-            // Create config structure
-            const config = {
-                data: [
-                    {
-                        "name": parentName,
-                        "x": parentX,
-                        "y": parentY,
-                        "width": parentWidth,
-                        "height": parentHeight,
-                        "zIndex": 1,
-                        "isParent": true
-                    },
-                    {
-                        "parent": childParent,
-                        "name": childName,
-                        "x": childX,
-                        "y": childY,
-                        "width": childWidth,
-                        "height": childHeight,
-                        "zIndex": 10,
-                        "isParent": false
-                    }
-                ]
-            };
+                // Loop through each window config and create corresponding div elements
+                config.forEach(windowData => {
+                    const windowDiv = document.createElement('div');
+                    windowDiv.classList.add('window');
+                    windowDiv.style.width = `${windowData.width}px`;
+                    windowDiv.style.height = `${windowData.height}px`;
+                    windowDiv.style.left = `${windowData.xLocation}px`;
+                    windowDiv.style.top = `${windowData.yLocation}px`;
+                    windowDiv.innerHTML = `<strong>${windowData.windowName}</strong>`;
+                    windowDiv.style.zIndex = windowData.windowId;
 
-            // Display the generated config
-            document.getElementById('generated-config').textContent = JSON.stringify(config, null, 4);
+                    // Attach a click event for selecting the item
+                    windowDiv.addEventListener('click', () => selectItem(windowDiv, windowData.windowId));
+
+                    document.getElementById('container').appendChild(windowDiv);
+                });
+            } catch (error) {
+                console.error('Error loading the OBS config:', error);
+            }
+        }
+
+        // Function to select an item
+        function selectItem(element, windowId) {
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+            }
+            selectedElement = element;
+            selectedElement.classList.add('selected');
+            console.log(`Selected windowId: ${windowId}`);
+        }
+
+        // Draw boundary function
+        function drawBoundary() {
+            if (!selectedElement) {
+                alert("Please select an item first.");
+                return;
+            }
+            isDrawingBoundary = true;
+            document.addEventListener('mousedown', startDrawingBoundary);
+        }
+
+        function startDrawingBoundary(e) {
+            if (!isDrawingBoundary) return;
+            currentBoundaryDiv = document.createElement('div');
+            currentBoundaryDiv.classList.add('boundary');
+            currentBoundaryDiv.style.left = `${e.pageX}px`;
+            currentBoundaryDiv.style.top = `${e.pageY}px`;
+            document.getElementById('container').appendChild(currentBoundaryDiv);
+
+            const startX = e.pageX;
+            const startY = e.pageY;
+
+            document.addEventListener('mousemove', draw);
+            document.addEventListener('mouseup', stopDrawingBoundary);
+
+            function draw(e) {
+                const width = e.pageX - startX;
+                const height = e.pageY - startY;
+                currentBoundaryDiv.style.width = `${Math.abs(width)}px`;
+                currentBoundaryDiv.style.height = `${Math.abs(height)}px`;
+                currentBoundaryDiv.style.left = `${Math.min(e.pageX, startX)}px`;
+                currentBoundaryDiv.style.top = `${Math.min(e.pageY, startY)}px`;
+            }
+
+            function stopDrawingBoundary(e) {
+                isDrawingBoundary = false;
+                document.removeEventListener('mousemove', draw);
+                document.removeEventListener('mouseup', stopDrawingBoundary);
+
+                boundaries.push({
+                    windowId: selectedElement.style.zIndex,
+                    xLocation: currentBoundaryDiv.style.left,
+                    yLocation: currentBoundaryDiv.style.top,
+                    width: currentBoundaryDiv.style.width,
+                    height: currentBoundaryDiv.style.height,
+                    parent: parentItem ? parentItem.style.zIndex : null
+                });
+
+                currentBoundaryDiv = null;  // Reset the current boundary
+            }
+        }
+
+        // Set the selected item as parent
+        function setParentItem() {
+            if (!selectedElement) {
+                alert("Please select an item first.");
+                return;
+            }
+            parentItem = selectedElement;
+            console.log(`Parent set to windowId: ${parentItem.style.zIndex}`);
+        }
+
+        // Create a new empty parent box
+        function createNewParentBox() {
+            isCreatingNewParent = true;
+            const newParentDiv = document.createElement('div');
+            newParentDiv.classList.add('new-parent');
+            newParentDiv.style.width = '100px';
+            newParentDiv.style.height = '100px';
+            newParentDiv.style.left = '50px';
+            newParentDiv.style.top = '50px';
+            newParentDiv.innerHTML = `<strong>New Parent</strong>`;
+            newParentDiv.addEventListener('click', () => selectItem(newParentDiv, null)); // Allow it to be selected
+            document.getElementById('container').appendChild(newParentDiv);
+
+            // Allow the new parent to be resized or repositioned (dragging)
+            newParentDiv.addEventListener('mousedown', function(e) {
+                const offsetX = e.clientX - newParentDiv.offsetLeft;
+                const offsetY = e.clientY - newParentDiv.offsetTop;
+
+                function moveAt(e) {
+                    newParentDiv.style.left = `${e.clientX - offsetX}px`;
+                    newParentDiv.style.top = `${e.clientY - offsetY}px`;
+                }
+
+                document.addEventListener('mousemove', moveAt);
+                document.addEventListener('mouseup', () => {
+                    document.removeEventListener('mousemove', moveAt);
+                });
+            });
+
+            // Store the new parent boundary details
+            boundaries.push({
+                windowId: null,  // No windowId since it's a custom parent box
+                xLocation: newParentDiv.style.left,
+                yLocation: newParentDiv.style.top,
+                width: newParentDiv.style.width,
+                height: newParentDiv.style.height,
+                parent: null
+            });
+        }
+
+        // Save boundaries and output as JSON
+        document.getElementById('save-boundaries').addEventListener('click', () => {
+            const boundariesConfig = JSON.stringify(boundaries, null, 4);
+            document.getElementById('output').textContent = boundariesConfig;
+
+            // Here you could send boundariesConfig to the server to save it
+            // Example:
+            // fetch('/save-boundaries', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: boundariesConfig
+            // })
         });
+
+        // Button event listeners
+        document.getElementById('select-item-btn').addEventListener('click', () => {
+            if (!selectedElement) alert("Click an item to select it.");
+        });
+
+        document.getElementById('draw-boundary-btn').addEventListener('click', drawBoundary);
+        document.getElementById('parent-item-btn').addEventListener('click', setParentItem);
+        document.getElementById('create-parent-box').addEventListener('click', createNewParentBox);
+
+        // Call the function to load and generate the HTML
+        loadObsConfig();
     </script>
 </body>
 </html>
