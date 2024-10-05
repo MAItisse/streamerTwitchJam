@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>OBS Window Boundaries with Parenting and Resizing</title>
@@ -8,31 +9,51 @@
             margin: 0;
             padding: 0;
             position: relative;
+
+            background-color: #111133;
+            user-select: none;
         }
+
         .window {
             position: absolute;
-            border: 1px solid #000;
-            background-color: rgba(0, 0, 255, 0.1);
+            border: 3px solid #000;
+            background-color: #3377;
+            border-radius: 10px;
+
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
+
+            transition: 0.2s all ease-out;
         }
+
+        .selected {
+            border-color: green !important;
+            background-color: #3578;
+        }
+
         .boundary {
             position: absolute;
             border: 2px dashed red;
+            border-radius: 10px;
             cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s, width 0.1s, height 0.1s;
+            transition-timing-function: ease-out;
         }
+
         .boundary-selected {
-            border-color: blue !important; /* Change border color when selected */
-            background-color: rgba(0, 0, 255, 0.1); /* Optional: Add slight background color */
+            border-color: blue !important;
+            background-color: rgba(0, 0, 255, 0.1);
         }
+
         .new-parent {
             position: absolute;
             border: 2px dashed green;
             background-color: rgba(0, 255, 0, 0.1);
             cursor: move;
         }
+
         .resize-handle {
             position: absolute;
             width: 10px;
@@ -42,18 +63,43 @@
             bottom: 0;
             cursor: nwse-resize;
         }
-        .selected {
-            border-color: green !important;
-        }
+
         .ui-controls {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 20px;
             padding: 10px;
-            background-color: white;
-            border-bottom: 1px solid #ccc;
+            left: 50%;
+            translate: -50% 0;
+            display: flex;
+
+            background-color: #333355;
+            border-radius: 10px;
+            box-shadow: 4px 4px 2px black;
+
             z-index: 1000;
         }
+
+        button {
+            margin: 10px;
+            font-size: 1.3rem;
+
+            background-color: #445;
+            color: white;
+            border: 3px #222244 solid;
+            border-radius: 10px;
+            padding: 5px;
+
+            transition: all 0.2s ease-out;
+        }
+
+        button:hover {
+            background-color: #223;
+        }
+
+        button.active {
+            background-color: #232;
+        }
+
         #container {
             position: relative;
             width: 100%;
@@ -63,16 +109,17 @@
     <!-- Include marked.js for Markdown conversion -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body>
     <div class="ui-controls">
-        <button id="select-item-btn">Select Item</button>
+        <!-- <button id="select-item-btn">Select Item</button> -->
         <button id="draw-boundary-btn">Draw Boundary</button>
-        <button id="assign-child-btn">Assign Child to Parent</button>
+        <!-- <button id="assign-child-btn">Assign Child to Parent</button> -->
         <button id="assign-child-boundary-btn">Assign Child to Boundary</button>
-        <button id="create-parent-box">Create New Parent Box</button>
-        <button id="assign-parent-boundary-btn">Assign Parent to Boundary</button>
+        <!-- <button id="create-parent-box">Create New Parent Box</button> -->
+        <!-- <button id="assign-parent-boundary-btn">Assign Parent to Boundary</button> -->
         <button id="save-boundaries">Save Boundaries</button>
-        <pre id="output"></pre>
+        <!-- <pre id="output"></pre> -->
     </div>
 
     <div id="container"></div>
@@ -150,6 +197,7 @@
         // Function to start drawing a boundary
         function drawBoundary() {
             isDrawingBoundary = true;
+            document.getElementById("draw-boundary-btn").classList.add("active");
             document.addEventListener('mousedown', startDrawingBoundary);
         }
 
@@ -180,6 +228,7 @@
                 isDrawingBoundary = false;
                 document.removeEventListener('mousemove', draw);
                 document.removeEventListener('mouseup', stopDrawingBoundary);
+                document.getElementById("draw-boundary-btn").classList.remove("active");
 
                 // Assign a unique ID to the boundary
                 const boundaryId = `boundary-${Date.now()}`;
@@ -225,6 +274,7 @@
             childBoundaries[boundaryId].push(selectedChild);
 
             console.log(`Assigned child with windowId: ${selectedChild.style.zIndex} to boundary with boundaryId: ${boundaryId}`);
+            alert("This button did a thing, but idk how to display feedback for that yet :P")
         }
 
         // Save boundaries and include child elements
@@ -269,7 +319,8 @@
                 });
             });
 
-            document.getElementById('output').textContent = JSON.stringify(boundaries, null, 4);
+            const config = JSON.stringify(boundaries, null, 4);
+            alert(config);
         });
 
         // Button event listeners
@@ -280,4 +331,5 @@
         loadObsConfig();
     </script>
 </body>
+
 </html>
