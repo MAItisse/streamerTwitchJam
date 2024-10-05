@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Config Creator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .config-item {
+            margin-bottom: 20px;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+        }
+        input, select {
+            margin-bottom: 10px;
+        }
+        .parent, .child {
+            padding: 10px;
+            border: 1px solid #000;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>OBS Scene Config Creator</h1>
+
+    <div id="config-form">
+        <!-- Parent item setup -->
+        <div class="parent config-item">
+            <h2>Parent Item</h2>
+            <label for="parent-name">Name:</label>
+            <input type="text" id="parent-name" placeholder="Parent ID or Name"><br>
+            <label for="parent-x">X:</label>
+            <input type="number" id="parent-x" placeholder="X position"><br>
+            <label for="parent-y">Y:</label>
+            <input type="number" id="parent-y" placeholder="Y position"><br>
+            <label for="parent-width">Width:</label>
+            <input type="text" id="parent-width" placeholder="e.g., 712px"><br>
+            <label for="parent-height">Height:</label>
+            <input type="text" id="parent-height" placeholder="e.g., 712px"><br>
+        </div>
+
+        <!-- Child item setup -->
+        <div class="child config-item">
+            <h2>Child Item</h2>
+            <label for="child-name">Name:</label>
+            <input type="text" id="child-name" placeholder="Child ID or Name"><br>
+            <label for="child-parent">Parent ID:</label>
+            <input type="text" id="child-parent" placeholder="Parent ID"><br>
+            <label for="child-x">X:</label>
+            <input type="number" id="child-x" placeholder="X position"><br>
+            <label for="child-y">Y:</label>
+            <input type="number" id="child-y" placeholder="Y position"><br>
+            <label for="child-width">Width:</label>
+            <input type="text" id="child-width" placeholder="e.g., 100px"><br>
+            <label for="child-height">Height:</label>
+            <input type="text" id="child-height" placeholder="e.g., 100px"><br>
+        </div>
+
+        <button id="generate-config">Generate Config</button>
+    </div>
+
+    <h2>Generated Config</h2>
+    <pre id="generated-config"></pre>
+
+    <script>
+        // Config generation logic
+        document.getElementById('generate-config').addEventListener('click', () => {
+            const parentName = document.getElementById('parent-name').value;
+            const parentX = document.getElementById('parent-x').value;
+            const parentY = document.getElementById('parent-y').value;
+            const parentWidth = document.getElementById('parent-width').value;
+            const parentHeight = document.getElementById('parent-height').value;
+
+            const childName = document.getElementById('child-name').value;
+            const childParent = document.getElementById('child-parent').value;
+            const childX = document.getElementById('child-x').value;
+            const childY = document.getElementById('child-y').value;
+            const childWidth = document.getElementById('child-width').value;
+            const childHeight = document.getElementById('child-height').value;
+
+            // Create config structure
+            const config = {
+                data: [
+                    {
+                        "name": parentName,
+                        "x": parentX,
+                        "y": parentY,
+                        "width": parentWidth,
+                        "height": parentHeight,
+                        "zIndex": 1,
+                        "isParent": true
+                    },
+                    {
+                        "parent": childParent,
+                        "name": childName,
+                        "x": childX,
+                        "y": childY,
+                        "width": childWidth,
+                        "height": childHeight,
+                        "zIndex": 10,
+                        "isParent": false
+                    }
+                ]
+            };
+
+            // Display the generated config
+            document.getElementById('generated-config').textContent = JSON.stringify(config, null, 4);
+        });
+    </script>
+</body>
+</html>
