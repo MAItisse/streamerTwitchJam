@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import obsws_python as obs
 import websocket
 import json
@@ -20,7 +22,9 @@ def getSceneItems(sceneName):
 def getSelectedSceneItems(itemList, itemsToSelect):
     selectedIds = []
     for sceneItem in itemList['sceneItems']:
+        # sceneTransform = sceneItem['sceneItemTransform']
         print(sceneItem['sceneItemId'], sceneItem['sourceName'])
+        print(getWindowDetails('Scene', sceneItem['sceneItemId']))
         if sceneItem['sourceName'] in itemsToSelect:
             # print(sceneItem)
             selectedIds.append(sceneItem['sceneItemId'])
@@ -39,6 +43,10 @@ def transformId(x: int, y: int, windowId: int):
     print(f"transform Id request: {raw_request}")
     response = ws.send('SetSceneItemTransform', data=raw_request, raw=True)
 
+def getSizeOfWindow(sceneResponse) -> Tuple[float, float]:
+    return ((float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * sceneResponse['scaleX'],
+            (float(sceneResponse['sourceHeight']) - float(sceneResponse['cropTop'] + sceneResponse['cropBottom'])) * sceneResponse['scaleY'])
+
 def getWindowDetails(sceneName, sceneItemId):
     raw_request = {
         "requestType": "GetSceneItemTransform",
@@ -46,11 +54,11 @@ def getWindowDetails(sceneName, sceneItemId):
         "sceneItemId": sceneItemId
     }
     response = ws.send('GetSceneItemTransform', data=raw_request, raw=True)
-    print(response)
+    # print(response)
 
     sceneResponse = response['sceneItemTransform']
-    sizeOfWindow = ((float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * sceneResponse['scaleX'],
-                    (float(sceneResponse['sourceHeight']) - float(sceneResponse['cropTop'] + sceneResponse['cropBottom'])) * sceneResponse['scaleY'])
+    # print(sceneResponse)
+    sizeOfWindow = getSizeOfWindow(sceneResponse)
     locationOfWindow = (sceneResponse['positionX'], sceneResponse['positionY'])
 
     print(f"sizeOfWindow: {sizeOfWindow}")
@@ -107,8 +115,8 @@ def on_message(ws, message):
         wholeData['data'].append({"data":[
             {
                 "name": 69,
-                "x": 500,
-                "y": 500,
+                "x": 200,
+                "y": 100,
                 "width": "712px",
                 "height": "712px",
                 "zIndex": 1,
@@ -166,7 +174,6 @@ if __name__ == '__main__':
     width, height = getVideoOutputSettings()
     # print(f"player native width: {width}, height: {height}")
     sceneItems = getSceneItems("Scene")
-    # print(sceneItems)
     IDs = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
     # print(IDs)
     userId = getUserIdFromName("matissetec")
