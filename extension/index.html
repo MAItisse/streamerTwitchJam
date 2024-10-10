@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Hello World Extension</title>
     <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+    <script src="marked.min.js"></script>
     <style>
       body,
       html {
@@ -228,11 +229,19 @@
 
       if (info) {
         // Populate the popup with information
-        popup.innerHTML = `
+        let markdownData = `
           <h3>${info.title}</h3>
           <p>${info.description}</p>
           <!-- Additional content -->
         `;
+        // popup.innerHTML = markdownData;
+
+        marked.setOptions({
+          gfm: true,       // Enable GitHub flavored markdown
+          breaks: true,    // Enable line breaks
+          sanitize: false, // Allow HTML tags
+        });
+        popup.innerHTML = marked.parse(markdownData);
 
         // Ensure the popup is visible to get its dimensions
         popup.classList.remove('hidden');

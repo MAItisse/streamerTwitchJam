@@ -20,11 +20,17 @@ def getSceneItems(sceneName):
     return response
 
 def getSelectedSceneItems(itemList, itemsToSelect):
+    """
+    :param itemList: Dictionary representing the list of scene items, expected to have a key 'sceneItems' which is a list of scene item objects.
+    :param itemsToSelect: List of item names to select from the scene items. If empty, all items will be selected.
+    :return: A tuple containing:
+        - A list of selected scene item IDs.
+        - A list of dictionaries containing details of the selected scene items, including window ID, window name, width, height, x location, and y location.
+    """
     selectedIds = []
     jsonData = []
     for sceneItem in itemList['sceneItems']:
-
-        if sceneItem['sourceName'] in itemsToSelect:
+        if sceneItem['sourceName'] in itemsToSelect or len(itemsToSelect) == 0:
             sceneWindowData = getWindowDetails('Scene', sceneItem['sceneItemId'])
             jsonData.append({"windowId": sceneItem['sceneItemId'], "windowName": sceneItem['sourceName'],
                              'width': sceneWindowData[0][0], 'height': sceneWindowData[0][1],
@@ -34,7 +40,7 @@ def getSelectedSceneItems(itemList, itemsToSelect):
     with open("obsConfig.json", "w+") as f:
         json.dump(jsonData, f)
 
-    return selectedIds
+    return selectedIds, jsonData
 
 def transformId(x: int, y: int, windowId: int):
     raw_request = {
@@ -117,7 +123,7 @@ def on_message(ws, message):
                     "zIndex": 10,
                     "isParent": False
                 }]})
-        
+
         wholeData['data'].append({"data":[
             {
                 "name": 69,
@@ -136,7 +142,7 @@ def on_message(ws, message):
         y = data.get('y', .5)
         windowId = int(data.get('name', 0))
         sizeOfWindow, _ = getWindowDetails("Scene", windowId)
-        
+
         print("Getting new location for ID:", windowId)
 
         # get id from name off list we create at beginning
@@ -180,12 +186,17 @@ if __name__ == '__main__':
     width, height = getVideoOutputSettings()
     # print(f"player native width: {width}, height: {height}")
     sceneItems = getSceneItems("Scene")
+    _, jsonData = getSelectedSceneItems(sceneItems, [])
+    print(jsonData)
+
+    # get items to select from json data save above
+
     # for scene in sceneItems:
     #     print(scene)
     #     windowData = getWindowDetails('Scene', scene['sceneItemId'])
     #     print({"windowId": scene['sceneItemId'], "windowName": scene['sourceName'], 'width': windowData[0][1], 'height': windowData[0][0],'xLocation': windowData[1][0], 'yLocation': windowData[1][1]})
     #     print(scene['sceneItemId'], scene['sourceName'])
-    IDs = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
+    IDs, _ = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
     # print(IDs)
     userId = getUserIdFromName("matissetec")
     # print(userId)
