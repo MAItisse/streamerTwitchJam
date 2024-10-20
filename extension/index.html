@@ -18,7 +18,7 @@
         position: relative;
       }
 
-      #obs-container, #background {
+      #obs-container {
           width: 100%;
           height: 100%;
       }
@@ -96,6 +96,8 @@
       channelId: "468106723",
       userId: "468106723",
     };
+
+    // this will be gathered from the backend
     const infoWindowData = {
       "96": {
         title: "Git gif",
@@ -106,7 +108,7 @@
         description: "<p>This is where we can show the current</p><h1>WINNERS</h1><p>enter <a href='https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information' target='_blank'>here</a></p><p>example Follow here <a href='https://twitch.tv/vivax3794' target='_blank'>follow</a></p>",
       },
     };
-    const TESTING = window.location.hostname == "localhost";
+    const TESTING = window.location.hostname === "localhost";
     let userId; // Declare userId in the global scope
     let popupTimeout; // Store the timeout ID
 
@@ -120,7 +122,7 @@
     let draggedElementBounds = null;
     let obsScreenData = [];
 
-    // TODO update with the websocket data?
+    // TODO update with the websocket data? - this should also be coming from config
     const windowBounds = {
       "96": { left: 0.75, top: 0.25, right: 1, bottom: 0.9 },
     };
@@ -210,7 +212,7 @@
       });
 
       // Hide popup after a delay on mouse out
-      infoIcon.addEventListener("mouseout", (e) => {
+      infoIcon.addEventListener("mouseout", (_) => {
         hidePopup();
       });
     }
@@ -239,7 +241,7 @@
         marked.setOptions({
           gfm: true,       // Enable GitHub flavored markdown
           breaks: true,    // Enable line breaks
-          sanitize: false, // Allow HTML tags
+          sanitize: true, // Allow HTML tags
         });
         popup.innerHTML = marked.parse(markdownData);
 
@@ -303,7 +305,7 @@
         socket = new WebSocket(wsUrl);
         resetObsmap();
 
-        socket.addEventListener("open", (event) => {
+        socket.addEventListener("open", (_) => {
           console.log("Connected to the WebSocket server");
           let container = document.getElementById("obs-container");
           container.style.display = "initial";
@@ -332,7 +334,7 @@
           }
         });
 
-        socket.addEventListener("close", (event) => {
+        socket.addEventListener("close", (_) => {
           console.log("Disconnected from the WebSocket server");
           // Attempt to reconnect every 10 seconds
           if (!reconnectInterval) {
@@ -343,7 +345,6 @@
               }
               catch (error) {
                 console.log("Failed to connect to WebSocket server:", error);
-                return;
               }
             }, 10000);
           }
@@ -410,6 +411,7 @@
     document.addEventListener("mousedown", (e) => {
       if (dragCooldown) return;
 
+      let obsCont;
       if (e.target.classList.contains("draggableWindow")) {
         isDragging = true;
         draggedElement = e.target;
@@ -440,7 +442,7 @@
             const right = (parentRect.right - containerRect.left) / containerRect.width;
             const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
 
-            draggedElementBounds = { left, top, right, bottom };
+            draggedElementBounds = {left, top, right, bottom};
           } else {
             draggedElementBounds = defaultBounds;
           }
@@ -452,12 +454,12 @@
         if (draggedElement.classList.contains("parentWindow")) {
           // Collect child elements
           const childElements = Array.from(document.querySelectorAll(".draggableWindow"))
-            .filter(el => el.dataset.parent === draggedElement.id);
+                  .filter(el => el.dataset.parent === draggedElement.id);
           // Store the initial positions of the child elements
           draggedElement.childElements = childElements.map(child => {
             const x = parseFloat(child.style.left) / 100;
             const y = parseFloat(child.style.top) / 100;
-            return { element: child, initialX: x, initialY: y };
+            return {element: child, initialX: x, initialY: y};
           });
         } else {
           draggedElement.childElements = [];
@@ -514,7 +516,7 @@
       window.Twitch.ext.onContext((context) => {
           // Get the player's width
           console.log("Context updated:", context);
-          resolutions = context.displayResolution.split("x");
+          let resolutions = context.displayResolution.split("x");
           let newWidth = parseInt(resolutions[0], 10);  // Update playerWidth
           let newHeight = parseInt(resolutions[1], 10); // Update playerHeight
           if (newWidth !== playerWidth || newHeight !== playerHeight) {

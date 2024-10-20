@@ -6,7 +6,7 @@ import json
 import threading
 import requests
 import time
-from secret import password
+from secret import password, username
 
 ws = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
 IDs = []
@@ -19,10 +19,11 @@ def getSceneItems(sceneName):
     response = ws.send('GetSceneItemList', data=raw_request, raw=True)
     return response
 
-def getSelectedSceneItems(itemList, itemsToSelect):
+def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
     """
     :param itemList: Dictionary representing the list of scene items, expected to have a key 'sceneItems' which is a list of scene item objects.
     :param itemsToSelect: List of item names to select from the scene items. If empty, all items will be selected.
+    :param sceneName: obs scene to use
     :return: A tuple containing:
         - A list of selected scene item IDs.
         - A list of dictionaries containing details of the selected scene items, including window ID, window name, width, height, x location, and y location.
@@ -31,7 +32,7 @@ def getSelectedSceneItems(itemList, itemsToSelect):
     jsonData = []
     for sceneItem in itemList['sceneItems']:
         if sceneItem['sourceName'] in itemsToSelect or len(itemsToSelect) == 0:
-            sceneWindowData = getWindowDetails('Scene', sceneItem['sceneItemId'])
+            sceneWindowData = getWindowDetails(sceneName, sceneItem['sceneItemId'])
             jsonData.append({"windowId": sceneItem['sceneItemId'], "windowName": sceneItem['sourceName'],
                              'width': sceneWindowData[0][0], 'height': sceneWindowData[0][1],
                              'xLocation': sceneWindowData[1][0], 'yLocation': sceneWindowData[1][1]})
@@ -42,10 +43,10 @@ def getSelectedSceneItems(itemList, itemsToSelect):
 
     return selectedIds, jsonData
 
-def transformId(x: int, y: int, windowId: int):
+def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene"):
     raw_request = {
         "requestType": "SetSceneItemTransform",
-        "sceneName": "Scene",
+        "sceneName": sceneName,
         "sceneItemId": windowId,
         "sceneItemTransform": {
             "positionX": x,
@@ -85,6 +86,17 @@ def getVideoOutputSettings():
     response = ws.send('GetVideoSettings', data=raw_request, raw=True)
     return response['baseWidth'], response['baseHeight']
 
+def getScenes():
+    raw_request = {
+        "requestType": "GetSceneList",
+    }
+    response = ws.send('GetSceneList', data=raw_request, raw=True)
+    print(response)
+    sceneResponse = ""
+    for scene in response['scenes']:
+        sceneResponse += f"{scene['sceneName']}, "
+    return sceneResponse[:-2]
+
 def startWebsocketRoom(userId):
     print("Starting WebSocket room with ID:", userId)
     # Replace with your actual WebSocket server URL
@@ -111,8 +123,10 @@ def on_message(ws, message):
         for windowId in IDs:
             print(f"running for id {windowId}")
             sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
+            # this data needs to be gathered from the config
             wholeData['data'].append({"data":[
                 {
+                    #      parent id              child id
                     "parent": 69 if int(windowId) == 97 else 0,
                     "name": windowId,
                     "x": locationOfWindow[0],
@@ -120,17 +134,22 @@ def on_message(ws, message):
                     "width": f"{sizeOfWindow[0]}px",
                     "height": f"{sizeOfWindow[1]}px",
                     "info": "some data to register later",
+                    # maybe we also have this settable for each window
                     "zIndex": 10,
                     "isParent": False
                 }]})
 
         wholeData['data'].append({"data":[
             {
+                # need the parent id
                 "name": 69,
+                # take these from the config
                 "x": 200,
                 "y": 100,
+                # sizes will be set by the config
                 "width": "712px",
                 "height": "712px",
+                # zindex by the config
                 "zIndex": 1,
                 "isParent": True
             }]})
@@ -146,7 +165,7 @@ def on_message(ws, message):
         print("Getting new location for ID:", windowId)
 
         # get id from name off list we create at beginning
-        transformId(x*float(width), y*float(height), windowId)
+        transformId(x*float(width), y*float(height), windowId, "Scene")
         ws.send(json.dumps({"data":[
             {
                 "name": windowId,
@@ -184,9 +203,14 @@ def getUserIdFromName(name):
 
 if __name__ == '__main__':
     width, height = getVideoOutputSettings()
-    # print(f"player native width: {width}, height: {height}")
-    sceneItems = getSceneItems("Scene")
-    _, jsonData = getSelectedSceneItems(sceneItems, [])
+    allScenes = getScenes()
+    print(allScenes)
+    #    Get names of the scenes wanted to be modified
+    selectedScene = "Scene"
+    # allow for more than 1 scene to be in the scene item list
+    # likely this will need to become a map like they have on obs
+    sceneItems = getSceneItems(selectedScene)
+    _, jsonData = getSelectedSceneItems(sceneItems, [], selectedScene)
     print(jsonData)
 
     # get items to select from json data save above
@@ -196,9 +220,11 @@ if __name__ == '__main__':
     #     windowData = getWindowDetails('Scene', scene['sceneItemId'])
     #     print({"windowId": scene['sceneItemId'], "windowName": scene['sourceName'], 'width': windowData[0][1], 'height': windowData[0][0],'xLocation': windowData[1][0], 'yLocation': windowData[1][1]})
     #     print(scene['sceneItemId'], scene['sourceName'])
-    IDs, _ = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'])
+
+    #                                                       From the config
+    IDs, _ = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'], selectedScene)
     # print(IDs)
-    userId = getUserIdFromName("matissetec")
+    userId = getUserIdFromName(username)
     # print(userId)
 
     listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
