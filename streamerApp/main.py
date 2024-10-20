@@ -8,15 +8,16 @@ import requests
 import time
 from secret import password, username
 
-ws = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
+obsWs = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
 IDs = []
+windowConfigData = {}
 
 def getSceneItems(sceneName):
     raw_request = {
         "requestType": "GetSceneItemList",
         "sceneName": sceneName,
     }
-    response = ws.send('GetSceneItemList', data=raw_request, raw=True)
+    response = obsWs.send('GetSceneItemList', data=raw_request, raw=True)
     return response
 
 def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
@@ -54,7 +55,7 @@ def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene"):
         }
     }
     print(f"transform Id request: {raw_request}")
-    response = ws.send('SetSceneItemTransform', data=raw_request, raw=True)
+    response = obsWs.send('SetSceneItemTransform', data=raw_request, raw=True)
 
 def getSizeOfWindow(sceneResponse) -> Tuple[float, float]:
     return ((float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * sceneResponse['scaleX'],
@@ -66,7 +67,7 @@ def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple
         "sceneName": sceneName,
         "sceneItemId": sceneItemId
     }
-    response = ws.send('GetSceneItemTransform', data=raw_request, raw=True)
+    response = obsWs.send('GetSceneItemTransform', data=raw_request, raw=True)
     # print(response)
 
     sceneResponse = response['sceneItemTransform']
@@ -83,14 +84,14 @@ def getVideoOutputSettings():
         "requestType": "GetVideoSettings",
     }
     print(f"transform Id request: {raw_request}")
-    response = ws.send('GetVideoSettings', data=raw_request, raw=True)
+    response = obsWs.send('GetVideoSettings', data=raw_request, raw=True)
     return response['baseWidth'], response['baseHeight']
 
 def getScenes():
     raw_request = {
         "requestType": "GetSceneList",
     }
-    response = ws.send('GetSceneList', data=raw_request, raw=True)
+    response = obsWs.send('GetSceneList', data=raw_request, raw=True)
     print(response)
     sceneResponse = ""
     for scene in response['scenes']:
@@ -114,46 +115,55 @@ def startWebsocketRoom(userId):
     )
     ws_app.run_forever()
 
+def runHello(ws):
+    # Receive new x and y positions
+    wholeData = {'data': []}
+    for windowId in IDs:
+        print(f"running for id {windowId}")
+        sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
+        # this data needs to be gathered from the config
+        wholeData['data'].append({"data": [
+            {
+                #      parent id              child id
+                "parent": 69 if int(windowId) == 97 else 0,
+                "name": windowId,
+                "x": locationOfWindow[0],
+                "y": locationOfWindow[1],
+                "width": f"{sizeOfWindow[0]}px",
+                "height": f"{sizeOfWindow[1]}px",
+                "info": "some data to register later",
+                # maybe we also have this settable for each window
+                "zIndex": 10,
+                "isParent": False
+            }]})
+
+    wholeData['data'].append({"data": [
+        {
+            # need the parent id
+            "name": 69,
+            # take these from the config
+            "x": 200,
+            "y": 100,
+            # sizes will be set by the config
+            "width": "712px",
+            "height": "712px",
+            # zindex by the config
+            "zIndex": 1,
+            "isParent": True
+        }]})
+    ws.send(json.dumps(wholeData))
+
+def sendWindowConfig(ws):
+    print("sending window config")
+    print(f"whole data from json {windowConfigData}")
+    ws.send(json.dumps(windowConfigData))
+
 def on_message(ws, message):
     print("Received message:", message)
     # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
-        # Receive new x and y positions
-        wholeData = {'data': []}
-        for windowId in IDs:
-            print(f"running for id {windowId}")
-            sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
-            # this data needs to be gathered from the config
-            wholeData['data'].append({"data":[
-                {
-                    #      parent id              child id
-                    "parent": 69 if int(windowId) == 97 else 0,
-                    "name": windowId,
-                    "x": locationOfWindow[0],
-                    "y": locationOfWindow[1],
-                    "width": f"{sizeOfWindow[0]}px",
-                    "height": f"{sizeOfWindow[1]}px",
-                    "info": "some data to register later",
-                    # maybe we also have this settable for each window
-                    "zIndex": 10,
-                    "isParent": False
-                }]})
-
-        wholeData['data'].append({"data":[
-            {
-                # need the parent id
-                "name": 69,
-                # take these from the config
-                "x": 200,
-                "y": 100,
-                # sizes will be set by the config
-                "width": "712px",
-                "height": "712px",
-                # zindex by the config
-                "zIndex": 1,
-                "isParent": True
-            }]})
-        ws.send(json.dumps(wholeData))
+        sendWindowConfig(ws)
+        runHello(ws)
         return
     try:
         data = json.loads(message)
@@ -226,6 +236,10 @@ if __name__ == '__main__':
     # print(IDs)
     userId = getUserIdFromName(username)
     # print(userId)
+
+    with open("windowConfig.json", "r", encoding="utf-8") as f:
+        windowConfigData = f.read()
+        print(windowConfigData)
 
     listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
     listener_thread.start()
