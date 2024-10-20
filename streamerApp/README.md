@@ -1,11 +1,8 @@
 # How to use
-- you can use the release section to grab an executable if you want
-- or you can run this directly through python main.py (suggested for full features)
+- run by `python main.py` (suggested for full features)
     - you will need to run `pip install -r requirements.txt` first
-- either way you will need to set a few settings in `settings.json`
-    - websocket obs password
-    - scene to effect
-    - name of sources to effect
+- you will need to set the obs password in `secret.py`
+- 
 
 
 Make sure that secret.py is set to your obs websocket password (for now)
