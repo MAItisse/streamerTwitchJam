@@ -99,6 +99,10 @@
     <div id="info-popup" class="hidden"></div>
 </body>
 <script>
+    function follow_button() {
+        alert("MATISSE REPLACE THIS");
+    }
+
     let playerWidth = 1920, playerHeight = 1080;
     const TestAuth = {
         channelId: "468106723",
@@ -118,7 +122,7 @@
             description: `
 # WINNERS
 enter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information')
-example Follow [follow here](https://twitch.tv/vivax3794)`,
+example Follow [follow here](FOLLOW_BUTTON)`,
         },
     };
     const TESTING = window.location.hostname === "localhost";
@@ -259,6 +263,9 @@ ${info.description}`;
             marked.use({
                 renderer: {
                     link(token) {
+                        if (token.href == "FOLLOW_BUTTON") {
+                            return `<button onclick="follow_button()">${token.text}</button>`
+                        }
                         return `<a href=${token.href} target="_blank">${token.text}</a>`
                     }
                 }
