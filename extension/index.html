@@ -99,8 +99,10 @@
     <div id="info-popup" class="hidden"></div>
 </body>
 <script>
-    function follow_button() {
-        alert("MATISSE REPLACE THIS");
+    function follow_button(channelName) {
+        console.log(channelName);
+        window.Twitch.ext.actions.followChannel(channelName);
+        console.log("finished following")
     }
 
     let playerWidth = 1920, playerHeight = 1080;
@@ -122,7 +124,7 @@
             description: `
 # WINNERS
 enter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information')
-example Follow [follow here](FOLLOW_BUTTON)`,
+example Follow [vivax3794](FOLLOW_BUTTON)`,
         },
     };
     const TESTING = window.location.hostname === "localhost";
@@ -139,12 +141,11 @@ example Follow [follow here](FOLLOW_BUTTON)`,
     let draggedElementBounds = null;
     let obsScreenData = [];
 
-    // TODO update with the websocket data? - this should also be coming from config
-    const windowBounds = {
-        "96": {left: 0.75, top: 0.25, right: 1, bottom: 0.9},
+    // TODO this should also be coming from the websocket read from the windowConfig
+    let windowBounds = {
+        // "96": {left: 0.7, top: 0.25, right: 1, bottom: 0.9},
     };
     const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
-
 
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
@@ -263,10 +264,10 @@ ${info.description}`;
             marked.use({
                 renderer: {
                     link(token) {
-                        if (token.href == "FOLLOW_BUTTON") {
-                            return `<button onclick="follow_button()">${token.text}</button>`
+                        if (token.href === "FOLLOW_BUTTON") {
+                            return `<button onclick="follow_button('${token.text}')">${token.text}</button>`
                         }
-                        return `<a href=${token.href} target="_blank">${token.text}</a>`
+                        return `<a href="${token.href}" target="_blank">${token.text}</a>`
                     }
                 }
             })
@@ -350,15 +351,27 @@ ${info.description}`;
                 }
                 let data = JSON.parse(event.data);
 
-                if (data.data.hasOwnProperty("reset")) {
-                    console.log("Resetting obsCont");
-                    resetObsmap();
+                // if (data.data.hasOwnProperty("reset")) {
+                //     console.log("Resetting obsCont");
+                //     resetObsmap();
+                // }
+                console.log("has data")
+                let eventData = JSON.parse(event.data);
+
+                // Check if the data contains window bounds
+                if (eventData.hasOwnProperty("bounds")) {
+                    // Update the windowBounds object with the received data
+                    console.log("Bounds data received from WebSocket:", eventData.bounds);
+                    windowBounds = eventData.bounds; // This updates the global windowBounds object
                 }
-                if (Array.isArray(data.data)) {
-                    obsScreenData = data.data;
-                    console.log("obsScreenData", obsScreenData);
+
+                // If the data contains the screen configuration (like the windows to display)
+                if (Array.isArray(eventData.data)) {
+                    obsScreenData = eventData.data;
+                    console.log("Screen data received:", obsScreenData);
                     updateObsScreen(obsScreenData);
                 }
+
             });
 
             socket.addEventListener("close", (_) => {
@@ -474,6 +487,7 @@ ${info.description}`;
                     draggedElementBounds = defaultBounds;
                 }
             } else {
+                console.log("this is the window bounds", windowBounds)
                 draggedElementBounds = windowBounds[windowID] || defaultBounds;
             }
 
@@ -559,5 +573,4 @@ ${info.description}`;
         // });
     }
 </script>
-
 </html>
