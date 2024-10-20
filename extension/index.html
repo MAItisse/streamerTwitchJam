@@ -100,12 +100,17 @@
     // this will be gathered from the backend
     const infoWindowData = {
       "96": {
-        title: "Git gif",
-        description: "This is a gif you can set from <a href='https://github.com/MatissesProjects/GenerateImage' target='_blank'>github</a>",
+        title: `
+### Git gif`,
+        description: `This is a gif you can set from [github]('https://github.com/MatissesProjects/GenerateImage')`,
       },
       "97": {
-        title: "Current Competition",
-        description: "<p>This is where we can show the current</p><h1>WINNERS</h1><p>enter <a href='https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information' target='_blank'>here</a></p><p>example Follow here <a href='https://twitch.tv/vivax3794' target='_blank'>follow</a></p>",
+        title: `
+### Current Competition`,
+        description: `
+# WINNERS
+enter [here]('https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information')
+example Follow [follow here]('https://twitch.tv/vivax3794')`,
       },
     };
     const TESTING = window.location.hostname === "localhost";
@@ -232,8 +237,9 @@
       if (info) {
         // Populate the popup with information
         let markdownData = `
-          <h3>${info.title}</h3>
-          <p>${info.description}</p>
+          ${info.title}
+
+          ${info.description}
           <!-- Additional content -->
         `;
         // popup.innerHTML = markdownData;
