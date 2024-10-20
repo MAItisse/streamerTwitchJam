@@ -1,117 +1,125 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <title>Hello World Extension</title>
     <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
     <script src="marked.min.js"></script>
     <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background-color: transparent; /* Transparent background */
-        font-family: Arial, sans-serif;
-        overflow: hidden; /* Prevent scrolling */
-        position: relative;
-      }
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            /* Transparent background */
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            /* Prevent scrolling */
+            position: relative;
+        }
 
-      #obs-container {
-          width: 100%;
-          height: 100%;
-      }
+        #obs-container {
+            width: 100%;
+            height: 100%;
+        }
 
-      #obs-container {
-        position: absolute;
-        top: 20px;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden; /* Ensure nothing overflows */
-      }
+        #obs-container {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* Ensure nothing overflows */
+        }
 
-      .draggableWindow {
-        background-color: rgba(0, 0, 255, 0.375);
-        position: absolute;
-        opacity: 0;
-        transition: opacity 0.2s;
-      }
+        .draggableWindow {
+            background-color: rgba(0, 0, 255, 0.375);
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
 
-      #obs-container:hover .draggableWindow {
-        opacity: 1;
-      }
+        #obs-container:hover .draggableWindow {
+            opacity: 1;
+        }
 
-      #info-popup {
-        position: absolute;
-        background-color: rgba(255, 255, 255, 0.9);
-        border: 1px solid #ccc;
-        padding: 10px;
-        max-width: 200px;
-        max-height: 200px;
-        z-index: 1000; /* Ensure it appears above other elements */
-        border-radius: 5px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        opacity: 0;
-        transition: opacity 0.2s ease-in-out;
-        overflow-y: auto; /* Enable vertical scrolling */
-      }
+        #info-popup {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 200px;
+            max-height: 200px;
+            z-index: 1000;
+            /* Ensure it appears above other elements */
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            overflow-y: auto;
+            /* Enable vertical scrolling */
+        }
 
-      #info-popup:not(.hidden) {
-          opacity: 1;
-          pointer-events: auto; /* Enable clicks when visible */
-      }
+        #info-popup:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+            /* Enable clicks when visible */
+        }
 
 
-      .hidden {
-        display: none;
-      }
-      
-      .infoIcon {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        width: 16px;
-        height: 16px;
-        background-color: rgba(0, 0, 0, 0.6);
-        color: white;
-        font-size: 12px;
-        text-align: center;
-        line-height: 16px;
-        border-radius: 50%;
-        cursor: pointer;
-        user-select: none;
-      }
+        .hidden {
+            display: none;
+        }
+
+        .infoIcon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 16px;
+            height: 16px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            line-height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            user-select: none;
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div id="obs-container">
     </div>
     <div id="info-popup" class="hidden"></div>
-  </body>
-  <script>
+</body>
+<script>
     let playerWidth = 1920, playerHeight = 1080;
     const TestAuth = {
-      channelId: "468106723",
-      userId: "468106723",
+        channelId: "468106723",
+        userId: "468106723",
     };
 
     // this will be gathered from the backend
     const infoWindowData = {
-      "96": {
-        title: `
+        "96": {
+            title: `
 ### Git gif`,
-        description: `This is a gif you can set from [github]('https://github.com/MatissesProjects/GenerateImage')`,
-      },
-      "97": {
-        title: `
+            description: `This is a gif you can set from [github](https://github.com/MatissesProjects/GenerateImage)`,
+        },
+        "97": {
+            title: `
 ### Current Competition`,
-        description: `
+            description: `
 # WINNERS
-enter [here]('https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information')
-example Follow [follow here]('https://twitch.tv/vivax3794')`,
-      },
+enter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information')
+example Follow [follow here](https://twitch.tv/vivax3794)`,
+        },
     };
     const TESTING = window.location.hostname === "localhost";
     let userId; // Declare userId in the global scope
@@ -129,413 +137,420 @@ example Follow [follow here]('https://twitch.tv/vivax3794')`,
 
     // TODO update with the websocket data? - this should also be coming from config
     const windowBounds = {
-      "96": { left: 0.75, top: 0.25, right: 1, bottom: 0.9 },
+        "96": {left: 0.75, top: 0.25, right: 1, bottom: 0.9},
     };
-    const defaultBounds = { left: 0, top: 0, right: 1, bottom: 1 }; // Full container
+    const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
 
 
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
-      for (let obsWindow of data) {
+        for (let obsWindow of data) {
 
-        console.log("obsWindow", obsWindow);
-        // console.log(obsWindow['data']);
-        if (Array.isArray(obsWindow['data'])) {
-          console.log(obsWindow['data'][0]);
-          obsWindow = obsWindow['data'][0];
-          console.log("obsWindow is an array, using first element", obsWindow);
+            console.log("obsWindow", obsWindow);
+            // console.log(obsWindow['data']);
+            if (Array.isArray(obsWindow['data'])) {
+                console.log(obsWindow['data'][0]);
+                obsWindow = obsWindow['data'][0];
+                console.log("obsWindow is an array, using first element", obsWindow);
+            }
+
+            console.log("obsWindow", obsWindow);
+            let node = document.getElementById(obsWindow.name);
+            if (node === null) {
+                console.log("creating new node for", obsWindow.name);
+
+                node = document.createElement("div");
+                obsContainer.appendChild(node);
+
+                node.id = obsWindow.name;
+                node.classList.add("draggableWindow");
+
+                if (obsWindow["parent"]) {
+                    node.dataset.parent = obsWindow.parent;
+                }
+                // Add the new class for info popups
+                if (obsWindow.hasOwnProperty("info")) {
+                    node.classList.add("infoWindow");
+                    const infoIcon = document.createElement("div");
+                    infoIcon.classList.add("infoIcon");
+                    infoIcon.innerText = "i"; // You can replace this with an icon or image
+
+                    // Position the info icon inside the window
+                    infoIcon.style.position = "absolute";
+                    infoIcon.style.top = "5px";
+                    infoIcon.style.right = "5px";
+                    infoIcon.style.cursor = "pointer";
+
+                    // Add event listeners to the info icon
+                    addInfoIconListeners(infoIcon);
+
+                    // Append the info icon to the window node
+                    node.appendChild(infoIcon);
+                }
+            }
+            let x = `${(obsWindow.x / 1920) * 100}%`;
+            let y = `${(obsWindow.y / 1080) * 100}%`;
+
+            if (obsWindow.isParent) {
+                node.style.backgroundColor = "#5a8a1e33";
+                node.classList.add("parentWindow");
+            }
+            node.style.left = x;
+            node.style.top = y;
+            node.style.zIndex = obsWindow.zIndex;
+            console.log(obsWindow);
+            console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / 1920 * playerWidth);
+            console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / 1080 * playerHeight);
+            node.style.width = obsWindow.width.split('p')[0] / 1920 * playerWidth + "px"; // obsWindow.width;
+            node.style.height = obsWindow.height.split('p')[0] / 1080 * playerHeight + "px"; // obsWindow.height;
         }
-
-        console.log("obsWindow", obsWindow);
-        let node = document.getElementById(obsWindow.name);
-        if (node === null) {
-          console.log("creating new node for", obsWindow.name);
-
-          node = document.createElement("div");
-          obsContainer.appendChild(node);
-
-          node.id = obsWindow.name;
-          node.classList.add("draggableWindow");
-
-          if (obsWindow["parent"]) {
-            node.dataset.parent = obsWindow.parent;
-          }
-          // Add the new class for info popups
-          if (obsWindow.hasOwnProperty("info")) {
-            node.classList.add("infoWindow");
-            const infoIcon = document.createElement("div");
-            infoIcon.classList.add("infoIcon");
-            infoIcon.innerText = "i"; // You can replace this with an icon or image
-
-            // Position the info icon inside the window
-            infoIcon.style.position = "absolute";
-            infoIcon.style.top = "5px";
-            infoIcon.style.right = "5px";
-            infoIcon.style.cursor = "pointer";
-
-            // Add event listeners to the info icon
-            addInfoIconListeners(infoIcon);
-
-            // Append the info icon to the window node
-            node.appendChild(infoIcon);
-          }
-        }
-        let x = `${(obsWindow.x/1920) * 100}%`;
-        let y = `${(obsWindow.y/1080) * 100}%`;
-
-        if (obsWindow.isParent) {
-          node.style.backgroundColor = "#5a8a1e33";
-          node.classList.add("parentWindow");
-        }
-        node.style.left = x;
-        node.style.top = y;
-        node.style.zIndex = obsWindow.zIndex;
-        console.log(obsWindow);
-        console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0]/1920*playerWidth);
-        console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0]/1080*playerHeight);
-        node.style.width = obsWindow.width.split('p')[0]/1920*playerWidth + "px"; // obsWindow.width;
-        node.style.height = obsWindow.height.split('p')[0]/1080*playerHeight + "px"; // obsWindow.height;
-      }
     }
 
     function resetObsmap() {
-      let units = Array.from(document.getElementsByClassName("draggableWindow"));
-      if (units.length !== 0) {
-        let container = document.getElementById("obs-container");
-        container.style.display = "";
-      }
-      for (const unit of units) {
-        unit.remove();
-      }
+        let units = Array.from(document.getElementsByClassName("draggableWindow"));
+        if (units.length !== 0) {
+            let container = document.getElementById("obs-container");
+            container.style.display = "";
+        }
+        for (const unit of units) {
+            unit.remove();
+        }
     }
 
     function setupInfoPopupHandlers(infoIcon) {
-      // Show popup on mouse over
-      infoIcon.addEventListener("mouseover", (e) => {
-        e.stopPropagation();
-        showPopup(e.target);
-      });
+        // Show popup on mouse over
+        infoIcon.addEventListener("mouseover", (e) => {
+            e.stopPropagation();
+            showPopup(e.target);
+        });
 
-      // Hide popup after a delay on mouse out
-      infoIcon.addEventListener("mouseout", (_) => {
-        hidePopup();
-      });
+        // Hide popup after a delay on mouse out
+        infoIcon.addEventListener("mouseout", (_) => {
+            hidePopup();
+        });
     }
 
     function addInfoIconListeners(infoIcon) {
-      setupInfoPopupHandlers(infoIcon);
+        setupInfoPopupHandlers(infoIcon);
     }
 
     function showPopup(targetElement) {
-      keepPopupOpen(popupTimeout); // Clear any pending timeouts
+        keepPopupOpen(popupTimeout); // Clear any pending timeouts
 
-      const popup = document.getElementById("info-popup");
-      const windowID = targetElement.closest('.infoWindow').id;
-      const infoWindowElement = targetElement.closest('.infoWindow');
-      const info = infoWindowData[windowID];
+        const popup = document.getElementById("info-popup");
+        const windowID = targetElement.closest('.infoWindow').id;
+        const infoWindowElement = targetElement.closest('.infoWindow');
+        const info = infoWindowData[windowID];
 
-      if (info) {
-        // Populate the popup with information
-        let markdownData = `
-          ${info.title}
+        if (info) {
+            // Populate the popup with information
+            // YES WE WANT IT UNINDENTED
+            let markdownData = `
+${info.title}
 
-          ${info.description}
-          <!-- Additional content -->
-        `;
-        // popup.innerHTML = markdownData;
+${info.description}`;
+            // popup.innerHTML = markdownData;
 
-        marked.setOptions({
-          gfm: true,       // Enable GitHub flavored markdown
-          breaks: true,    // Enable line breaks
-          sanitize: true, // Allow HTML tags
-        });
-        popup.innerHTML = marked.parse(markdownData);
+            marked.setOptions({
+                gfm: true,       // Enable GitHub flavored markdown
+                breaks: true,    // Enable line breaks
+                sanitize: true, // Allow HTML tags
+            });
+            marked.use({
+                renderer: {
+                    link(token) {
+                        return `<a href=${token.href} target="_blank">${token.text}</a>`
+                    }
+                }
+            })
+            popup.innerHTML = marked.parse(markdownData);
 
-        // Ensure the popup is visible to get its dimensions
-        popup.classList.remove('hidden');
-        // popup.style.display = 'block';
+            // Ensure the popup is visible to get its dimensions
+            popup.classList.remove('hidden');
+            // popup.style.display = 'block';
 
-        // Get bounding rectangles
-        const windowRect = infoWindowElement.getBoundingClientRect();
-        const popupRect = popup.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+            // Get bounding rectangles
+            const windowRect = infoWindowElement.getBoundingClientRect();
+            const popupRect = popup.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
 
-        // Default position: above the info icon
-        let popupLeft = windowRect.left + (windowRect.width - popupRect.width) / 2;
-        let popupTop = windowRect.top + (windowRect.height - popupRect.height) / 2;
+            // Default position: above the info icon
+            let popupLeft = windowRect.left + (windowRect.width - popupRect.width) / 2;
+            let popupTop = windowRect.top + (windowRect.height - popupRect.height) / 2;
 
-        // Adjust position if the popup goes off-screen horizontally
-        if (popupLeft < 5) {
-          popupLeft = 5; // Minimum 5px from the left edge
-        } else if (popupLeft + popupRect.width > viewportWidth - 5) {
-          popupLeft = viewportWidth - popupRect.width - 5; // Minimum 5px from the right edge
+            // Adjust position if the popup goes off-screen horizontally
+            if (popupLeft < 5) {
+                popupLeft = 5; // Minimum 5px from the left edge
+            } else if (popupLeft + popupRect.width > viewportWidth - 5) {
+                popupLeft = viewportWidth - popupRect.width - 5; // Minimum 5px from the right edge
+            }
+
+            // Adjust position if the popup goes off-screen vertically
+            if (popupTop < 5) { // 5px padding
+                popupTop = 5;
+            } else if (popupTop + popupRect.height > viewportHeight - 5) {
+                popupTop = viewportHeight - popupRect.height - 5;
+            }
+
+            // Set the popup position
+            popup.style.left = popupLeft + 'px';
+            popup.style.top = popupTop + 'px';
+
+            // Add event listeners to the popup itself (this part is the key fix)
+            popup.addEventListener("mouseover", keepPopupOpen);
+            popup.addEventListener("mouseout", hidePopup);
         }
-
-        // Adjust position if the popup goes off-screen vertically
-        if (popupTop < 5) { // 5px padding
-          popupTop = 5;
-        } else if (popupTop + popupRect.height > viewportHeight - 5) {
-          popupTop = viewportHeight - popupRect.height - 5;
-        }
-
-        // Set the popup position
-        popup.style.left = popupLeft + 'px';
-        popup.style.top = popupTop + 'px';
-
-        // Add event listeners to the popup itself (this part is the key fix)
-        popup.addEventListener("mouseover", keepPopupOpen);
-        popup.addEventListener("mouseout", hidePopup);
-      }
     }
 
     function hidePopup() {
-      popupTimeout = setTimeout(() => {
-        const popup = document.getElementById("info-popup");
-        popup.classList.add('hidden');
-        popup.style.left = '-9999px'; // Move off-screen
+        popupTimeout = setTimeout(() => {
+            const popup = document.getElementById("info-popup");
+            popup.classList.add('hidden');
+            popup.style.left = '-9999px'; // Move off-screen
         }, 500); // Wait for 1 second before hiding
     }
 
     function keepPopupOpen() {
-      clearTimeout(popupTimeout); // Clear the timeout to prevent hiding
+        clearTimeout(popupTimeout); // Clear the timeout to prevent hiding
     }
 
     function runGameJam(auth) {
-      userId = auth.userId; // Set userId here
-      let wsUrl = "wss://websocket.matissetec.dev/lobby/connect?user=" + auth.channelId;
-      let socket;
-      let reconnectInterval = null; // To store the interval ID for reconnection attempts
+        userId = auth.userId; // Set userId here
+        let wsUrl = "wss://websocket.matissetec.dev/lobby/connect?user=" + auth.channelId;
+        let socket;
+        let reconnectInterval = null; // To store the interval ID for reconnection attempts
 
-      function connectWebSocket() {
-        socket = new WebSocket(wsUrl);
-        resetObsmap();
-
-        socket.addEventListener("open", (_) => {
-          console.log("Connected to the WebSocket server");
-          let container = document.getElementById("obs-container");
-          container.style.display = "initial";
-          socket.send("Hello Server!");
-          if (reconnectInterval) {
-            clearInterval(reconnectInterval); // Clear the reconnect interval on successful connection
-            reconnectInterval = null;
-          }
-        });
-
-        socket.addEventListener("message", (event) => {
-          if(event.data === "ping") {
-            console.log("ping received");
-            return;
-          }
-          let data = JSON.parse(event.data);
-
-          if (data.data.hasOwnProperty("reset")) {
-            console.log("Resetting obsCont");
+        function connectWebSocket() {
+            socket = new WebSocket(wsUrl);
             resetObsmap();
-          }
-          if (Array.isArray(data.data)) {
-            obsScreenData = data.data;
-            console.log("obsScreenData", obsScreenData);
-            updateObsScreen(obsScreenData);
-          }
-        });
 
-        socket.addEventListener("close", (_) => {
-          console.log("Disconnected from the WebSocket server");
-          // Attempt to reconnect every 10 seconds
-          if (!reconnectInterval) {
-            reconnectInterval = setInterval(() => {
-              console.log("Attempting to reconnect...");
-              try {
-                connectWebSocket();
-              }
-              catch (error) {
-                console.log("Failed to connect to WebSocket server:", error);
-              }
-            }, 10000);
-          }
-        });
-
-        socket.addEventListener("error", (event) => {
-          let container = document.getElementById("obs-container");
-          container.style.display = "none";
-          console.log("WebSocket error, likely disconnected:", event);
-        });
-      }
-
-      connectWebSocket();
-      // Function to stop dragging
-      window.addEventListener("mouseup", () => {
-        // console.log("Mouse released");
-        if (isDragging && draggedElement) {
-          // Send the final position to the server
-          const x = parseFloat(draggedElement.style.left) / 100;
-          const y = parseFloat(draggedElement.style.top) / 100;
-          const data = {
-            name: draggedElement.id, // Assuming each draggableWindow has a unique id
-            x: x,
-            y: y,
-            // userId: userId,
-          };
-          sendMessage(JSON.stringify(data));
-
-          // If the dragged element is a parent, send positions of child elements
-          if (draggedElement.childElements && draggedElement.childElements.length > 0) {
-            draggedElement.childElements.forEach(childData => {
-              const childX = parseFloat(childData.element.style.left) / 100;
-              const childY = parseFloat(childData.element.style.top) / 100;
-              const childDataToSend = {
-                name: childData.element.id,
-                x: childX,
-                y: childY,
-              };
-              sendMessage(JSON.stringify(childDataToSend));
+            socket.addEventListener("open", (_) => {
+                console.log("Connected to the WebSocket server");
+                let container = document.getElementById("obs-container");
+                container.style.display = "initial";
+                socket.send("Hello Server!");
+                if (reconnectInterval) {
+                    clearInterval(reconnectInterval); // Clear the reconnect interval on successful connection
+                    reconnectInterval = null;
+                }
             });
-          }
-        }
-        isDragging = false;
-        draggedElement = null;
-        draggedElementBounds = null; // Reset bounds
-        document.body.style.cursor = ''; // Reset cursor
-        dragCooldown = true; // Set cooldown
-        setTimeout(() => { dragCooldown = false; }, 100); // Cooldown for 100ms
-      });
 
-      function sendMessage(message) {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.send(message);
-        } else {
-          console.error(
-            "WebSocket is not open. Ready state:",
-            socket.readyState,
-          );
+            socket.addEventListener("message", (event) => {
+                if (event.data === "ping") {
+                    console.log("ping received");
+                    return;
+                }
+                let data = JSON.parse(event.data);
+
+                if (data.data.hasOwnProperty("reset")) {
+                    console.log("Resetting obsCont");
+                    resetObsmap();
+                }
+                if (Array.isArray(data.data)) {
+                    obsScreenData = data.data;
+                    console.log("obsScreenData", obsScreenData);
+                    updateObsScreen(obsScreenData);
+                }
+            });
+
+            socket.addEventListener("close", (_) => {
+                console.log("Disconnected from the WebSocket server");
+                // Attempt to reconnect every 10 seconds
+                if (!reconnectInterval) {
+                    reconnectInterval = setInterval(() => {
+                        console.log("Attempting to reconnect...");
+                        try {
+                            connectWebSocket();
+                        }
+                        catch (error) {
+                            console.log("Failed to connect to WebSocket server:", error);
+                        }
+                    }, 10000);
+                }
+            });
+
+            socket.addEventListener("error", (event) => {
+                let container = document.getElementById("obs-container");
+                container.style.display = "none";
+                console.log("WebSocket error, likely disconnected:", event);
+            });
         }
-      }
+
+        connectWebSocket();
+        // Function to stop dragging
+        window.addEventListener("mouseup", () => {
+            // console.log("Mouse released");
+            if (isDragging && draggedElement) {
+                // Send the final position to the server
+                const x = parseFloat(draggedElement.style.left) / 100;
+                const y = parseFloat(draggedElement.style.top) / 100;
+                const data = {
+                    name: draggedElement.id, // Assuming each draggableWindow has a unique id
+                    x: x,
+                    y: y,
+                    // userId: userId,
+                };
+                sendMessage(JSON.stringify(data));
+
+                // If the dragged element is a parent, send positions of child elements
+                if (draggedElement.childElements && draggedElement.childElements.length > 0) {
+                    draggedElement.childElements.forEach(childData => {
+                        const childX = parseFloat(childData.element.style.left) / 100;
+                        const childY = parseFloat(childData.element.style.top) / 100;
+                        const childDataToSend = {
+                            name: childData.element.id,
+                            x: childX,
+                            y: childY,
+                        };
+                        sendMessage(JSON.stringify(childDataToSend));
+                    });
+                }
+            }
+            isDragging = false;
+            draggedElement = null;
+            draggedElementBounds = null; // Reset bounds
+            document.body.style.cursor = ''; // Reset cursor
+            dragCooldown = true; // Set cooldown
+            setTimeout(() => {dragCooldown = false;}, 100); // Cooldown for 100ms
+        });
+
+        function sendMessage(message) {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(message);
+            } else {
+                console.error(
+                    "WebSocket is not open. Ready state:",
+                    socket.readyState,
+                );
+            }
+        }
     }
 
     // Function to handle dragging
     document.addEventListener("mousedown", (e) => {
-      if (dragCooldown) return;
+        if (dragCooldown) return;
 
-      let obsCont;
-      if (e.target.classList.contains("draggableWindow")) {
-        isDragging = true;
-        draggedElement = e.target;
-        obsCont = document.getElementById("obs-container");
-        rect = obsCont.getBoundingClientRect();
-        document.body.style.cursor = 'grabbing';
+        let obsCont;
+        if (e.target.classList.contains("draggableWindow")) {
+            isDragging = true;
+            draggedElement = e.target;
+            obsCont = document.getElementById("obs-container");
+            rect = obsCont.getBoundingClientRect();
+            document.body.style.cursor = 'grabbing';
 
-        // Calculate the offset
-        const elemRect = draggedElement.getBoundingClientRect();
-        offsetX = e.clientX - elemRect.left;
-        offsetY = e.clientY - elemRect.top;
+            // Calculate the offset
+            const elemRect = draggedElement.getBoundingClientRect();
+            offsetX = e.clientX - elemRect.left;
+            offsetY = e.clientY - elemRect.top;
 
-        // Store the initial position of the draggedElement
-        draggedElement.initialX = parseFloat(draggedElement.style.left) / 100;
-        draggedElement.initialY = parseFloat(draggedElement.style.top) / 100;
+            // Store the initial position of the draggedElement
+            draggedElement.initialX = parseFloat(draggedElement.style.left) / 100;
+            draggedElement.initialY = parseFloat(draggedElement.style.top) / 100;
 
-        const windowID = draggedElement.id;
-        const parentID = draggedElement.dataset.parent;
+            const windowID = draggedElement.id;
+            const parentID = draggedElement.dataset.parent;
 
-        if (parentID) {
-          const parentElement = document.getElementById(parentID);
-          if (parentElement) {
-            const parentRect = parentElement.getBoundingClientRect();
-            const containerRect = obsCont.getBoundingClientRect();
+            if (parentID) {
+                const parentElement = document.getElementById(parentID);
+                if (parentElement) {
+                    const parentRect = parentElement.getBoundingClientRect();
+                    const containerRect = obsCont.getBoundingClientRect();
 
-            const left = (parentRect.left - containerRect.left) / containerRect.width;
-            const top = (parentRect.top - containerRect.top) / containerRect.height;
-            const right = (parentRect.right - containerRect.left) / containerRect.width;
-            const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
+                    const left = (parentRect.left - containerRect.left) / containerRect.width;
+                    const top = (parentRect.top - containerRect.top) / containerRect.height;
+                    const right = (parentRect.right - containerRect.left) / containerRect.width;
+                    const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
 
-            draggedElementBounds = {left, top, right, bottom};
-          } else {
-            draggedElementBounds = defaultBounds;
-          }
-        } else {
-          draggedElementBounds = windowBounds[windowID] || defaultBounds;
+                    draggedElementBounds = {left, top, right, bottom};
+                } else {
+                    draggedElementBounds = defaultBounds;
+                }
+            } else {
+                draggedElementBounds = windowBounds[windowID] || defaultBounds;
+            }
+
+            // If the dragged element is a parent, collect child elements
+            if (draggedElement.classList.contains("parentWindow")) {
+                // Collect child elements
+                const childElements = Array.from(document.querySelectorAll(".draggableWindow"))
+                    .filter(el => el.dataset.parent === draggedElement.id);
+                // Store the initial positions of the child elements
+                draggedElement.childElements = childElements.map(child => {
+                    const x = parseFloat(child.style.left) / 100;
+                    const y = parseFloat(child.style.top) / 100;
+                    return {element: child, initialX: x, initialY: y};
+                });
+            } else {
+                draggedElement.childElements = [];
+            }
         }
-
-        // If the dragged element is a parent, collect child elements
-        if (draggedElement.classList.contains("parentWindow")) {
-          // Collect child elements
-          const childElements = Array.from(document.querySelectorAll(".draggableWindow"))
-                  .filter(el => el.dataset.parent === draggedElement.id);
-          // Store the initial positions of the child elements
-          draggedElement.childElements = childElements.map(child => {
-            const x = parseFloat(child.style.left) / 100;
-            const y = parseFloat(child.style.top) / 100;
-            return {element: child, initialX: x, initialY: y};
-          });
-        } else {
-          draggedElement.childElements = [];
-        }
-      }
     });
 
     document.addEventListener("mousemove", (e) => {
-      if (isDragging && draggedElement) {
-          const x = (e.clientX - rect.left - offsetX) / rect.width;
-          const y = (e.clientY - rect.top - offsetY) / rect.height;
+        if (isDragging && draggedElement) {
+            const x = (e.clientX - rect.left - offsetX) / rect.width;
+            const y = (e.clientY - rect.top - offsetY) / rect.height;
 
-          // Get the element's size relative to the container
-          const elemWidth = draggedElement.offsetWidth / rect.width;
-          const elemHeight = draggedElement.offsetHeight / rect.height;
-          
-          // Calculate the constraints based on bounds
-          const minX = draggedElementBounds.left;
-          const maxX = draggedElementBounds.right - elemWidth;
-          const minY = draggedElementBounds.top;
-          const maxY = draggedElementBounds.bottom - elemHeight;
+            // Get the element's size relative to the container
+            const elemWidth = draggedElement.offsetWidth / rect.width;
+            const elemHeight = draggedElement.offsetHeight / rect.height;
 
-          // console.log("Dragging", x, y);
-          // Constrain x and y within the calculated bounds
-          const constrainedX = Math.max(minX, Math.min(maxX, x));
-          const constrainedY = Math.max(minY, Math.min(maxY, y));
-          // Update the position of the dragged element
-          draggedElement.style.left = constrainedX * 100 + "%";
-          draggedElement.style.top = constrainedY * 100 + "%";
+            // Calculate the constraints based on bounds
+            const minX = draggedElementBounds.left;
+            const maxX = draggedElementBounds.right - elemWidth;
+            const minY = draggedElementBounds.top;
+            const maxY = draggedElementBounds.bottom - elemHeight;
 
-          // If the dragged element is a parent, update child positions
-          if (draggedElement.childElements && draggedElement.childElements.length > 0) {
-            // Calculate the delta movement
-            const deltaX = constrainedX - draggedElement.initialX;
-            const deltaY = constrainedY - draggedElement.initialY;
+            // console.log("Dragging", x, y);
+            // Constrain x and y within the calculated bounds
+            const constrainedX = Math.max(minX, Math.min(maxX, x));
+            const constrainedY = Math.max(minY, Math.min(maxY, y));
+            // Update the position of the dragged element
+            draggedElement.style.left = constrainedX * 100 + "%";
+            draggedElement.style.top = constrainedY * 100 + "%";
 
-            // Move each child element by the delta
-            draggedElement.childElements.forEach(childData => {
-              const childConstrainedX = childData.initialX + deltaX;
-              const childConstrainedY = childData.initialY + deltaY;
+            // If the dragged element is a parent, update child positions
+            if (draggedElement.childElements && draggedElement.childElements.length > 0) {
+                // Calculate the delta movement
+                const deltaX = constrainedX - draggedElement.initialX;
+                const deltaY = constrainedY - draggedElement.initialY;
 
-              // Update the position of the child element
-              childData.element.style.left = childConstrainedX * 100 + "%";
-              childData.element.style.top = childConstrainedY * 100 + "%";
-            });
-          }
-      }
+                // Move each child element by the delta
+                draggedElement.childElements.forEach(childData => {
+                    const childConstrainedX = childData.initialX + deltaX;
+                    const childConstrainedY = childData.initialY + deltaY;
+
+                    // Update the position of the child element
+                    childData.element.style.left = childConstrainedX * 100 + "%";
+                    childData.element.style.top = childConstrainedY * 100 + "%";
+                });
+            }
+        }
     });
 
     if (TESTING) {
-      runGameJam(TestAuth);
+        runGameJam(TestAuth);
     } else {
-      window.Twitch.ext.onAuthorized(runGameJam);
-      window.Twitch.ext.onContext((context) => {
-          // Get the player's width
-          console.log("Context updated:", context);
-          let resolutions = context.displayResolution.split("x");
-          let newWidth = parseInt(resolutions[0], 10);  // Update playerWidth
-          let newHeight = parseInt(resolutions[1], 10); // Update playerHeight
-          if (newWidth !== playerWidth || newHeight !== playerHeight) {
-            playerWidth = newWidth;
-            playerHeight = newHeight;
-            console.log("Player width:", playerWidth);
-            console.log("Player height:", playerHeight);
-            updateObsScreen(obsScreenData);
-          }
+        window.Twitch.ext.onAuthorized(runGameJam);
+        window.Twitch.ext.onContext((context) => {
+            // Get the player's width
+            console.log("Context updated:", context);
+            let resolutions = context.displayResolution.split("x");
+            let newWidth = parseInt(resolutions[0], 10);  // Update playerWidth
+            let newHeight = parseInt(resolutions[1], 10); // Update playerHeight
+            if (newWidth !== playerWidth || newHeight !== playerHeight) {
+                playerWidth = newWidth;
+                playerHeight = newHeight;
+                console.log("Player width:", playerWidth);
+                console.log("Player height:", playerHeight);
+                updateObsScreen(obsScreenData);
+            }
         });
         // window.Twitch.ext.onAuthorized(function(auth) {
         //   console.log('The Helix JWT is ', auth.helixToken);
         // });
-      }
-  </script>
+    }
+</script>
+
 </html>
