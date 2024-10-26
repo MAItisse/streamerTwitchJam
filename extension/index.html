@@ -181,9 +181,8 @@
                     node.appendChild(infoIcon);
                 }
             }
-
-            let x = `${(obsWindow.x / obsOutputWidth) * 100}%`;
-            let y = `${(obsWindow.y / obsOutputHeight) * 100}%`;
+            let x = `${(obsWindow.x / playerWidth) * 100}%`;
+            let y = `${(obsWindow.y / playerHeight) * 100}%`;
 
             if (obsWindow.isParent) {
                 node.style.backgroundColor = "#5a8a1e33";
