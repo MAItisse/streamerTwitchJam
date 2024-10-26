@@ -248,7 +248,7 @@ ${info.description}`;
             marked.setOptions({
                 gfm: true,       // Enable GitHub flavored markdown
                 breaks: true,    // Enable line breaks
-                sanitize: false, // Allow HTML tags
+                sanitize: true, // Allow HTML tags
             });
             marked.use({
                 renderer: {
