@@ -106,6 +106,7 @@
     }
 
     let playerWidth = 1920, playerHeight = 1080;
+    let obsOutputWidth = 1920, obsOutputHeight = 1080;
     const TestAuth = {
         channelId: "468106723",
         userId: "468106723",
@@ -175,8 +176,9 @@
                     node.appendChild(infoIcon);
                 }
             }
-            let x = `${(obsWindow.x / 1920) * 100}%`;
-            let y = `${(obsWindow.y / 1080) * 100}%`;
+
+            let x = `${(obsWindow.x / obsOutputWidth) * 100}%`;
+            let y = `${(obsWindow.y / obsOutputHeight) * 100}%`;
 
             if (obsWindow.isParent) {
                 node.style.backgroundColor = "#5a8a1e33";
@@ -186,10 +188,10 @@
             node.style.top = y;
             node.style.zIndex = obsWindow.zIndex;
             console.log(obsWindow);
-            console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / 1920 * playerWidth);
-            console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / 1080 * playerHeight);
-            node.style.width = obsWindow.width.split('p')[0] / 1920 * playerWidth + "px"; // obsWindow.width;
-            node.style.height = obsWindow.height.split('p')[0] / 1080 * playerHeight + "px"; // obsWindow.height;
+            console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth);
+            console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight);
+            node.style.width = obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth + "px"; // obsWindow.width;
+            node.style.height = obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight + "px"; // obsWindow.height;
         }
     }
 
@@ -241,7 +243,7 @@ ${info.description}`;
             marked.setOptions({
                 gfm: true,       // Enable GitHub flavored markdown
                 breaks: true,    // Enable line breaks
-                sanitize: true, // Allow HTML tags
+                sanitize: false, // Allow HTML tags
             });
             marked.use({
                 renderer: {
@@ -352,6 +354,11 @@ ${info.description}`;
                     if (eventData.hasOwnProperty("infoWindow")) {
                         console.log("infoWindow data received from websocket: ", eventData.infoWindow)
                         infoWindowData = eventData.infoWindow
+                    }
+                    if (eventData.hasOwnProperty("obsSize")) {
+                        console.log("obsSize data received from websocket: ", eventData.obsSize)
+                        obsOutputWidth = eventData.obsSize["obsSize"]["width"]
+                        obsOutputHeight = eventData.obsSize["obsSize"]["height"]
                     }
                 }
 

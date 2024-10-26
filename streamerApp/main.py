@@ -164,10 +164,15 @@ def sendWindowConfig(ws):
     print(f"whole data from json {windowConfigData}")
     ws.send(json.dumps(windowConfigData))
 
+def sendObsSizeConfig(ws):
+    print("sending obs size config")
+    ws.send(json.dumps({"obsSize": {"width":width, "height":height}}))
+
 def on_message(ws, message):
     print("Received message:", message)
     # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
+        sendObsSizeConfig(ws)
         sendWindowConfig(ws)
         sendInfoWindowDataConfig(ws)
         runHello(ws)

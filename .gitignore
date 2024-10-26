@@ -3,3 +3,4 @@ secret.*
 newGame*
 streamerApp/.vs/slnx.sqlite
 streamerApp/venv
+streamerApp/obsConfig.json
