@@ -192,8 +192,8 @@
                     node.appendChild(infoIcon);
                 }
             }
-            let x = `${(obsWindow.x / playerWidth) * 100}%`;
-            let y = `${(obsWindow.y / playerHeight) * 100}%`;
+            let x = `${(obsWindow.x / obsOutputWidth) * 100}%`;
+            let y = `${(obsWindow.y / obsOutputHeight) * 100}%`;
 
             // if (obsWindow.isParent) {
             //     node.classList.add("parentWindow");
@@ -203,10 +203,10 @@
             node.style.top = y;
             node.style.zIndex = obsWindow.zIndex;
             console.log(obsWindow);
-            console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / playerWidth * obsOutputWidth);
-            console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / playerHeight * obsOutputHeight);
-            node.style.width = Math.min(Math.max(obsWindow.width.split('p')[0] / playerWidth * obsOutputWidth, 0), obsOutputWidth) + "px"; // obsWindow.width;
-            node.style.height = Math.min(Math.max(obsWindow.height.split('p')[0] / playerHeight * obsOutputHeight, 0), obsOutputHeight) + "px"; // obsWindow.height;
+            console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth);
+            console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight);
+            node.style.width = Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) + "px"; // obsWindow.width;
+            node.style.height = Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight) + "px"; // obsWindow.height;
         }
     }
 
