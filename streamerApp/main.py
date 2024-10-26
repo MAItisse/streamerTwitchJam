@@ -45,14 +45,14 @@ def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
 
     return selectedIds, jsonData
 
-def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene"):
+def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene", sizeOfWindow = (100,100)):
     raw_request = {
         "requestType": "SetSceneItemTransform",
         "sceneName": sceneName,
         "sceneItemId": windowId,
         "sceneItemTransform": {
-            "positionX": x,
-            "positionY": y,
+            "positionX": min(max(x, 0),width - sizeOfWindow[0]),
+            "positionY": min(max(y, 0),height - sizeOfWindow[1]),
         }
     }
     print(f"transform Id request: {raw_request}")
@@ -137,31 +137,31 @@ def runHello(ws):
                 "zIndex": 10,
                 "isParent": False
             }]})
-
-    wholeData['data'].append({"data": [
-        {
-            # need the parent id
-            "name": 69,
-            # take these from the config
-            "x": 200,
-            "y": 100,
-            # sizes will be set by the config
-            "width": "712px",
-            "height": "712px",
-            # zindex by the config
-            "zIndex": 1,
-            "isParent": True
-        }]})
+    #
+    # wholeData['data'].append({"data": [
+    #     {
+    #         # need the parent id
+    #         "name": 69,
+    #         # take these from the config
+    #         "x": 200,
+    #         "y": 100,
+    #         # sizes will be set by the config
+    #         "width": "712px",
+    #         "height": "712px",
+    #         # zindex by the config
+    #         "zIndex": 1,
+    #         "isParent": True
+    #     }]})
     ws.send(json.dumps(wholeData))
 
 def sendInfoWindowDataConfig(ws):
-    print("sending window config")
-    print(f"whole data from json {infoWindowDataConfigData}")
+    print("sending InfoWindowDataConfig")
+    # print(f"whole data from json {infoWindowDataConfigData}")
     ws.send(json.dumps(infoWindowDataConfigData))
 
 def sendWindowConfig(ws):
-    print("sending window config")
-    print(f"whole data from json {windowConfigData}")
+    print("sending windowConfig")
+    # print(f"whole data from json {windowConfigData}")
     ws.send(json.dumps(windowConfigData))
 
 def sendObsSizeConfig(ws):
@@ -187,7 +187,7 @@ def on_message(ws, message):
         print("Getting new location for ID:", windowId)
 
         # get id from name off list we create at beginning
-        transformId(x*float(width), y*float(height), windowId, "Scene")
+        transformId(x*float(width), y*float(height), windowId, "Scene", sizeOfWindow)
         ws.send(json.dumps({"data":[
             {
                 "name": windowId,

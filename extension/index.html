@@ -23,11 +23,6 @@
         }
 
         #obs-container {
-            width: 100%;
-            height: 100%;
-        }
-
-        #obs-container {
             position: absolute;
             top: 20px;
             left: 0;
@@ -41,7 +36,7 @@
             background-color: rgba(0, 0, 255, 0.375);
             position: absolute;
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, left 0.075s, top 0.075s;
         }
 
         #obs-container:hover .draggableWindow {
@@ -71,7 +66,6 @@
             /* Enable clicks when visible */
         }
 
-
         .hidden {
             display: none;
         }
@@ -91,6 +85,15 @@
             cursor: pointer;
             user-select: none;
         }
+
+        /*.parentWindow {*/
+        /*    position: relative; !* Establishes a new containing block for child elements *!*/
+        /*    background-color: #5a8a1e33; !* Example color for parent *!*/
+        /*}*/
+
+        /*.parentWindow .draggableWindow {*/
+        /*    position: absolute; !* Ensures child elements are positioned relative to the parent *!*/
+        /*}*/
     </style>
 </head>
 
@@ -134,14 +137,12 @@
     let obsScreenData = [];
 
     let windowBounds = {};
-    const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
+    const defaultBounds = { left: 0, top: 0, right: 1, bottom: 1 }; // Full container
 
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
         for (let obsWindow of data) {
-
             console.log("obsWindow", obsWindow);
-            // console.log(obsWindow['data']);
             if (Array.isArray(obsWindow['data'])) {
                 console.log(obsWindow['data'][0]);
                 obsWindow = obsWindow['data'][0];
@@ -154,14 +155,23 @@
                 console.log("creating new node for", obsWindow.name);
 
                 node = document.createElement("div");
-                obsContainer.appendChild(node);
-
                 node.id = obsWindow.name;
                 node.classList.add("draggableWindow");
 
-                if (obsWindow["parent"]) {
-                    node.dataset.parent = obsWindow.parent;
-                }
+                // If the window has a parent, append it to the parent; else, append to obsContainer
+                // if (obsWindow["parent"]) {
+                //     const parentNode = document.getElementById(obsWindow.parent);
+                //     if (parentNode) {
+                //         parentNode.appendChild(node);
+                //         node.dataset.parent = obsWindow.parent;
+                //     } else {
+                //         console.warn(`Parent element with ID "${obsWindow.parent}" not found. Appending to container.`);
+                //         obsContainer.appendChild(node);
+                //     }
+                // } else {
+                obsContainer.appendChild(node);
+                // }
+
                 // Add the new class for info popups
                 if (obsWindow.hasOwnProperty("info")) {
                     node.classList.add("infoWindow");
@@ -185,18 +195,18 @@
             let x = `${(obsWindow.x / playerWidth) * 100}%`;
             let y = `${(obsWindow.y / playerHeight) * 100}%`;
 
-            if (obsWindow.isParent) {
-                node.style.backgroundColor = "#5a8a1e33";
-                node.classList.add("parentWindow");
-            }
+            // if (obsWindow.isParent) {
+            //     node.classList.add("parentWindow");
+            // }
+
             node.style.left = x;
             node.style.top = y;
             node.style.zIndex = obsWindow.zIndex;
             console.log(obsWindow);
-            console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth);
-            console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight);
-            node.style.width = obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth + "px"; // obsWindow.width;
-            node.style.height = obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight + "px"; // obsWindow.height;
+            console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / playerWidth * obsOutputWidth);
+            console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / playerHeight * obsOutputHeight);
+            node.style.width = Math.min(Math.max(obsWindow.width.split('p')[0] / playerWidth * obsOutputWidth, 0), obsOutputWidth) + "px"; // obsWindow.width;
+            node.style.height = Math.min(Math.max(obsWindow.height.split('p')[0] / playerHeight * obsOutputHeight, 0), obsOutputHeight) + "px"; // obsWindow.height;
         }
     }
 
@@ -312,7 +322,7 @@ ${info.description}`;
             const popup = document.getElementById("info-popup");
             popup.classList.add('hidden');
             popup.style.left = '-9999px'; // Move off-screen
-        }, 500); // Wait for 1 second before hiding
+        }, 500); // Wait for 0.5 seconds before hiding
     }
 
     function keepPopupOpen() {
@@ -416,25 +426,14 @@ ${info.description}`;
                 sendMessage(JSON.stringify(data));
 
                 // If the dragged element is a parent, send positions of child elements
-                if (draggedElement.childElements && draggedElement.childElements.length > 0) {
-                    draggedElement.childElements.forEach(childData => {
-                        const childX = parseFloat(childData.element.style.left) / 100;
-                        const childY = parseFloat(childData.element.style.top) / 100;
-                        const childDataToSend = {
-                            name: childData.element.id,
-                            x: childX,
-                            y: childY,
-                        };
-                        sendMessage(JSON.stringify(childDataToSend));
-                    });
-                }
+                // No longer needed since children are nested and their positions are relative
             }
             isDragging = false;
             draggedElement = null;
             draggedElementBounds = null; // Reset bounds
             document.body.style.cursor = ''; // Reset cursor
             dragCooldown = true; // Set cooldown
-            setTimeout(() => {dragCooldown = false;}, 100); // Cooldown for 100ms
+            setTimeout(() => { dragCooldown = false; }, 100); // Cooldown for 100ms
         });
 
         function sendMessage(message) {
@@ -454,9 +453,11 @@ ${info.description}`;
         if (dragCooldown) return;
 
         let obsCont;
-        if (e.target.classList.contains("draggableWindow")) {
+        // Ensure the draggableWindow is correctly identified even if a child element (like infoIcon) is clicked
+        let target = e.target.closest(".draggableWindow");
+        if (target) {
             isDragging = true;
-            draggedElement = e.target;
+            draggedElement = target;
             obsCont = document.getElementById("obs-container");
             rect = obsCont.getBoundingClientRect();
             document.body.style.cursor = 'grabbing';
@@ -471,42 +472,29 @@ ${info.description}`;
             draggedElement.initialY = parseFloat(draggedElement.style.top) / 100;
 
             const windowID = draggedElement.id;
-            const parentID = draggedElement.dataset.parent;
+            // const parentID = draggedElement.dataset.parent;
+            //
+            // if (parentID) {
+            //     const parentElement = document.getElementById(parentID);
+            //     if (parentElement) {
+            //         const parentRect = parentElement.getBoundingClientRect();
+            //         const containerRect = obsCont.getBoundingClientRect();
+            //
+            //         const left = (parentRect.left - containerRect.left) / containerRect.width;
+            //         const top = (parentRect.top - containerRect.top) / containerRect.height;
+            //         const right = (parentRect.right - containerRect.left) / containerRect.width;
+            //         const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
+            //
+            //         draggedElementBounds = { left, top, right, bottom };
+            //     } else {
+            //         draggedElementBounds = defaultBounds;
+            //     }
+            // } else {
+            console.log("this is the window bounds", windowBounds);
+            draggedElementBounds = windowBounds[windowID] || defaultBounds;
+            // }
 
-            if (parentID) {
-                const parentElement = document.getElementById(parentID);
-                if (parentElement) {
-                    const parentRect = parentElement.getBoundingClientRect();
-                    const containerRect = obsCont.getBoundingClientRect();
-
-                    const left = (parentRect.left - containerRect.left) / containerRect.width;
-                    const top = (parentRect.top - containerRect.top) / containerRect.height;
-                    const right = (parentRect.right - containerRect.left) / containerRect.width;
-                    const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
-
-                    draggedElementBounds = {left, top, right, bottom};
-                } else {
-                    draggedElementBounds = defaultBounds;
-                }
-            } else {
-                console.log("this is the window bounds", windowBounds);
-                draggedElementBounds = windowBounds[windowID] || defaultBounds;
-            }
-
-            // If the dragged element is a parent, collect child elements
-            if (draggedElement.classList.contains("parentWindow")) {
-                // Collect child elements
-                const childElements = Array.from(document.querySelectorAll(".draggableWindow"))
-                    .filter(el => el.dataset.parent === draggedElement.id);
-                // Store the initial positions of the child elements
-                draggedElement.childElements = childElements.map(child => {
-                    const x = parseFloat(child.style.left) / 100;
-                    const y = parseFloat(child.style.top) / 100;
-                    return {element: child, initialX: x, initialY: y};
-                });
-            } else {
-                draggedElement.childElements = [];
-            }
+            // No need to handle child elements manually since they're nested
         }
     });
 
@@ -525,30 +513,13 @@ ${info.description}`;
             const minY = draggedElementBounds.top;
             const maxY = draggedElementBounds.bottom - elemHeight;
 
-            // console.log("Dragging", x, y);
             // Constrain x and y within the calculated bounds
             const constrainedX = Math.max(minX, Math.min(maxX, x));
             const constrainedY = Math.max(minY, Math.min(maxY, y));
+
             // Update the position of the dragged element
             draggedElement.style.left = constrainedX * 100 + "%";
             draggedElement.style.top = constrainedY * 100 + "%";
-
-            // If the dragged element is a parent, update child positions
-            if (draggedElement.childElements && draggedElement.childElements.length > 0) {
-                // Calculate the delta movement
-                const deltaX = constrainedX - draggedElement.initialX;
-                const deltaY = constrainedY - draggedElement.initialY;
-
-                // Move each child element by the delta
-                draggedElement.childElements.forEach(childData => {
-                    const childConstrainedX = childData.initialX + deltaX;
-                    const childConstrainedY = childData.initialY + deltaY;
-
-                    // Update the position of the child element
-                    childData.element.style.left = childConstrainedX * 100 + "%";
-                    childData.element.style.top = childConstrainedY * 100 + "%";
-                });
-            }
         }
     });
 
