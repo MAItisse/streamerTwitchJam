@@ -1,2 +1,3 @@
 obsws-python
 websocket-client
+requests
