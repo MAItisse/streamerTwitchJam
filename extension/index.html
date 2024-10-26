@@ -85,15 +85,6 @@
             cursor: pointer;
             user-select: none;
         }
-
-        /*.parentWindow {*/
-        /*    position: relative; !* Establishes a new containing block for child elements *!*/
-        /*    background-color: #5a8a1e33; !* Example color for parent *!*/
-        /*}*/
-
-        /*.parentWindow .draggableWindow {*/
-        /*    position: absolute; !* Ensures child elements are positioned relative to the parent *!*/
-        /*}*/
     </style>
 </head>
 
@@ -158,19 +149,7 @@
                 node.id = obsWindow.name;
                 node.classList.add("draggableWindow");
 
-                // If the window has a parent, append it to the parent; else, append to obsContainer
-                // if (obsWindow["parent"]) {
-                //     const parentNode = document.getElementById(obsWindow.parent);
-                //     if (parentNode) {
-                //         parentNode.appendChild(node);
-                //         node.dataset.parent = obsWindow.parent;
-                //     } else {
-                //         console.warn(`Parent element with ID "${obsWindow.parent}" not found. Appending to container.`);
-                //         obsContainer.appendChild(node);
-                //     }
-                // } else {
                 obsContainer.appendChild(node);
-                // }
 
                 // Add the new class for info popups
                 if (obsWindow.hasOwnProperty("info")) {
@@ -194,10 +173,6 @@
             }
             let x = `${(obsWindow.x / obsOutputWidth) * 100}%`;
             let y = `${(obsWindow.y / obsOutputHeight) * 100}%`;
-
-            // if (obsWindow.isParent) {
-            //     node.classList.add("parentWindow");
-            // }
 
             node.style.left = x;
             node.style.top = y;
@@ -253,7 +228,6 @@
 ## ${info.title}
 
 ${info.description}`;
-            // popup.innerHTML = markdownData;
 
             marked.setOptions({
                 gfm: true,       // Enable GitHub flavored markdown
@@ -281,7 +255,6 @@ ${info.description}`;
 
             // Ensure the popup is visible to get its dimensions
             popup.classList.remove('hidden');
-            // popup.style.display = 'block';
 
             // Get bounding rectangles
             const windowRect = infoWindowElement.getBoundingClientRect();
@@ -425,8 +398,6 @@ ${info.description}`;
                 };
                 sendMessage(JSON.stringify(data));
 
-                // If the dragged element is a parent, send positions of child elements
-                // No longer needed since children are nested and their positions are relative
             }
             isDragging = false;
             draggedElement = null;
@@ -472,29 +443,8 @@ ${info.description}`;
             draggedElement.initialY = parseFloat(draggedElement.style.top) / 100;
 
             const windowID = draggedElement.id;
-            // const parentID = draggedElement.dataset.parent;
-            //
-            // if (parentID) {
-            //     const parentElement = document.getElementById(parentID);
-            //     if (parentElement) {
-            //         const parentRect = parentElement.getBoundingClientRect();
-            //         const containerRect = obsCont.getBoundingClientRect();
-            //
-            //         const left = (parentRect.left - containerRect.left) / containerRect.width;
-            //         const top = (parentRect.top - containerRect.top) / containerRect.height;
-            //         const right = (parentRect.right - containerRect.left) / containerRect.width;
-            //         const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
-            //
-            //         draggedElementBounds = { left, top, right, bottom };
-            //     } else {
-            //         draggedElementBounds = defaultBounds;
-            //     }
-            // } else {
             console.log("this is the window bounds", windowBounds);
             draggedElementBounds = windowBounds[windowID] || defaultBounds;
-            // }
-
-            // No need to handle child elements manually since they're nested
         }
     });
 
