@@ -6,6 +6,7 @@
     <title>Hello World Extension</title>
     <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
     <script src="marked.min.js"></script>
+    <script type="text/javascript" src="purify.min.js"></script>
     <style>
         body,
         html {
@@ -133,7 +134,7 @@
     let obsScreenData = [];
 
     let windowBounds = {};
-    const defaultBounds = { left: 0, top: 0, right: 1, bottom: 1 }; // Full container
+    const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
 
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
@@ -253,13 +254,20 @@ ${info.description}`;
                 renderer: {
                     link(token) {
                         if (token.href === "FOLLOW_BUTTON") {
-                            return `<button onclick="follow_button('${token.text}')">${token.text}</button>`
+                            return `<button class="follow_button" data-channel="${token.text}">${token.text}</button>`
                         }
                         return `<a href="${token.href}" target="_blank">${token.text}</a>`
                     }
                 }
             })
-            popup.innerHTML = marked.parse(markdownData);
+            let html = marked.parse(markdownData);
+            html = DOMPurify.sanitize(html);
+            popup.innerHTML = html
+            for (const button of popup.getElementsByClassName("follow_button")) {
+                button.addEventListener("click", (event) => {
+                    follow_button(event.target.dataset.channel)
+                })
+            }
 
             // Ensure the popup is visible to get its dimensions
             popup.classList.remove('hidden');
@@ -426,7 +434,7 @@ ${info.description}`;
             draggedElementBounds = null; // Reset bounds
             document.body.style.cursor = ''; // Reset cursor
             dragCooldown = true; // Set cooldown
-            setTimeout(() => { dragCooldown = false; }, 100); // Cooldown for 100ms
+            setTimeout(() => {dragCooldown = false;}, 100); // Cooldown for 100ms
         });
 
         function sendMessage(message) {
@@ -476,7 +484,7 @@ ${info.description}`;
                     const right = (parentRect.right - containerRect.left) / containerRect.width;
                     const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
 
-                    draggedElementBounds = { left, top, right, bottom };
+                    draggedElementBounds = {left, top, right, bottom};
                 } else {
                     draggedElementBounds = defaultBounds;
                 }
@@ -494,7 +502,7 @@ ${info.description}`;
                 draggedElement.childElements = childElements.map(child => {
                     const x = parseFloat(child.style.left) / 100;
                     const y = parseFloat(child.style.top) / 100;
-                    return { element: child, initialX: x, initialY: y };
+                    return {element: child, initialX: x, initialY: y};
                 });
             } else {
                 draggedElement.childElements = [];
