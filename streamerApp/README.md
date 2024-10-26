@@ -3,7 +3,7 @@
 - run by `python main.py` (suggested for full features)
   - you will need to run `pip install -r requirements.txt` first
 - you will need to set the obs password in `secret.py`
-- update `extension/index.html`'s TestAuth `userId` and `channelId` to your own
+- update `extension/index.html`'s TestAuth `userId` and `channelId` to your own - for local only
 
 Make sure that `secret.py` is set to your obs websocket password (for now)
 
@@ -11,3 +11,5 @@ Make sure that `secret.py` is set to your obs websocket password (for now)
 
 - You can use this to have multiple obs windows on different computers to output 1 screen onto another and modify all sources from 1 place
   - even allowing chat to help
+
+![vivGraphDescription.png](..%2FvivGraphDescription.png)
