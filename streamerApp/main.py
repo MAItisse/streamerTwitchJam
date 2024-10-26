@@ -162,8 +162,8 @@ def on_message(ws, message):
     print("Received message:", message)
     # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
-        sendWindowConfig(ws)
         runHello(ws)
+        sendWindowConfig(ws)
         return
     try:
         data = json.loads(message)

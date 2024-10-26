@@ -114,15 +114,12 @@
     // this will be gathered from the backend
     const infoWindowData = {
         "96": {
-            title: `
-### Git gif`,
+            title: `Git gif`,
             description: `This is a gif you can set from [github](https://github.com/MatissesProjects/GenerateImage)`,
         },
         "97": {
-            title: `
-### Current Competition`,
-            description: `
-# WINNERS
+            title: `Current Competition`,
+            description: `### WINNERS
 enter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information')
 example Follow [vivax3794](FOLLOW_BUTTON)`,
         },
@@ -251,7 +248,7 @@ example Follow [vivax3794](FOLLOW_BUTTON)`,
             // Populate the popup with information
             // YES WE WANT IT UNINDENTED
             let markdownData = `
-${info.title}
+## ${info.title}
 
 ${info.description}`;
             // popup.innerHTML = markdownData;
@@ -349,27 +346,24 @@ ${info.description}`;
                     console.log("ping received");
                     return;
                 }
-                let data = JSON.parse(event.data);
-
-                // if (data.data.hasOwnProperty("reset")) {
-                //     console.log("Resetting obsCont");
-                //     resetObsmap();
-                // }
                 console.log("has data")
+                console.log(event)
                 let eventData = JSON.parse(event.data);
-
-                // Check if the data contains window bounds
-                if (eventData.hasOwnProperty("bounds")) {
-                    // Update the windowBounds object with the received data
-                    console.log("Bounds data received from WebSocket:", eventData.bounds);
-                    windowBounds = eventData.bounds; // This updates the global windowBounds object
-                }
 
                 // If the data contains the screen configuration (like the windows to display)
                 if (Array.isArray(eventData.data)) {
                     obsScreenData = eventData.data;
                     console.log("Screen data received:", obsScreenData);
                     updateObsScreen(obsScreenData);
+                } else {
+                    eventData = JSON.parse(eventData)
+                    console.log(eventData)
+                    // Check if the data contains window bounds
+                    if (eventData.hasOwnProperty("bounds")) {
+                        // Update the windowBounds object with the received data
+                        console.log("Bounds data received from WebSocket:", eventData.bounds);
+                        windowBounds = eventData.bounds; // This updates the global windowBounds object
+                    }
                 }
 
             });
@@ -487,7 +481,7 @@ ${info.description}`;
                     draggedElementBounds = defaultBounds;
                 }
             } else {
-                console.log("this is the window bounds", windowBounds)
+                console.log("this is the window bounds", windowBounds);
                 draggedElementBounds = windowBounds[windowID] || defaultBounds;
             }
 
