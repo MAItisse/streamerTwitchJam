@@ -98,6 +98,7 @@
     </div>
     <div id="info-popup" class="hidden"></div>
 </body>
+<script src="config.js"></script>
 <script>
     function follow_button(channelName) {
         console.log(channelName);
@@ -105,11 +106,15 @@
         console.log("finished following")
     }
 
-    let playerWidth = 1920, playerHeight = 1080;
-    let obsOutputWidth = 1920, obsOutputHeight = 1080;
+    let playerWidth = CONFIG.playerWidth;
+    let playerHeight = CONFIG.playerHeight;
+
+    let obsOutputWidth = CONFIG.obsOutputWidth;
+    let obsOutputHeight = CONFIG.obsOutputHeight;
+
     const TestAuth = {
-        channelId: "468106723",
-        userId: "468106723",
+        channelId: CONFIG.channelId,
+        userId: CONFIG.userId
     };
 
     let infoWindowData = {};
@@ -128,7 +133,7 @@
     let obsScreenData = [];
 
     let windowBounds = {};
-    const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
+    const defaultBounds = { left: 0, top: 0, right: 1, bottom: 1 }; // Full container
 
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
@@ -422,7 +427,7 @@ ${info.description}`;
             draggedElementBounds = null; // Reset bounds
             document.body.style.cursor = ''; // Reset cursor
             dragCooldown = true; // Set cooldown
-            setTimeout(() => {dragCooldown = false;}, 100); // Cooldown for 100ms
+            setTimeout(() => { dragCooldown = false; }, 100); // Cooldown for 100ms
         });
 
         function sendMessage(message) {
@@ -472,7 +477,7 @@ ${info.description}`;
                     const right = (parentRect.right - containerRect.left) / containerRect.width;
                     const bottom = (parentRect.bottom - containerRect.top) / containerRect.height;
 
-                    draggedElementBounds = {left, top, right, bottom};
+                    draggedElementBounds = { left, top, right, bottom };
                 } else {
                     draggedElementBounds = defaultBounds;
                 }
@@ -490,7 +495,7 @@ ${info.description}`;
                 draggedElement.childElements = childElements.map(child => {
                     const x = parseFloat(child.style.left) / 100;
                     const y = parseFloat(child.style.top) / 100;
-                    return {element: child, initialX: x, initialY: y};
+                    return { element: child, initialX: x, initialY: y };
                 });
             } else {
                 draggedElement.childElements = [];
@@ -563,4 +568,5 @@ ${info.description}`;
         // });
     }
 </script>
+
 </html>
