@@ -11,6 +11,7 @@ from secret import password, username
 obsWs = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
 IDs = []
 windowConfigData = {}
+infoWindowDataConfigData = {}
 
 def getSceneItems(sceneName):
     raw_request = {
@@ -153,6 +154,11 @@ def runHello(ws):
         }]})
     ws.send(json.dumps(wholeData))
 
+def sendInfoWindowDataConfig(ws):
+    print("sending window config")
+    print(f"whole data from json {infoWindowDataConfigData}")
+    ws.send(json.dumps(infoWindowDataConfigData))
+
 def sendWindowConfig(ws):
     print("sending window config")
     print(f"whole data from json {windowConfigData}")
@@ -162,8 +168,9 @@ def on_message(ws, message):
     print("Received message:", message)
     # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
-        runHello(ws)
         sendWindowConfig(ws)
+        sendInfoWindowDataConfig(ws)
+        runHello(ws)
         return
     try:
         data = json.loads(message)
@@ -240,6 +247,10 @@ if __name__ == '__main__':
     with open("windowConfig.json", "r", encoding="utf-8") as f:
         windowConfigData = f.read()
         print(windowConfigData)
+
+    with open("infoWindowDataConfig.json", "r", encoding="utf-8") as f:
+        infoWindowDataConfigData = f.read()
+        print(infoWindowDataConfigData)
 
     listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
     listener_thread.start()

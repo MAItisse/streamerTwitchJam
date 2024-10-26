@@ -111,19 +111,7 @@
         userId: "468106723",
     };
 
-    // this will be gathered from the backend
-    const infoWindowData = {
-        "96": {
-            title: `Git gif`,
-            description: `This is a gif you can set from [github](https://github.com/MatissesProjects/GenerateImage)`,
-        },
-        "97": {
-            title: `Current Competition`,
-            description: `### WINNERS
-enter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information')
-example Follow [vivax3794](FOLLOW_BUTTON)`,
-        },
-    };
+    let infoWindowData = {};
     const TESTING = window.location.hostname === "localhost";
     let userId; // Declare userId in the global scope
     let popupTimeout; // Store the timeout ID
@@ -138,10 +126,7 @@ example Follow [vivax3794](FOLLOW_BUTTON)`,
     let draggedElementBounds = null;
     let obsScreenData = [];
 
-    // TODO this should also be coming from the websocket read from the windowConfig
-    let windowBounds = {
-        // "96": {left: 0.7, top: 0.25, right: 1, bottom: 0.9},
-    };
+    let windowBounds = {};
     const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
 
     const obsContainer = document.getElementById("obs-container");
@@ -363,6 +348,10 @@ ${info.description}`;
                         // Update the windowBounds object with the received data
                         console.log("Bounds data received from WebSocket:", eventData.bounds);
                         windowBounds = eventData.bounds; // This updates the global windowBounds object
+                    }
+                    if (eventData.hasOwnProperty("infoWindow")) {
+                        console.log("infoWindow data received from websocket: ", eventData.infoWindow)
+                        infoWindowData = eventData.infoWindow
                     }
                 }
 
