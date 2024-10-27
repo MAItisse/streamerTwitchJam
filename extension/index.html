@@ -226,7 +226,7 @@
 
     let infoWindowData = {};
     const TESTING = window.location.hostname === "localhost";
-    let userId; // Declare userId in the global scope
+    let userId = ""; // Declare userId in the global scope
     let popupTimeout; // Store the timeout ID
 
     // Add the drag-and-drop functionality for the obs-container
@@ -415,7 +415,8 @@ ${info.description}`;
     }
 
     function runGameJam(auth) {
-        userId = auth.userId; // Set userId here
+        if (userId === "")
+            userId = auth.userId; // Set userId here
         let wsUrl = "wss://websocket.matissetec.dev/lobby/connect?user=" + auth.channelId;
         let socket;
         let reconnectInterval = null; // To store the interval ID for reconnection attempts
@@ -506,7 +507,7 @@ ${info.description}`;
                     name: draggedElement.id, // Assuming each draggableWindow has a unique id
                     x: x,
                     y: y,
-                    // userId: userId,
+                    userId: userId,
                 };
                 sendMessage(JSON.stringify(data));
 
@@ -585,16 +586,6 @@ ${info.description}`;
         }
     });
 
-    // Define the handleBitsPurchase function
-    function handleBitsPurchase(sku, amount) {
-        console.log(`Purchasing ${amount} Bits with SKU: ${sku}`);
-        // Implement actual purchase logic here
-        // Example: Redirect to a purchase page or use Twitch's Bits API
-        // window.open(`https://www.twitch.tv/directory/game/YourGame?bits=${sku}`, '_blank');
-        // Alternatively, you might use Twitch's Bits API to initiate a purchase
-        // Note: Ensure you follow Twitch's guidelines and have the necessary backend support
-    }
-
     if (TESTING) {
         runGameJam(TestAuth);
     } else {
@@ -619,13 +610,7 @@ ${info.description}`;
                 console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
                 // Get the container where buttons will be added
                 const buttonsContainer = document.getElementById('bits-buttons-container');
-
-                if (!buttonsContainer) {
-                    console.error("No element with ID 'bits-buttons-container' found.");
-                    return;
-                }
-
-                // Clear any existing buttons (optional, in case of re-renders)
+                // Clear any existing buttons
                 buttonsContainer.innerHTML = '';
 
                 // Iterate through each product and create a button
@@ -645,7 +630,8 @@ ${info.description}`;
                     // Add an event listener for button clicks
                     button.addEventListener('click', function () {
                         // Handle the button click
-                        handleBitsPurchase(this.dataset.sku, product.cost.amount);
+                        console.log("just clicked ", this.dataset.sku)
+                        Twitch.ext.bits.useBits(this.dataset.sku);
                     });
 
                     // Append the button to the container
@@ -658,6 +644,13 @@ ${info.description}`;
                 console.error('Error fetching Bits products:', error);
             });
             runGameJam(auth);
+        });
+
+        window.Twitch.ext.bits.onTransactionComplete(function (transactionObject){
+            console.log("we just completed the transaction")
+            // console.log(transactionObject);
+            userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
+            console.log(userId);
         });
     }
 </script>
