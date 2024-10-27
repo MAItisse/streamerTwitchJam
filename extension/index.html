@@ -3,13 +3,153 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Hello World Extension</title>
+    <title>Chat Plays OBS</title>
     <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
     <script type="text/javascript" src="marked.min.js"></script>
     <script type="text/javascript" src="purify.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
 
+        #obs-container {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .draggableWindow {
+            background-color: rgba(0, 0, 255, 0.375);
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        #obs-container:hover .draggableWindow {
+            opacity: 1;
+        }
+
+        #info-popup {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 200px;
+            max-height: 200px;
+            z-index: 1000;
+            /* Ensure it appears above other elements */
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            overflow-y: auto;
+            /* Enable vertical scrolling */
+        }
+
+        #info-popup:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+            /* Enable clicks when visible */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .infoIcon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 16px;
+            height: 16px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            line-height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* New Popup Menu Styles */
+        .popup-menu {
+            position: fixed;
+            top: 50px;
+            left: 10px;
+            height: 30px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: height 0.5s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .popup-menu:hover {
+            width: auto;
+            height: 100px;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        /* Initially hide the popup menu */
+        .popup-menu.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Show the popup menu */
+        .popup-menu.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Bits Button Styles */
+        .bits-button {
+            background-color: #9146FF;/* Twitch purple */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+        }
+
+        .bits-button:hover {
+            background-color: #772ce8;
+        }
+
+        #bits-buttons-container {
+            display: none;
+        }
+
+        #top-left-menu:hover #bits-buttons-container {
+            display: block;
+        }
+
+        .top-text {
+            color: green;
+        }
+    </style>
+</head>
 <body>
     <div id="obs-container">
     </div>
@@ -47,11 +187,11 @@
         console.log("finished following")
     }
 
-    // initially set to 0, gets set by local player and websocket
-    let playerWidth = 0;
-    let playerHeight = 0;
-    let obsOutputWidth = 0;
-    let obsOutputHeight = 0;
+    // initially set to 1080p, gets set by local player and websocket
+    let playerWidth = 1920;
+    let playerHeight = 1080;
+    let obsOutputWidth = 1920;
+    let obsOutputHeight = 1080;
 
     let infoWindowData = {};
     let userId = ""; // Declare userId in the global scope
@@ -320,6 +460,7 @@ ${info.description}`;
         }
 
         connectWebSocket();
+
         // Function to stop dragging
         window.addEventListener("mouseup", () => {
             // console.log("Mouse released");
@@ -480,7 +621,24 @@ ${info.description}`;
             // console.log(transactionObject);
             userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
             console.log(userId);
+            const data = {
+                color: getRandomColor()
+            };
+            console.log("new color data:",data);
+            const tWindows = document.getElementsByClassName("draggableWindow");
+            for(let i = 0; i < tWindows.length; i++) {
+                tWindows[i].style.backgroundColor = data['color']
+            }
         });
+
+        function getRandomColor() {
+          const letters = '0123456789ABCDEF';
+          let color = '#';
+          for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+          }
+          return color + "60"; // the 60 is the alpha
+        }
     }
 </script>
 </html>
