@@ -6,6 +6,9 @@ import json
 import threading
 import requests
 import time
+
+from obsws_python.error import OBSSDKRequestError
+
 from secret import password, username
 
 obsWs = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
@@ -55,8 +58,8 @@ def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene", sizeOfW
             "positionY": min(max(y, 0),height - sizeOfWindow[1]),
         }
     }
-    print(f"transform Id request: {raw_request}")
-    response = obsWs.send('SetSceneItemTransform', data=raw_request, raw=True)
+    # print(f"transform Id request: {raw_request}")
+    obsWs.send('SetSceneItemTransform', data=raw_request, raw=True)
 
 def getSizeOfWindow(sceneResponse) -> Tuple[float, float]:
     return ((float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * sceneResponse['scaleX'],
@@ -68,7 +71,11 @@ def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple
         "sceneName": sceneName,
         "sceneItemId": sceneItemId
     }
-    response = obsWs.send('GetSceneItemTransform', data=raw_request, raw=True)
+    try:
+        response = obsWs.send('GetSceneItemTransform', data=raw_request, raw=True)
+    except OBSSDKRequestError as e:
+        print(f"item id {sceneItemId} does not exist")
+        return (float(0), float(0)), (float(0), float(0))
     # print(response)
 
     sceneResponse = response['sceneItemTransform']
@@ -120,7 +127,7 @@ def runHello(ws):
     # Receive new x and y positions
     wholeData = {'data': []}
     for windowId in IDs:
-        print(f"running for id {windowId}")
+        # print(f"running for id {windowId}")
         sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
         # this data needs to be gathered from the config
         wholeData['data'].append({"data": [
@@ -137,33 +144,42 @@ def runHello(ws):
     ws.send(json.dumps(wholeData))
 
 def sendInfoWindowDataConfig(ws):
-    print("sending InfoWindowDataConfig")
+    # print("sending InfoWindowDataConfig")
     # print(f"whole data from json {infoWindowDataConfigData}")
     ws.send(json.dumps(infoWindowDataConfigData))
 
 def sendWindowConfig(ws):
-    print("sending windowConfig")
+    # print("sending windowConfig")
     # print(f"whole data from json {windowConfigData}")
     ws.send(json.dumps(windowConfigData))
 
 def sendObsSizeConfig(ws):
-    print("sending obs size config")
+    # print("sending obs size config")
     ws.send(json.dumps({"obsSize": {"width":width, "height":height}}))
 
 def on_message(ws, message):
-    print("Received message:", message)
+    # print("Received message:", message)
     # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
         sendObsSizeConfig(ws)
+        # might need to add the sleeps so we can insure we send the data with the network restriction on the server
+        # time.sleep(.025)
         sendWindowConfig(ws)
+        # time.sleep(.025)
         sendInfoWindowDataConfig(ws)
+        # time.sleep(.025)
         runHello(ws)
         return
     try:
         data = json.loads(message)
+        if 'color' in data:
+            return # this is for the frontend only for now
         x = data.get('x', .5)
         y = data.get('y', .5)
         windowId = int(data.get('name', 0))
+        if windowId == 0:
+            print("error name does not exist in data", data)
+            return
         sizeOfWindow, _ = getWindowDetails("Scene", windowId)
 
         print("Getting new location for ID:", windowId)
