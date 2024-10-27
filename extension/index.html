@@ -94,6 +94,8 @@
             top: 50px;
             /* 50px below the top */
             left: 10px;
+            width: 30px;
+            height: 30px;
             /* Slightly away from the left edge */
             background-color: rgba(0, 0, 0, 0.7);
             /* Semi-transparent background */
@@ -107,7 +109,15 @@
             /* Ensure it's above other elements */
             display: flex;
             align-items: center;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+            cursor: pointer;
+        }
+
+        .popup-menu:hover {
+            width: auto; /* Expanded width */
+            height: 200px; /* Auto height to fit content */
+            border-radius: 8px;
+            padding: 10px;
         }
 
         /* Initially hide the popup menu */
@@ -120,58 +130,6 @@
         .popup-menu.visible {
             opacity: 1;
             visibility: visible;
-        }
-
-        /* Styled Button */
-        .styled-button {
-            background-color: #4CAF50;
-            /* Green background */
-            border: none;
-            /* Remove borders */
-            color: white;
-            /* White text */
-            padding: 10px 20px;
-            /* Some padding */
-            text-align: center;
-            /* Centered text */
-            text-decoration: none;
-            /* Remove underline */
-            display: inline-block;
-            /* Get the element to respect width and height */
-            font-size: 16px;
-            /* Increase font size */
-            margin: 4px 2px;
-            /* Some margin */
-            cursor: pointer;
-            /* Pointer/hand icon on hover */
-            border-radius: 5px;
-            /* Rounded corners */
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            /* Button shadow */
-        }
-
-        /* Button Hover Effect */
-        .styled-button:hover {
-            background-color: #45a049;
-            /* Darker green on hover */
-            transform: translateY(-2px);
-            /* Slight lift on hover */
-        }
-
-        /* Button Active (Click) Effect */
-        .styled-button:active {
-            background-color: #3e8e41;
-            /* Even darker green when clicked */
-            transform: translateY(0);
-            /* Remove lift */
-        }
-
-        /* Optional: Button Focus Outline */
-        .styled-button:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.5);
-            /* Green focus ring */
         }
 
         /* Bits Button Styles */
@@ -191,6 +149,19 @@
         .bits-button:hover {
             background-color: #772ce8;
         }
+
+        #bits-buttons-container {
+            /*opacity: 0;*/
+            /*pointer-events: none;*/
+            /*transition: opacity .3s ease-in-out;*/
+            display: none;
+        }
+
+        #top-left-menu:hover #bits-buttons-container {
+            /*opacity: 1;*/
+            /*pointer-events: auto;*/
+            display: block;
+        }
     </style>
 </head>
 
@@ -200,8 +171,14 @@
     <div id="info-popup" class="hidden"></div>
     <!-- New Popup Menu -->
     <div id="top-left-menu" class="popup-menu hidden">
-        <button id="styled-button" class="styled-button">Click Me</button>
-        <!-- Bits buttons container -->
+        <!-- Diamond SVG Icon -->
+        <div id="diamond-icon" class="diamond-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 18L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-opacity=".5" stroke-linejoin="round" fill="#9146FF"/>
+            </svg>
+        </div>
+
+        <!-- Bits buttons container (hidden by default) -->
         <div id="bits-buttons-container"></div>
     </div>
 </body>
@@ -598,7 +575,7 @@ ${info.description}`;
     } else {
         window.Twitch.ext.onContext((context) => {
             // Get the player's width
-            console.log("Context updated:", context);
+            // console.log("Context updated:", context);
             let resolutions = context.displayResolution.split("x");
             let newWidth = parseInt(resolutions[0], 10);  // Update playerWidth
             let newHeight = parseInt(resolutions[1], 10); // Update playerHeight
@@ -625,8 +602,19 @@ ${info.description}`;
                     // Create a button element
                     const button = document.createElement('button');
 
+                    const topText = document.createElement('span');
+                    topText.classList.add('top-text');
+                    topText.textContent = `bits ${product.cost.amount}`; // Top text (number range)
+
+                    const bottomText = document.createElement('span');
+                    bottomText.classList.add('bottom-text');
+                    bottomText.textContent = `${product.displayName}`; // Top text (number range)
+
+                    button.appendChild(bottomText);
+                    button.appendChild(document.createElement('br')); // Line break between top and bottom text
+                    button.appendChild(topText);
                     // Set the button text to display the amount of bits
-                    button.textContent = `${product.cost.amount} Bits`;
+                    // button.textContent = `${product.cost.amount} Bits`;
 
                     // Assign the SKU as a data attribute for later reference
                     button.dataset.sku = product.sku;
