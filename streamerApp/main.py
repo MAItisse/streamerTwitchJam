@@ -125,8 +125,6 @@ def runHello(ws):
         # this data needs to be gathered from the config
         wholeData['data'].append({"data": [
             {
-                #      parent id              child id
-                "parent": 69 if int(windowId) == 97 else 0,
                 "name": windowId,
                 "x": locationOfWindow[0],
                 "y": locationOfWindow[1],
@@ -135,7 +133,6 @@ def runHello(ws):
                 "info": "some data to register later",
                 # maybe we also have this settable for each window
                 "zIndex": 10,
-                "isParent": False
             }]})
     ws.send(json.dumps(wholeData))
 

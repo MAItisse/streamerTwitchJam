@@ -94,14 +94,14 @@
             top: 50px;
             /* 50px below the top */
             left: 10px;
-            width: 30px;
+            /*width: 30px;*/
             height: 30px;
             /* Slightly away from the left edge */
             background-color: rgba(0, 0, 0, 0.7);
             /* Semi-transparent background */
             padding: 10px 15px;
             /* Padding inside the menu */
-            border-radius: 8px;
+            border-radius: 50%;
             /* Rounded corners */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             /* Subtle shadow */
@@ -109,13 +109,14 @@
             /* Ensure it's above other elements */
             display: flex;
             align-items: center;
-            transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+            justify-content: center; /* Center content horizontally */
+            transition: height 0.5s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
             cursor: pointer;
         }
 
         .popup-menu:hover {
             width: auto; /* Expanded width */
-            height: 200px; /* Auto height to fit content */
+            height: 100px; /* Auto height to fit content */
             border-radius: 8px;
             padding: 10px;
         }
@@ -184,6 +185,8 @@
 </body>
 <script src="config.js"></script>
 <script>
+    // console.log = () => {};
+
     DOMPurify.addHook('afterSanitizeAttributes', function (node) {
         if ('target' in node) {
             node.setAttribute('target', '_blank');
