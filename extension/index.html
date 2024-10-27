@@ -36,7 +36,8 @@
             background-color: rgba(0, 0, 255, 0.375);
             position: absolute;
             opacity: 0;
-            transition: opacity 0.2s, left 0.075s, top 0.075s;
+            transition: opacity 0.2s;
+            /*, left 0.075s, top 0.075s;*/
         }
 
         #obs-container:hover .draggableWindow {
@@ -85,6 +86,111 @@
             cursor: pointer;
             user-select: none;
         }
+
+        /* New Popup Menu Styles */
+        .popup-menu {
+            position: fixed;
+            /* Fixed position relative to the viewport */
+            top: 50px;
+            /* 50px below the top */
+            left: 10px;
+            /* Slightly away from the left edge */
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Semi-transparent background */
+            padding: 10px 15px;
+            /* Padding inside the menu */
+            border-radius: 8px;
+            /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* Subtle shadow */
+            z-index: 1001;
+            /* Ensure it's above other elements */
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* Initially hide the popup menu */
+        .popup-menu.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Show the popup menu */
+        .popup-menu.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Styled Button */
+        .styled-button {
+            background-color: #4CAF50;
+            /* Green background */
+            border: none;
+            /* Remove borders */
+            color: white;
+            /* White text */
+            padding: 10px 20px;
+            /* Some padding */
+            text-align: center;
+            /* Centered text */
+            text-decoration: none;
+            /* Remove underline */
+            display: inline-block;
+            /* Get the element to respect width and height */
+            font-size: 16px;
+            /* Increase font size */
+            margin: 4px 2px;
+            /* Some margin */
+            cursor: pointer;
+            /* Pointer/hand icon on hover */
+            border-radius: 5px;
+            /* Rounded corners */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            /* Button shadow */
+        }
+
+        /* Button Hover Effect */
+        .styled-button:hover {
+            background-color: #45a049;
+            /* Darker green on hover */
+            transform: translateY(-2px);
+            /* Slight lift on hover */
+        }
+
+        /* Button Active (Click) Effect */
+        .styled-button:active {
+            background-color: #3e8e41;
+            /* Even darker green when clicked */
+            transform: translateY(0);
+            /* Remove lift */
+        }
+
+        /* Optional: Button Focus Outline */
+        .styled-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.5);
+            /* Green focus ring */
+        }
+
+        /* Bits Button Styles */
+        .bits-button {
+            background-color: #9146FF;
+            /* Twitch purple */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+        }
+
+        .bits-button:hover {
+            background-color: #772ce8;
+        }
     </style>
 </head>
 
@@ -92,6 +198,12 @@
     <div id="obs-container">
     </div>
     <div id="info-popup" class="hidden"></div>
+    <!-- New Popup Menu -->
+    <div id="top-left-menu" class="popup-menu hidden">
+        <button id="styled-button" class="styled-button">Click Me</button>
+        <!-- Bits buttons container -->
+        <div id="bits-buttons-container"></div>
+    </div>
 </body>
 <script src="config.js"></script>
 <script>
@@ -473,10 +585,19 @@ ${info.description}`;
         }
     });
 
+    // Define the handleBitsPurchase function
+    function handleBitsPurchase(sku, amount) {
+        console.log(`Purchasing ${amount} Bits with SKU: ${sku}`);
+        // Implement actual purchase logic here
+        // Example: Redirect to a purchase page or use Twitch's Bits API
+        // window.open(`https://www.twitch.tv/directory/game/YourGame?bits=${sku}`, '_blank');
+        // Alternatively, you might use Twitch's Bits API to initiate a purchase
+        // Note: Ensure you follow Twitch's guidelines and have the necessary backend support
+    }
+
     if (TESTING) {
         runGameJam(TestAuth);
     } else {
-        window.Twitch.ext.onAuthorized(runGameJam);
         window.Twitch.ext.onContext((context) => {
             // Get the player's width
             console.log("Context updated:", context);
@@ -491,9 +612,53 @@ ${info.description}`;
                 updateObsScreen(obsScreenData);
             }
         });
-        // window.Twitch.ext.onAuthorized(function(auth) {
-        //   console.log('The Helix JWT is ', auth.helixToken);
-        // });
+        window.Twitch.ext.onAuthorized(function (auth) {
+            // console.log('The Helix JWT is ', auth.helixToken);
+            console.log('The Helix JWT is jk');
+            Twitch.ext.bits.getProducts().then(function (products) {
+                console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
+                // Get the container where buttons will be added
+                const buttonsContainer = document.getElementById('bits-buttons-container');
+
+                if (!buttonsContainer) {
+                    console.error("No element with ID 'bits-buttons-container' found.");
+                    return;
+                }
+
+                // Clear any existing buttons (optional, in case of re-renders)
+                buttonsContainer.innerHTML = '';
+
+                // Iterate through each product and create a button
+                products.forEach(function (product) {
+                    // Create a button element
+                    const button = document.createElement('button');
+
+                    // Set the button text to display the amount of bits
+                    button.textContent = `${product.cost.amount} Bits`;
+
+                    // Assign the SKU as a data attribute for later reference
+                    button.dataset.sku = product.sku;
+
+                    // Optionally, add a class for styling
+                    button.classList.add('bits-button');
+
+                    // Add an event listener for button clicks
+                    button.addEventListener('click', function () {
+                        // Handle the button click
+                        handleBitsPurchase(this.dataset.sku, product.cost.amount);
+                    });
+
+                    // Append the button to the container
+                    buttonsContainer.appendChild(button);
+                });
+
+                // Make sure the bits buttons container is visible
+                document.getElementById('top-left-menu').classList.add('visible');
+            }).catch(function (error) {
+                console.error('Error fetching Bits products:', error);
+            });
+            runGameJam(auth);
+        });
     }
 </script>
 
