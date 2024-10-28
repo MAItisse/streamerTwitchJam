@@ -182,8 +182,6 @@ def on_message(ws, message):
             return
         sizeOfWindow, _ = getWindowDetails("Scene", windowId)
 
-        print("Getting new location for ID:", windowId)
-
         # get id from name off list we create at beginning
         transformId(x*float(width), y*float(height), windowId, "Scene", sizeOfWindow)
         ws.send(json.dumps({"data":[
@@ -195,7 +193,7 @@ def on_message(ws, message):
                 "height": f"{sizeOfWindow[1]}px",
                 "info": "some data to register later"
             }]}))
-        print("Moved window to", x, y)
+        print(f"{windowId} Moved window to {x} {y}")
     except json.JSONDecodeError:
         print("Received non-JSON message" + message)
 
@@ -242,7 +240,7 @@ if __name__ == '__main__':
     #     print(scene['sceneItemId'], scene['sourceName'])
 
     #                                                       From the config
-    IDs, _ = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif'], selectedScene)
+    IDs, _ = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif', 'guest1'], selectedScene)
     # print(IDs)
     userId = getUserIdFromName(username)
     # print(userId)

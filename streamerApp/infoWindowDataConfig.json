@@ -1,12 +1,16 @@
 {
   "infoWindow": {
+    "84": {
+      "title": "coStreamer! vivax3794",
+      "description": "example Follow [vivax3794](FOLLOW_BUTTON)"
+    },
     "96": {
         "title": "Git gif",
         "description": "This is a gif you can set from [github](https://github.com/MatissesProjects/GenerateImage)"
     },
     "97": {
         "title": "Current Competition",
-        "description": "### WINNERS\nenter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information)\nexample Follow [vivax3794](FOLLOW_BUTTON)"
+        "description": "### WINNERS\nenter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information)"
     }
   }
 }
