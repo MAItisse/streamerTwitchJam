@@ -717,9 +717,9 @@ ${info.description}`;
             console.log("new color data:", data);
             const tWindows = document.getElementsByClassName("draggableWindow");
             for (let i = 0; i < tWindows.length; i++) {
-                tWindows[i].style.setAttribute("--r", data.r);
-                tWindows[i].style.setAttribute("--g", data.g);
-                tWindows[i].style.setAttribute("--b", data.b);
+                tWindows[i].style.setProperty("--r", data.r);
+                tWindows[i].style.setProperty("--g", data.g);
+                tWindows[i].style.setProperty("--b", data.b);
             }
         });
 
