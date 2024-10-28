@@ -30,37 +30,67 @@
         }
 
         .draggableWindow {
-            background-color: rgba(0, 0, 255, 0.375);
+            background-color: rgba(0, 0, 255, 0.1);
             position: absolute;
+            box-shadow: black 2px 2px 10px;
+            transition: box-shadow 0.3s, background-color 0.3s;
+            border-radius: 4px;
+        }
+
+        .draggableWindow:hover {
+            background-color: rgba(0, 0, 255, 0.375);
+            box-shadow: black 10px 10px 10px;
+        }
+
+        body {
             opacity: 0;
             transition: opacity 0.2s;
         }
 
-        #obs-container:hover .draggableWindow {
+        body:hover {
             opacity: 1;
         }
 
         #info-popup {
             position: absolute;
             background-color: rgba(255, 255, 255, 0.9);
-            border: 1px solid #ccc;
-            padding: 10px;
-            max-width: 200px;
-            max-height: 200px;
+            border: 1px solid #1b1b33;
+            padding: 20px;
+            /* max-width: 200px; */
+            /* max-height: 200px; */
             z-index: 1000;
             /* Ensure it appears above other elements */
             border-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: black 8px 8px 8px;
             opacity: 0;
-            transition: opacity 0.2s ease-in-out;
+            transition: opacity 10s ease-in-out;
             overflow-y: auto;
             /* Enable vertical scrolling */
+
+            color: white;
+            background-color: #0f1023;
+        }
+
+        .follow_button {
+            background-color: #9146FF;
+            /* Twitch purple */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+        }
+
+        .follow_button:hover {
+            background-color: #772ce8;
         }
 
         #info-popup:not(.hidden) {
             opacity: 1;
             pointer-events: auto;
-            /* Enable clicks when visible */
         }
 
         .hidden {
@@ -91,18 +121,19 @@
             height: 30px;
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px 15px;
-            border-radius: 50%;
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 1001;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: height 0.5s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            transition: height 0.2s ease-in-out;
             cursor: pointer;
+            overflow: hidden;
         }
 
         .popup-menu:hover {
-            width: auto;
+            max-width: 50vw;
             height: 100px;
             border-radius: 8px;
             padding: 10px;
@@ -122,7 +153,8 @@
 
         /* Bits Button Styles */
         .bits-button {
-            background-color: #9146FF;/* Twitch purple */
+            background-color: #9146FF;
+            /* Twitch purple */
             border: none;
             color: white;
             padding: 10px 20px;
@@ -138,11 +170,25 @@
         }
 
         #bits-buttons-container {
-            display: none;
+            display: flex;
+            transition: max-width 0.5s;
+            width: auto;
+            height: 70px;
+            max-width: 0px;
+            overflow: hidden;
+        }
+
+        .bits-button * {
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #top-left-menu:hover .bits-button * {
+            opacity: 1;
         }
 
         #top-left-menu:hover #bits-buttons-container {
-            display: block;
+            max-width: 100vw;
         }
 
         .top-text {
@@ -154,16 +200,22 @@
         }
     </style>
 </head>
+
 <body>
     <div id="obs-container">
     </div>
     <div id="info-popup" class="hidden"></div>
     <!-- New Popup Menu -->
-    <div id="top-left-menu" class="popup-menu hidden">
+    <!-- TODO: ADD BACK HIDDEN -->
+    <!-- TODO: IF THIS IS PUSHED FEEL FREE TO YELL AT VIV -->
+    <!-- TODO: VIV MESSED UP :P :P :P -->
+    <div id="top-left-menu" class="popup-menu">
         <!-- Diamond SVG Icon -->
         <div id="diamond-icon" class="diamond-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 18L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-opacity=".5" stroke-linejoin="round" fill="#9146FF"/>
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 18L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                    stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-opacity=".5" stroke-linejoin="round"
+                    fill="#9146FF" />
             </svg>
         </div>
 
@@ -212,7 +264,7 @@
     let obsScreenData = [];
 
     let windowBounds = {};
-    const defaultBounds = { left: 0, top: 0, right: 1, bottom: 1 }; // Full container
+    const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
 
     const obsContainer = document.getElementById("obs-container");
     function updateObsScreen(data) {
@@ -486,7 +538,7 @@ ${info.description}`;
             draggedElementBounds = null; // Reset bounds
             document.body.style.cursor = ''; // Reset cursor
             dragCooldown = true; // Set cooldown
-            setTimeout(() => { dragCooldown = false; }, 100); // Cooldown for 100ms
+            setTimeout(() => {dragCooldown = false;}, 100); // Cooldown for 100ms
         });
 
         function sendMessage(message) {
@@ -556,6 +608,31 @@ ${info.description}`;
     });
 
     if (TESTING) {
+        // TODO: REMOVE THIS
+        // TODO: IF THIS IS PUSHED FEEL FREE TO YELL AT VIV
+        // TODO: VIV MESSED UP: P: P: :P
+        const buttonsContainer = document.getElementById('bits-buttons-container');
+        // Clear any existing buttons, this gets called every reauthorization
+        buttonsContainer.innerHTML = '';
+
+        for (let i = 0; i < 3; i++) {
+            // Iterate through each product and create a button
+            const button = document.createElement('button');
+
+            const topText = document.createElement('span');
+            topText.classList.add('top-text');
+            topText.textContent = `TEST BIT`; // Top text (number range)
+
+            const bottomText = document.createElement('span');
+            bottomText.classList.add('bottom-text');
+            bottomText.textContent = `bits 3794`; // Top text (number range)
+            button.classList.add('bits-button');
+
+            button.appendChild(topText);
+            button.appendChild(document.createElement('br')); // Line break between top and bottom text
+            button.appendChild(bottomText);
+            buttonsContainer.appendChild(button);
+        }
         runGameJam(TestAuth);
     } else {
         window.Twitch.ext.onContext((context) => {
@@ -620,7 +697,7 @@ ${info.description}`;
             runGameJam(auth);
         });
 
-        window.Twitch.ext.bits.onTransactionComplete(function (transactionObject){
+        window.Twitch.ext.bits.onTransactionComplete(function (transactionObject) {
             console.log("we just completed the transaction")
             // console.log(transactionObject);
             userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
@@ -628,21 +705,22 @@ ${info.description}`;
             const data = {
                 color: getRandomColor()
             };
-            console.log("new color data:",data);
+            console.log("new color data:", data);
             const tWindows = document.getElementsByClassName("draggableWindow");
-            for(let i = 0; i < tWindows.length; i++) {
+            for (let i = 0; i < tWindows.length; i++) {
                 tWindows[i].style.backgroundColor = data['color']
             }
         });
 
         function getRandomColor() {
-          const letters = '0123456789ABCDEF';
-          let color = '#';
-          for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-          }
-          return color + "60"; // the 60 is the alpha
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color + "60"; // the 60 is the alpha
         }
     }
 </script>
+
 </html>
