@@ -18,6 +18,8 @@
             font-family: Arial, sans-serif;
             overflow: hidden;
             position: relative;
+
+            /* background-image: url("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets.change.org%2Fphotos%2F4%2Fdw%2Fbs%2FukdWbStGWSBsTBo-1600x900-noPad.jpg%3F1609977468&f=1&nofb=1&ipt=15b94c20056b770a201772bb214fdfd2182a64e1ad8aeffb5f6cae63ad7bc281&ipo=images"); */
         }
 
         #obs-container {
@@ -30,17 +32,20 @@
         }
 
         .draggableWindow {
-            opacity: 0.1;
-            background-color: rgb(0, 0, 255);
+            --r: 0;
+            --g: 0;
+            --b: 255;
+            background-color: rgba(var(--r), var(--g), var(--b), 0.1);
             position: absolute;
             box-shadow: black 2px 2px 10px;
-            transition: box-shadow 0.3s, background-color 0.3s, opacity 0.3s;
+            transition: box-shadow 0.3s, backdrop-filter 0.5s ease-in-out, background-color 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
             border-radius: 4px;
+            backdrop-filter: blur(5px);
         }
 
         .draggableWindow:hover {
-            opacity: 0.375;
-            background-color: rgb(0, 0, 255);
+            backdrop-filter: blur(20px);
+            background-color: rgba(var(--r), var(--g), var(--b), 0.357);
             box-shadow: black 10px 10px 10px;
         }
 
@@ -705,22 +710,21 @@ ${info.description}`;
             userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
             console.log(userId);
             const data = {
-                color: getRandomColor()
+                r: getRandomColor(),
+                g: getRandomColor(),
+                b: getRandomColor(),
             };
             console.log("new color data:", data);
             const tWindows = document.getElementsByClassName("draggableWindow");
             for (let i = 0; i < tWindows.length; i++) {
-                tWindows[i].style.backgroundColor = data['color']
+                tWindows[i].style.setAttribute("--r", data.r);
+                tWindows[i].style.setAttribute("--g", data.g);
+                tWindows[i].style.setAttribute("--b", data.b);
             }
         });
 
         function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
+            return Math.floor(Math.random() * 255);
         }
     }
 </script>
