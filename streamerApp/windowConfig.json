@@ -1,1 +1,14 @@
-{"bounds":{"96":{"left":0.45,"top":0.25,"right":1,"bottom":0.9},"84":{"left":0.25,"top":0,"right":1,"bottom":0.75}}}
+{
+  "bounds":
+  {
+    "96":{"left":0.45,"right":1,"bottom":0.9,"top":0.25},
+    "84":{"left":0.25,"right":1,"bottom":0.75,"top":0},
+    "104":{"left":0.1,"right":0.5,"bottom":0.9,"top":0.15},
+    "105":{"left":0.6,"right":1,"bottom":0.95,"top":0.75},
+    "108":{"left":0,"right":1,"bottom":0.35,"top":0},
+    "110":{"left":0,"right":1,"bottom":0.35,"top":0},
+    "113":{"left":0,"right":1,"bottom":0.35,"top":0},
+    "114":{"left":0,"right":1,"bottom":1,"top":0.75},
+    "115":{"left":0,"right":1,"bottom":1,"top":0.5}
+  }
+}
