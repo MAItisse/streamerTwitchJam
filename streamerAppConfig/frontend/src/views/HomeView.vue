@@ -113,13 +113,14 @@ function connectObs() {
         // Get "Scene" sceneItems
         GetSceneItems().then((res) => {
           console.log("GetSceneItems response:", res);
+          console.log("bounds.value.Data = ", bounds.value.Data)
           for (let item of res.Data.sceneItems) {
             console.log("item.sceneItemId: ", item.sceneItemId); //, typeof item.sceneItemId, item.sceneItemId in infoWindowConfig.value.Data.infoWindow);
 
             item.twitch_movable = (item.sceneItemId in infoWindowConfig.value.Data.infoWindow);
             item.info_title = infoWindowConfig.value.Data.infoWindow[item.sceneItemId]?.title || "";
             item.info_description = infoWindowConfig.value.Data.infoWindow[item.sceneItemId]?.description || "";
-            item.boundary_key = "";
+            item.boundary_key = bounds.value.Data.bounds[item.sceneItemId]?.key || "none";
 
           }
           sceneItems.value = res
@@ -128,6 +129,17 @@ function connectObs() {
       })
     });
   });
+}
+
+function compareBounds(b1: Bound, b2: Bound) {
+  if (b1.top == b2.top &&
+    b1.left == b2.left &&
+    b1.right == b2.right &&
+    b1.bottom == b2.bottom
+  ) {
+    return true;
+  }
+  return false;
 }
 
 const enabledSceneItems = computed(() => {
@@ -204,29 +216,18 @@ function saveConfig() {
   saveConfigStatusMessage.value = null;
   for (let ind in enabledSceneItems) {
     const val = enabledSceneItems[ind];
-    console.log("sceneItem: ind:", ind, "val:", val.boundary_key);
-    console.log("uniqueBounds.value = ", uniqueBounds.value);
 
     // find the Bound by key
     const bound = uniqueBounds.value.find((e: any) => e.key === val.boundary_key);
-    if (!bound) {
-      console.log("missing bound!");
-      saveConfigStatusMessage.value = {
-        Status: "error",
-        Message: "Missing bounds for: " + val.sourceName
-      };
-      return
+    if (bound) {
+      console.log("found the bound: ", bound);
+      wcf.bounds['' + val.sceneItemId] = {
+        top: bound.top,
+        left: bound.left,
+        right: bound.right,
+        bottom: bound.bottom
+      }
     }
-
-    console.log("found the bound: ", bound);
-    console.log("wcf.bounds = ", wcf.bounds);
-    wcf.bounds['' + val.sceneItemId] = {
-      top: bound.top,
-      left: bound.left,
-      right: bound.right,
-      bottom: bound.bottom
-    }
-    console.log("after new entry: ", wcf.bounds['' + val.sceneItemId]);
   }
 
   // infoWindowConfig.json
@@ -484,7 +485,7 @@ ${description}`;
                       Size
                     </th> -->
                     <th class="px-6 py-3 w-30 border-b-2 border-gray-300 text-left text-sm font-semibold text-gray-700">
-                      Moveable?
+                      Movable?
                     </th>
                     <th class="px-6 py-3 w-60 border-b-2 border-gray-300 text-left text-sm font-semibold text-gray-700">
                       Boundary
@@ -525,11 +526,11 @@ ${description}`;
                     </td>
 
                     <!-- Boundary Dropdown -->
-                    <td class="px-6 py-4 border-b border-gray-200"
-                      :class="{ 'bg-red-300': !item.boundary_key && item.twitch_movable }">
+                    <td class="px-6 py-4 border-b border-gray-200">
                       <select v-if="item.twitch_movable" v-model="item.boundary_key"
                         class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         <option disabled value="">Select Boundary</option>
+                        <option value="none">None</option>
                         <option v-for="(bound, ind) in uniqueBounds" :key="bound.key" :value="bound.key">
                           #{{ ind + 1 }}
                         </option>
@@ -549,7 +550,7 @@ ${description}`;
 
         <h1 class="mb-4 text-xl font-extrabold dark:text-white">Setup Info Cards<small
             class="m-4 font-semibold text-gray-500 dark:text-gray-400">These info cards only appear when a viewer
-            hovers over a moveable source on your stream
+            hovers over a movable source on your stream
           </small></h1>
 
         <div class="items-center justify-center bg-gray-100 rounded-lg mx-auto">
