@@ -1,0 +1,27 @@
+FROM rust as base
+RUN cargo install cargo-chef --version ^0.1
+ 
+FROM base AS planner
+WORKDIR /app
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+ 
+FROM base as builder
+WORKDIR /app
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+COPY . .
+# RUN cargo test --release
+RUN cargo build --release
+
+FROM debian
+WORKDIR /app
+
+COPY --from=builder /app/target/release/server .
+
+ENV ROCKET_ADDRESS=0.0.0.0
+ENV ROCKET_LOG_LEVEL=normal
+ENV ROCKET_PORT=8000
+
+CMD ["./server"]
