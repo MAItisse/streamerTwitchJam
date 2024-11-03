@@ -1,12 +1,13 @@
 <template>
     <div ref="previewWindow" class="preview-window"
-        :style="{ backgroundImage: 'url(' + bgImage + ')', backgroundSize: 'cover' }">
+        :style="{ backgroundImage: 'url(' + bgImage + ')', backgroundSize: 'cover', aspectRatio: videoWidth + '/' + videoHeight }">
         <div v-for="(boundary, index) in boundaries" :key="index" :data-index="index" class="boundary"
             :style="calculateBoundaryStyle(boundary)">
             <div
                 class="w-full h-full flex items-center justify-center text-3xl drop-shadow-[0_0px_5.2px_rgba(255,255,255,1)]">
                 {{ index + 1 }}</div>
         </div>
+        {{ videoWidth }} x {{ videoHeight }}
     </div>
 </template>
 
@@ -169,8 +170,6 @@ watch(() => props.boundaries, () => {
 <style scoped lang="scss">
 .preview-window {
     width: 640px;
-    aspect-ratio: 16 / 9;
-    /* Adjust based on video dimensions */
     border: 2px solid #333;
     position: relative;
     background-color: #fafafa;

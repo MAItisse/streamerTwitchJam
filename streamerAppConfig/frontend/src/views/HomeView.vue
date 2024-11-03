@@ -20,22 +20,6 @@ type Bound = {
   bottom: number
 }
 
-// type WindowConfigFile = {
-//   bounds: {
-//     [key: string]: Bound
-//   }
-// }
-
-// type WindowInfoConfigFile = {
-//   infoWindow: {
-//     [key: string]: {
-//       title: string;
-//       description: string;
-//     };
-//   };
-// };
-
-
 const secretPy = ref({
   "Username": "",
   "Password": "",
@@ -53,6 +37,9 @@ const obsPreviewSourceSelect = ref("");
 const finalSaveStatusMessage = ref();
 const finalSaveCount = ref(0);
 
+const baseWidth = ref(1024);
+const baseHeight = ref(768);
+
 function makeid(length: number) {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -69,17 +56,16 @@ onMounted(() => {
   LoadSecretPy().then((data) => secretPy.value = data)
 })
 
-// function submitSecret() {
-//   SaveSecretPy(secretPy.value).then((res) => {
-//     savePasswordStatusMessage.value = res;
-//   })
-// }
-
 function connectObs() {
   SaveSecretPy(secretPy.value).then((res) => {
     // Connect to OBS
     ConnectOBS().then((res) => {
       connectObsStatusMessage.value = res
+      console.log("connectObsStatusMessage:", connectObsStatusMessage.value)
+
+      baseWidth.value = connectObsStatusMessage.value.Data.baseWidth;
+      baseHeight.value = connectObsStatusMessage.value.Data.baseHeight;
+
       if (res.Status == "error") {
         return;
       }
@@ -215,6 +201,7 @@ function saveConfig() {
   */
   let wcf: types.WindowConfig = new types.WindowConfig();
   wcf.bounds = {};
+  saveConfigStatusMessage.value = null;
   for (let ind in enabledSceneItems) {
     const val = enabledSceneItems[ind];
     console.log("sceneItem: ind:", ind, "val:", val.boundary_key);
@@ -461,8 +448,8 @@ ${description}`;
                       Load Screenshot
                     </button>
                   </div>
-                  <PreviewWindow :videoWidth="1920" :videoHeight="1080" :boundaries="uniqueBounds"
-                    @update:uniqueBounds="updateUniqueBounds" :bgImage="obsScreenshot" />
+                  <PreviewWindow v-if="connectObsStatusMessage" :videoWidth="baseWidth" :videoHeight="baseHeight"
+                    :boundaries="uniqueBounds" @update:uniqueBounds="updateUniqueBounds" :bgImage="obsScreenshot" />
                 </div>
               </div>
             </div>
@@ -611,7 +598,11 @@ ${description}`;
         class="w-full m-2 px-4 py-4 font-bold text-2xl text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-green-800 transition active:scale-[.98]">
         Save Config!
       </button>
+      <StatusMessage v-if="saveConfigStatusMessage" :status-message="saveConfigStatusMessage"></StatusMessage>
       <StatusMessage v-if="finalSaveStatusMessage" :status-message="finalSaveStatusMessage"></StatusMessage>
+      <!-- {{ outputWindowConfig }} -->
+      <!-- <hr> -->
+      <!-- {{ outputInfoWindowConfig }} -->
     </div>
   </div>
 </template>
