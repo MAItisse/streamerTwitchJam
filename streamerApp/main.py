@@ -157,9 +157,20 @@ def sendObsSizeConfig(ws):
     # print("sending obs size config")
     ws.send(json.dumps({"obsSize": {"width":width, "height":height}}))
 
+def moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow):
+    transformId(xLoc, yLoc, windowId, "Scene", sizeOfWindow)
+    ws.send(json.dumps({"data": [
+        {
+            "name": windowId,
+            "x": xLoc,
+            "y": yLoc,
+            "width": f"{sizeOfWindow[0]}px",
+            "height": f"{sizeOfWindow[1]}px",
+            "info": "some data to register later"
+        }]}))
+    print(f"{windowId} Moved window to {x} {y}")
+
 def on_message(ws, message):
-    # print("Received message:", message)
-    # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
         sendObsSizeConfig(ws)
         # might need to add the sleeps so we can insure we send the data with the network restriction on the server
@@ -181,19 +192,15 @@ def on_message(ws, message):
             print("error name does not exist in data", data)
             return
         sizeOfWindow, _ = getWindowDetails("Scene", windowId)
-
-        # get id from name off list we create at beginning
-        transformId(x*float(width), y*float(height), windowId, "Scene", sizeOfWindow)
-        ws.send(json.dumps({"data":[
-            {
-                "name": windowId,
-                "x": x*float(width),
-                "y": y*float(height),
-                "width": f"{sizeOfWindow[0]}px",
-                "height": f"{sizeOfWindow[1]}px",
-                "info": "some data to register later"
-            }]}))
-        print(f"{windowId} Moved window to {x} {y}")
+        jsonConfigData = json.loads(windowConfigData)
+        xLoc = x * float(width)
+        yLoc = y * float(height)
+        if str(windowId) in jsonConfigData['bounds']:
+            if jsonConfigData['bounds'][str(windowId)]['left'] <= xLoc/width <= jsonConfigData['bounds'][str(windowId)]['right'] \
+             and jsonConfigData['bounds'][str(windowId)]['top'] <= yLoc/height <= jsonConfigData['bounds'][str(windowId)]['bottom']:
+                moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow)
+        else:
+            moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow)
     except json.JSONDecodeError:
         print("Received non-JSON message" + message)
 
@@ -201,7 +208,7 @@ def on_error(ws, error):
     print("WebSocket error:", error)
 
 def on_close(ws, close_status_code, close_msg):
-    print("WebSocket connection closed")
+    print("WebSocket connection closed", close_msg)
 
 def on_open(ws):
     print("WebSocket connection opened")
@@ -223,7 +230,7 @@ if __name__ == '__main__':
     width, height = getVideoOutputSettings()
     allScenes = getScenes()
     print(allScenes)
-    #    Get names of the scenes wanted to be modified
+    # Get names of the scenes wanted to be modified
     selectedScene = "Scene"
     # allow for more than 1 scene to be in the scene item list
     # likely this will need to become a map like they have on obs
@@ -238,12 +245,12 @@ if __name__ == '__main__':
     #     windowData = getWindowDetails('Scene', scene['sceneItemId'])
     #     print({"windowId": scene['sceneItemId'], "windowName": scene['sourceName'], 'width': windowData[0][1], 'height': windowData[0][0],'xLocation': windowData[1][0], 'yLocation': windowData[1][1]})
     #     print(scene['sceneItemId'], scene['sourceName'])
-
-    #                                                       From the config
-    IDs, _ = getSelectedSceneItems(sceneItems, ['gitEasy', 'gif', 'guest1'], selectedScene)
-    # print(IDs)
+    IDs, _ = getSelectedSceneItems(sceneItems,
+                                   ['gitEasy', 'gif', 'guest1',
+                                                'now listening', 'tst', 'coolStreamer',
+                                                'viv', 'clayman', 'dancers'],
+                                   selectedScene)
     userId = getUserIdFromName(username)
-    # print(userId)
 
     with open("windowConfig.json", "r", encoding="utf-8") as f:
         windowConfigData = f.read()
