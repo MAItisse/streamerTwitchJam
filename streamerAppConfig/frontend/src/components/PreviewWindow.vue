@@ -1,5 +1,6 @@
 <template>
-    <div ref="previewWindow" class="preview-window">
+    <div ref="previewWindow" class="preview-window"
+        :style="{ backgroundImage: 'url(' + bgImage + ')', backgroundSize: 'cover' }">
         <div v-for="(boundary, index) in boundaries" :key="index" :data-index="index" class="boundary"
             :style="calculateBoundaryStyle(boundary)">
             <div class="w-full h-full flex items-center justify-center text-3xl">{{ index + 1 }}</div>
@@ -25,6 +26,10 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    bgImage: {
+        type: String,
+        required: true
+    }
 });
 
 // Emit changes to the parent component
@@ -137,7 +142,7 @@ onMounted(() => {
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .preview-window {
     width: 640px;
     aspect-ratio: 16 / 9;
@@ -153,5 +158,9 @@ onMounted(() => {
     border: 2px dashed #007bff;
     background-color: rgba(0, 123, 255, 0.2);
     cursor: move;
+
+    &:hover {
+        background-color: rgba(0, 123, 255, 0.5);
+    }
 }
 </style>

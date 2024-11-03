@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { LoadSecretPy, SaveSecretPy, GetBounds, GetInfoWindowConfig, GetSceneItems, ConnectOBS } from '../../wailsjs/go/main/App';
+import { LoadSecretPy, SaveSecretPy, GetBounds, GetInfoWindowConfig, GetSceneItems, ConnectOBS, GetVideoOutputScreenshot } from '../../wailsjs/go/main/App';
 import StatusMessage from '@/components/StatusMessage.vue';
 import PreviewWindow from '@/components/PreviewWindow.vue';
 
@@ -23,16 +23,13 @@ const secretPy = ref({
 })
 
 const saveStatusMessage = ref();
-// const connectObsStatusMessage = ref();
 const connectObsStatusMessage = ref();
 const bounds = ref();
 const uniqueBounds = ref();
 const infoWindowConfig = ref();
 const sceneItems = ref();
-
-const enabledSources = ref({
-  "4": 1
-});
+const obsScreenshot = ref("");
+const obsPreviewSourceSelect = ref("");
 
 function makeid(length: number) {
   let result = '';
@@ -45,30 +42,6 @@ function makeid(length: number) {
   }
   return result;
 }
-
-// const uniqueBounds = computed(() => {
-
-//   if (!bounds.value) {
-//     return [];
-//   }
-
-//   const boundsArray = Object.keys(bounds.value.Data.bounds).map(function (key) { return bounds.value.Data.bounds[key] })
-
-//   // Use a Set to keep track of unique serialized objects
-//   const uniqueSet = new Set();
-//   const uniqueBounds = [];
-
-//   for (const bound of boundsArray) {
-//     const serializedBound = JSON.stringify(bound);
-
-//     if (!uniqueSet.has(serializedBound)) {
-//       uniqueSet.add(serializedBound);
-//       uniqueBounds.push(bound);
-//     }
-//   }
-
-//   return uniqueBounds;
-// })
 
 onMounted(() => {
   LoadSecretPy().then((data) => secretPy.value = data)
@@ -93,7 +66,6 @@ function connectObs() {
       // Get bounds
       GetBounds().then((res) => {
         console.log("GetBounds response:", res)
-        // connectObsStatusMessage.value = res
 
         bounds.value = res
 
@@ -139,7 +111,16 @@ function connectObs() {
         sceneItems.value = res
       })
 
+
     });
+  });
+}
+
+function loadPreviewScreenshot() {
+  // Get OBS screenshot
+  GetVideoOutputScreenshot(obsPreviewSourceSelect.value).then((res) => {
+    console.log("GetVideoOutputScreenshot response:", res.Data.imageData);
+    obsScreenshot.value = res.Data.imageData;
   });
 }
 
@@ -184,7 +165,6 @@ const updateUniqueBounds = (newBounds: object) => {
     </div>
 
     <!-- Setup boundaries -->
-    uniqueBounds: {{ uniqueBounds }}
     <div v-if="connectObsStatusMessage && connectObsStatusMessage.Status == 'success'" class="p-4">
       <div class="flex flex-col mt-4 items-center justify-center p-6 bg-gray-100 rounded-lg shadow-lg mx-auto">
         <div class="w-full">
@@ -215,9 +195,8 @@ const updateUniqueBounds = (newBounds: object) => {
                   <tbody>
                     <tr v-for="(bound, ind) in uniqueBounds" :key="bound.key" class="hover:bg-gray-50">
 
-                      <!-- Positoin Checkbox -->
                       <td class="px-6 py-4 border-b border-gray-200">
-                        {{ ind+1 }}
+                        {{ ind + 1 }}
                       </td>
 
                       <!-- Position -->
@@ -247,8 +226,25 @@ const updateUniqueBounds = (newBounds: object) => {
                 </table>
               </div>
               <div class="flex justify-center">
-                <PreviewWindow :videoWidth="1920" :videoHeight="1080" :boundaries="uniqueBounds"
-                  @update:uniqueBounds="updateUniqueBounds" />
+                <div>
+                  <div class="display-inline p-2">
+                    Select your main display source:
+                    <select v-model="obsPreviewSourceSelect"
+                      class="border-gray-300 py-4  rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                      <option disabled value="">Select Source</option>
+                      <option v-for="source in sceneItems.Data.sceneItems" :key="source.sceneItemId"
+                        :value="source.sourceName">
+                        {{ source.sourceName }}
+                      </option>
+                    </select>
+                    <button type="button" @click="loadPreviewScreenshot"
+                      class="m-4 px-4 py-0.5 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      Load Preview
+                    </button>
+                  </div>
+                  <PreviewWindow :videoWidth="1920" :videoHeight="1080" :boundaries="uniqueBounds"
+                    @update:uniqueBounds="updateUniqueBounds" :bgImage="obsScreenshot" />
+                </div>
               </div>
             </div>
           </div>
@@ -289,7 +285,7 @@ const updateUniqueBounds = (newBounds: object) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in sceneItems.Data.sceneItems" :key="item.sceneItemId" class="hover:bg-gray-50">
+                  <tr v-for="item in sceneItems.Data.sceneItems" :key="item.sceneItemId" class="hover: bg-gray-50">
 
                     <!-- Enabled Checkbox -->
                     <td class="px-6 py-4 border-b border-gray-200">
@@ -319,15 +315,14 @@ const updateUniqueBounds = (newBounds: object) => {
                       ({{ item.sceneItemTransform.width }}, {{ item.sceneItemTransform.height }})
                     </td>
 
-
                     <!-- Boundary Dropdown -->
                     <td class="px-6 py-4 border-b border-gray-200">
-                      <select v-model="item.boundary"
+                      <select v-if="item.twitch_movable" v-model="item.boundary"
                         class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         <option disabled value="">Select Boundary</option>
-                        <!-- <option v-for="boundary in boundaries" :key="boundary" :value="boundary">
-                          {{ boundary }}
-                        </option> -->
+                        <option v-for="(bound, ind) in uniqueBounds" :key="bound.key" :value="bound.key">
+                          {{ ind + 1 }}
+                        </option>
                       </select>
                     </td>
                   </tr>

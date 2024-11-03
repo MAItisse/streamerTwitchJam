@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/andreykaipov/goobs"
+	"github.com/andreykaipov/goobs/api/requests/general"
 	"github.com/andreykaipov/goobs/api/requests/sceneitems"
 	"github.com/andreykaipov/goobs/api/requests/sources"
 	"log"
@@ -128,13 +128,21 @@ func (a *App) GetSceneItems() types.StatusMessage {
 }
 
 func (a *App) GetVideoOutputScreenshot(sourceName string) types.StatusMessage {
-	params := sources.NewGetSourceScreenshotParams().WithSourceName(sourceName)
+	log.Printf("GetVideoOutputScreenshot")
+
+	version, err := a.ObsClient.General.GetVersion(&general.GetVersionParams{})
+	log.Printf("GetVideoOutputScreenshot supported img formats: %v", version.SupportedImageFormats)
+	if err != nil {
+		return types.NewStatusMessage("error", err.Error(), nil)
+	}
+
+	params := sources.NewGetSourceScreenshotParams().
+		WithSourceName(sourceName).
+		WithImageFormat("png")
 	sourceScreenshot, err := a.ObsClient.Sources.GetSourceScreenshot(params)
 	if err != nil {
 		return types.NewStatusMessage("error", err.Error(), nil)
 	}
 
-	// Convert the screenshot data to a base64 string
-	base64Image := base64.StdEncoding.EncodeToString([]byte(sourceScreenshot.ImageData))
-	return types.NewStatusMessage("success", "Successfully loaded source screenshot", base64Image)
+	return types.NewStatusMessage("success", "Successfully loaded source screenshot", sourceScreenshot)
 }
