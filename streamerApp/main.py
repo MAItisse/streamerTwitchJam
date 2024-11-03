@@ -244,7 +244,7 @@ if __name__ == '__main__':
     IDs, _ = getSelectedSceneItems(sceneItems,
                                    ['gitEasy', 'gif', 'guest1',
                                                 'now listening', 'tst', 'coolStreamer',
-                                                'viv', 'clayman'],
+                                                'viv', 'clayman', 's9tpepper'],
                                    selectedScene)
     userId = getUserIdFromName(username)
 

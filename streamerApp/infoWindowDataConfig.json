@@ -2,7 +2,7 @@
   "infoWindow": {
     "84": {
       "title": "coStreamer! vivax3794",
-      "description": "example Follow [vivax3794](FOLLOW_BUTTON)"
+      "description": "Follow [vivax3794](FOLLOW_BUTTON)"
     },
     "96": {
         "title": "Git gif",
@@ -11,6 +11,34 @@
     "97": {
         "title": "Current Competition",
         "description": "### WINNERS\nenter [here](https://github.com/MatissesProjects/GenerateImage/tree/main/PlayGame#game-information)"
+    },
+    "105": {
+        "title": "now listening",
+        "description": "currently listening to datawave on [nighttride.fm](https://nightride.fm/stations?station=datawave)"
+    },
+    "107": {
+        "title": "my first t spin triple!",
+        "description": "the first time I was able to get a [t spin triple](https://www.youtube.com/shorts/Sg9rRBmUDvc)"
+    },
+    "108": {
+        "title": "Cool streamer!",
+        "description": "check out this great streamer! Follow [itsOik](FOLLOW_BUTTON)"
+    },
+    "110": {
+        "title": "Cool streamer!",
+        "description": "check out this great streamer! Follow [vivax3794](FOLLOW_BUTTON)"
+    },
+    "113": {
+        "title": "Cool streamer!",
+        "description": "check out this great streamer! Follow [clayman_dev](FOLLOW_BUTTON)"
+    },
+    "115": {
+        "title": "It me, matissetec!",
+        "description": "this is my video output"
+    },
+    "116": {
+        "title": "Cool streamer!",
+        "description": "check out this great streamer! Follow [s9tpepper_](FOLLOW_BUTTON)"
     }
   }
 }
