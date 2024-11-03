@@ -124,6 +124,11 @@ function loadPreviewScreenshot() {
   });
 }
 
+function removeBoundary(key: string) {
+  
+
+}
+
 const updateUniqueBounds = (newBounds: object) => {
   console.log("Updating boundaries... ", newBounds)
   uniqueBounds.value = newBounds;
@@ -218,7 +223,7 @@ const updateUniqueBounds = (newBounds: object) => {
                       </td>
 
                       <td class="px-6 py-4 border-b border-gray-200">
-                        <button type="button"
+                        <button type="button" @click="removeBoundary"
                           class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-md px-2.5 py-1 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">X</button>
                       </td>
                     </tr>
@@ -336,9 +341,9 @@ const updateUniqueBounds = (newBounds: object) => {
     <!-- <div>
       connectObsStatusMessage: {{ connectObsStatusMessage }}<br />
       bounds: {{ bounds }}<br />
-      infoWindowConfig: {{ infoWindowConfig }}<br />
-      sceneItems: {{ sceneItems }}<br />
-    </div> -->
+    -->
+    infoWindowConfig: {{ infoWindowConfig }}<br />
+    <!-- sceneItems: {{ sceneItems }}<br /> -->
   </div>
 </template>
 
