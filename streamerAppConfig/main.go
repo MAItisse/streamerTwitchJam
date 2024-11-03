@@ -26,12 +26,12 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:             "streamerAppConfig",
-		Width:             900,
-		Height:            600,
+		Width:             1080,
+		Height:            768,
 		MinWidth:          900,
 		MinHeight:         600,
-		MaxWidth:          1200,
-		MaxHeight:         800,
+		MaxWidth:          1080,
+		MaxHeight:         768,
 		DisableResize:     false,
 		Fullscreen:        false,
 		Frameless:         false,
@@ -56,7 +56,7 @@ func main() {
 		},
 		// Windows platform specific options
 		Windows: &windows.Options{
-			WebviewIsTransparent:              true,
+			WebviewIsTransparent:              false,
 			WindowIsTranslucent:               false,
 			DisableWindowIcon:                 false,
 			DisableFramelessWindowDecorations: false,
@@ -75,8 +75,8 @@ func main() {
 				HideToolbarSeparator:       false,
 			},
 			Appearance:           mac.NSAppearanceNameDarkAqua,
-			WebviewIsTransparent: true,
-			WindowIsTranslucent:  true,
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
 			About: &mac.AboutInfo{
 				Title:   "StreamerApp Config Tool",
 				Message: "A simple app to manage your streamerApp configs",

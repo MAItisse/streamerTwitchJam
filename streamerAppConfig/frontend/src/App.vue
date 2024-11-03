@@ -4,31 +4,32 @@ const onclickMinimise = () => { };
 
 const onclickQuit = () => { };
 
-document.body.addEventListener("click", function (event) {
-  event.preventDefault();
-});
+// document.body.addEventListener("click", function (event) {
+//   event.preventDefault();
+// });
 </script>
 
 <template>
   <!-- Header -->
-  <div class="header">
-    <!-- navigation -->
-    <div class="nav">
-      <router-link to="/">Home</router-link>
-    </div>
-    <!-- Menu -->
-    <div class="menu">
-      <div class="bar">
-        <!-- <div class="bar-btn" @click="onclickQuit">{{ t("topbar.quit") }}</div> -->
-      </div>
-    </div>
-  </div>
+  <!-- <div class="header"> -->
+  <!-- navigation -->
+  <!-- <div class="nav"> -->
+  <!-- <router-link to="/">Home</router-link> -->
+  <!-- </div> -->
+  <!-- Menu -->
+  <!-- <div class="menu"> -->
+  <!-- <div class="bar"> -->
+  <!-- <div class="bar-btn" @click="onclickQuit">{{ t("topbar.quit") }}</div> -->
+  <!-- </div> -->
+  <!-- </div> -->
+  <!-- </div>  -->
   <!-- Page -->
   <div class="view">
     <router-view />
   </div>
 </template>
 
+<!--
 <style lang="scss">
 @import url("./assets/css/reset.css");
 @import url("./assets/css/font.css");
@@ -53,7 +54,6 @@ body {
   // height: 520px;
   height: 100%;
   background-color: rgba(219, 188, 239, 0.9);
-  overflow: hidden;
 }
 
 .header {
@@ -169,3 +169,4 @@ body {
   overflow: hidden;
 }
 </style>
+-->

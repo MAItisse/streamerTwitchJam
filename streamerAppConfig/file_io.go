@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"streamerAppConfig/types"
 	"strings"
@@ -60,4 +62,60 @@ func SaveSecretPy(filename string, secret *types.SecretPy) error {
 	}
 	_, err = file.WriteString(fmt.Sprintf("password = \"%s\"\n", secret.Password))
 	return err
+}
+
+// ReadWindowConfig reads and parses the JSON configuration file into a WindowConfig struct.
+func ReadWindowConfig(filename string) (*types.WindowConfig, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	bytes, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	var config types.WindowConfig
+	if err := json.Unmarshal(bytes, &config); err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
+
+// ReadInfoWindowData loads InfoWindowData from a file
+func ReadInfoWindowData(filename string) (*types.InfoWindowData, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	bytes, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	var data types.InfoWindowData
+	if err := json.Unmarshal(bytes, &data); err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+}
+
+// SaveInfoWindowData marshals InfoWindowData struct and writes it to disk
+func SaveInfoWindowData(filename string, data *types.InfoWindowData) error {
+	bytes, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(filename, bytes, 0644); err != nil {
+		return err
+	}
+
+	return nil
 }
