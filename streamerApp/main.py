@@ -168,7 +168,7 @@ def moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow):
             "height": f"{sizeOfWindow[1]}px",
             "info": "some data to register later"
         }]}))
-    print(f"{windowId} Moved window to {x} {y}")
+    print(f"{windowId} Moved window to {xLoc} {yLoc}")
 
 def on_message(ws, message):
     if 'Hello Server!' in message:
@@ -195,10 +195,12 @@ def on_message(ws, message):
         jsonConfigData = json.loads(windowConfigData)
         xLoc = x * float(width)
         yLoc = y * float(height)
+        # if there are bounds force it on the before sending to websocket area
         if str(windowId) in jsonConfigData['bounds']:
             if jsonConfigData['bounds'][str(windowId)]['left'] <= xLoc/width <= jsonConfigData['bounds'][str(windowId)]['right'] \
              and jsonConfigData['bounds'][str(windowId)]['top'] <= yLoc/height <= jsonConfigData['bounds'][str(windowId)]['bottom']:
                 moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow)
+        # no bounds for this object, it can go anywhere on the screen
         else:
             moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow)
     except json.JSONDecodeError:
@@ -238,17 +240,11 @@ if __name__ == '__main__':
     _, jsonData = getSelectedSceneItems(sceneItems, [], selectedScene)
     print(jsonData)
 
-    # get items to select from json data save above
-
-    # for scene in sceneItems:
-    #     print(scene)
-    #     windowData = getWindowDetails('Scene', scene['sceneItemId'])
-    #     print({"windowId": scene['sceneItemId'], "windowName": scene['sourceName'], 'width': windowData[0][1], 'height': windowData[0][0],'xLocation': windowData[1][0], 'yLocation': windowData[1][1]})
-    #     print(scene['sceneItemId'], scene['sourceName'])
+    # get items to select from json data saved above
     IDs, _ = getSelectedSceneItems(sceneItems,
                                    ['gitEasy', 'gif', 'guest1',
                                                 'now listening', 'tst', 'coolStreamer',
-                                                'viv', 'clayman', 'dancers'],
+                                                'viv', 'clayman'],
                                    selectedScene)
     userId = getUserIdFromName(username)
 
