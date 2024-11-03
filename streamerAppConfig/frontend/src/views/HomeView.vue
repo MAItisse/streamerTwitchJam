@@ -50,6 +50,8 @@ const infoWindowConfig = ref();
 const sceneItems = ref();
 const obsScreenshot = ref("");
 const obsPreviewSourceSelect = ref("");
+const finalSaveStatusMessage = ref();
+const finalSaveCount = ref(0);
 
 function makeid(length: number) {
   let result = '';
@@ -264,16 +266,61 @@ function saveConfig() {
     }
   }
 
+  finalSaveStatusMessage.value == null;
+  finalSaveCount.value = 0;
+
   // Save to disk
   console.log("Calling WriteInfoWindowConfig with:", wicf);
   WriteInfoWindowConfig(wicf).then((res) => {
     console.log("WriteInfoWindowConfig:", res);
 
+    if (res.Status == "error") {
+      finalSaveCount.value -= 30;
+    } else if (res.Status == "success") {
+      finalSaveCount.value += 1;
+    }
+
+    setSaveSuccessMessage();
+
   });
   console.log("Calling WriteWindowConfig with:", wcf);
   WriteWindowConfig(wcf).then((res) => {
     console.log("WriteWindowConfig:", res);
+
+    if (res.Status == "error") {
+      finalSaveCount.value -= 10;
+    } else if (res.Status == "success") {
+      finalSaveCount.value += 1;
+    }
+
+    setSaveSuccessMessage();
   });
+
+}
+
+function setSaveSuccessMessage() {
+  if (finalSaveCount.value > 0) {
+    let msg: StatusMessage = {
+      Status: "success",
+      Message: "Saved configurations Successfully!",
+      Data: null
+    }
+
+    finalSaveStatusMessage.value = msg
+
+    setTimeout(() => {
+      finalSaveStatusMessage.value = null;
+      finalSaveCount.value = 0
+    }, 10000);
+  } else {
+    // something happened
+    let msg: StatusMessage = {
+      Status: "error",
+      Message: "Something went wrong (Error Code: " + finalSaveCount.value + ")",
+      Data: null
+    }
+    finalSaveStatusMessage.value = msg
+  }
 
 }
 
@@ -365,8 +412,8 @@ ${description}`;
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr v-for="(bound, ind) in uniqueBounds" :key="bound.key" class="hover:bg-gray-50">
+                  <transition-group name="fade" tag="tbody">
+                    <tr v-for="(bound, ind) in uniqueBounds" :key="bound.key" class="hover:bg-gray-50 fade-row">
 
                       <td class="px-6 py-4 text-lg font-bold border-b border-gray-200">
                         {{ ind + 1 }}
@@ -395,7 +442,7 @@ ${description}`;
                           class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-md px-2.5 py-1 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900 transition active:scale-[.95]">X</button>
                       </td>
                     </tr>
-                  </tbody>
+                  </transition-group>
                 </table>
               </div>
               <div class="flex justify-center">
@@ -436,6 +483,7 @@ ${description}`;
               <table class="min-w-full bg-white">
                 <thead>
                   <tr>
+
                     <!-- <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm font-semibold text-gray-700">
                       ID
                     </th> -->
@@ -457,6 +505,7 @@ ${description}`;
                   </tr>
                 </thead>
                 <tbody>
+
                   <tr v-for="item in sceneItems.Data.sceneItems" :key="item.sceneItemId"
                     :class="{ 'hover:bg-gray-50': true, 'bg-amber-100': item.twitch_movable, 'hover:bg-amber-50': item.twitch_movable }">
 
@@ -525,8 +574,7 @@ ${description}`;
               </tr>
             </thead>
             <tbody>
-              <!-- <tr v-for="(item, key) in infoWindowConfig.Data.infoWindow" :key="key" class="border-b border-gray-200"> -->
-              <tr v-for="(item, key) in enabledSceneItems" :key="key" class="border-b border-gray-200">
+              <tr v-for="(item, key) in enabledSceneItems" :key="key" class="border-b border-gray-200 fade-row">
                 <td class="p-4 pt-6 space-y-2 bg-gray-200 border border-gray-400">
                   <div class="text-2xl font-bold">
                     {{ item.sourceName }}<br />
@@ -563,15 +611,12 @@ ${description}`;
         class="w-full m-2 px-4 py-4 font-bold text-2xl text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-green-800 transition active:scale-[.98]">
         Save Config!
       </button>
-      <StatusMessage v-if="saveConfigStatusMessage" :status-message="saveConfigStatusMessage"></StatusMessage>
-      <!-- {{ outputWindowConfig }} -->
-      <!-- <hr> -->
-      <!-- {{ outputInfoWindowConfig }} -->
+      <StatusMessage v-if="finalSaveStatusMessage" :status-message="finalSaveStatusMessage"></StatusMessage>
     </div>
   </div>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 .home {
   .logo {
     display: block;
@@ -622,5 +667,33 @@ ${description}`;
       }
     }
   }
+}
+</style>
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(-30px);
+  /* Slide-in effect */
+}
+
+.fade-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(-100px);
+  /* Slide-out effect */
 }
 </style>

@@ -2,7 +2,9 @@ package main
 
 import (
 	"embed"
+	"io"
 	"log"
+	"os"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
@@ -20,11 +22,21 @@ var assets embed.FS
 var icon []byte
 
 func main() {
+
+	// Open the log file
+	logFile, err := os.OpenFile("app-info", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logFile.Close()
+	multiWriter := io.MultiWriter(logFile, os.Stdout)
+	log.SetOutput(multiWriter)
+
 	// Create an instance of the app structure
 	app := NewApp()
 
 	// Create application with options
-	err := wails.Run(&options.App{
+	err = wails.Run(&options.App{
 		Title:             "streamerAppConfig",
 		Width:             1080,
 		Height:            768,

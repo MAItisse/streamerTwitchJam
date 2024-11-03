@@ -52,7 +52,11 @@ func (a *App) LoadSecretPy() *types.SecretPy {
 	log.Printf("LoadSecretPy")
 	secret, err := LoadSecretPy("secret.py")
 	if err != nil {
-
+		log.Printf("LoadSecretPy error: %v", err)
+		return &types.SecretPy{
+			Username: "",
+			Password: "",
+		}
 	}
 	return secret
 }
@@ -61,6 +65,7 @@ func (a *App) SaveSecretPy(secret *types.SecretPy) types.StatusMessage {
 	log.Printf("SaveSecretPy")
 	err := SaveSecretPy("secret.py", secret)
 	if err != nil {
+		log.Printf("SaveSecretPy error: %v", err.Error())
 		return types.NewStatusMessage("error", err.Error(), nil)
 	}
 	return types.NewStatusMessage("success", "Saved Successfully!", nil)
@@ -82,13 +87,16 @@ func (a *App) ConnectOBS() types.StatusMessage {
 	obsHost := fmt.Sprintf("%s:%s", host, port)
 	obsClient, err := goobs.New(obsHost, goobs.WithPassword(password))
 	if err != nil {
+		log.Printf("Error connecting to OBS: %v", err)
 		return types.NewStatusMessage("error", err.Error(), nil)
 	}
 	a.ObsClient = obsClient
 
 	videoOutputSettings, err := a.GetVideoOutputSettings()
 	if err != nil {
-		return types.NewStatusMessage("error", fmt.Sprintf("error getting video output settings: %v", err), nil)
+		msg := fmt.Sprintf("error getting video output settings: %v", err)
+		log.Printf(msg)
+		return types.NewStatusMessage("error", msg, nil)
 	}
 	return types.NewStatusMessage("success", "Connected!", videoOutputSettings)
 }
@@ -136,6 +144,7 @@ func (a *App) WriteInfoWindowConfig(data types.InfoWindowData) types.StatusMessa
 	err := SaveInfoWindowData("infoWindowDataConfig.json", &data)
 	if err != nil {
 		msg := fmt.Sprintf("error writing infoWindowConfig: %s", err.Error())
+		log.Printf(msg)
 		return types.NewStatusMessage("error", msg, nil)
 	}
 	return types.NewStatusMessage("success", "Saved Info Window Config", nil)
@@ -144,6 +153,7 @@ func (a *App) WriteInfoWindowConfig(data types.InfoWindowData) types.StatusMessa
 func (a *App) GetSceneItems() types.StatusMessage {
 	log.Printf("GetSceneItems")
 	if a.ObsClient == nil {
+		log.Printf("GetSceneItems: OBS not connected.")
 		return types.NewStatusMessage("error", "OBS not connected...", nil)
 	}
 
@@ -163,6 +173,7 @@ func (a *App) GetVideoOutputScreenshot(sourceName string) types.StatusMessage {
 	version, err := a.ObsClient.General.GetVersion(&general.GetVersionParams{})
 	log.Printf("GetVideoOutputScreenshot supported img formats: %v", version.SupportedImageFormats)
 	if err != nil {
+		log.Printf("GetVerion error: %v", err)
 		return types.NewStatusMessage("error", err.Error(), nil)
 	}
 
@@ -171,6 +182,7 @@ func (a *App) GetVideoOutputScreenshot(sourceName string) types.StatusMessage {
 		WithImageFormat("png")
 	sourceScreenshot, err := a.ObsClient.Sources.GetSourceScreenshot(params)
 	if err != nil {
+		log.Printf("GetSourceScreenshot error: %v", err)
 		return types.NewStatusMessage("error", err.Error(), nil)
 	}
 

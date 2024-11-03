@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, type PropType } from 'vue';
 import interact from 'interactjs';
 
 // Props
@@ -25,7 +25,7 @@ const props = defineProps({
         required: true,
     },
     boundaries: {
-        type: Array,
+        type: Array as PropType<Bound[]>,
         required: true,
         default: [],
     },
@@ -43,8 +43,16 @@ const previewWindow = ref(null);
 const previewWidth = 640; // Set a fixed width for the preview window
 const previewHeight = (props.videoHeight / props.videoWidth) * previewWidth;
 
+type Bound = {
+    key?: string,
+    left: number,
+    top: number,
+    right: number,
+    bottom: number
+}
+
 // Calculate boundary style based on video dimensions
-const calculateBoundaryStyle = (boundary) => {
+const calculateBoundaryStyle = (boundary: Bound) => {
     return {
         left: `${Math.max(0, boundary.left * previewWidth)}px`,
         top: `${Math.max(0, boundary.top * previewHeight)}px`,
