@@ -78,11 +78,32 @@ func ReadWindowConfig(filename string) (*types.WindowConfig, error) {
 	}
 
 	var config types.WindowConfig
+	config.Bounds = map[string]types.Bound{}
 	if err := json.Unmarshal(bytes, &config); err != nil {
 		return nil, err
 	}
 
 	return &config, nil
+}
+
+// SaveWindowConfig writes a WindowConfig struct to a JSON configuration file.
+func SaveWindowConfig(filename string, config *types.WindowConfig) error {
+	// Open the file for writing; create it if it doesn't exist
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Encode the struct to JSON
+	bytes, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	// Write the JSON data to the file
+	_, err = file.Write(bytes)
+	return err
 }
 
 // ReadInfoWindowData loads InfoWindowData from a file
@@ -108,14 +129,20 @@ func ReadInfoWindowData(filename string) (*types.InfoWindowData, error) {
 
 // SaveInfoWindowData marshals InfoWindowData struct and writes it to disk
 func SaveInfoWindowData(filename string, data *types.InfoWindowData) error {
+	// Open the file for writing; create it if it doesn't exist
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Encode the struct to JSON
 	bytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(filename, bytes, 0644); err != nil {
-		return err
-	}
-
-	return nil
+	// Write the JSON data to the file
+	_, err = file.Write(bytes)
+	return err
 }

@@ -90,29 +90,59 @@ func (a *App) ConnectOBS() types.StatusMessage {
 	if err != nil {
 		return types.NewStatusMessage("error", fmt.Sprintf("error getting video output settings: %v", err), nil)
 	}
-	return types.NewStatusMessage("success", "Connected to OBS", videoOutputSettings)
+	return types.NewStatusMessage("success", "Connected!", videoOutputSettings)
 }
 
-func (a *App) GetBounds() types.StatusMessage {
+func (a *App) GetWindowConfig() types.StatusMessage {
 	// Load WindowConfig
 	windowConfig, err := ReadWindowConfig("windowConfig.json")
-	log.Printf("GetBounds")
+	log.Printf("GetWindowConfig")
 	if err != nil {
-		return types.NewStatusMessage("error", err.Error(), nil)
+		msg := fmt.Sprintf("ReadWindowConfig error: %v", err)
+		log.Printf(msg)
+
+		newWindowConfig := types.NewWindowConfig()
+		return types.NewStatusMessage("success", "Couldn't find window config file. We'll create one later", newWindowConfig)
 	}
 	a.WindowConfig = windowConfig
 	return types.NewStatusMessage("success", "Loaded windowConfig successfully!", windowConfig)
 }
 
+func (a *App) WriteWindowConfig(data types.WindowConfig) types.StatusMessage {
+	log.Printf("WriteWindowConfig, got %#v", data)
+	err := SaveWindowConfig("windowConfig.json", &data)
+	if err != nil {
+		msg := fmt.Sprintf("error saving window config: %v", err)
+		log.Printf(msg)
+		return types.NewStatusMessage("error", msg, nil)
+	}
+	return types.NewStatusMessage("success", "Saved Window Config", nil)
+}
+
 func (a *App) GetInfoWindowConfig() types.StatusMessage {
 	infoWindowData, err := ReadInfoWindowData("infoWindowDataConfig.json")
 	if err != nil {
-		return types.NewStatusMessage("error", err.Error(), nil)
+		msg := fmt.Sprintf("ReadInfoWindowData error: %v", err)
+		log.Printf(msg)
+
+		newInfoWindowConfig := types.NewInfoWindowData()
+		return types.NewStatusMessage("success", "Couldn't find infoWindowConfig file. We'll create one later", newInfoWindowConfig)
 	}
 	return types.NewStatusMessage("success", "Loaded infoWindowData successfully!", infoWindowData)
 }
 
+func (a *App) WriteInfoWindowConfig(data types.InfoWindowData) types.StatusMessage {
+	log.Printf("WriteInfoWindowConfig")
+	err := SaveInfoWindowData("infoWindowDataConfig.json", &data)
+	if err != nil {
+		msg := fmt.Sprintf("error writing infoWindowConfig: %s", err.Error())
+		return types.NewStatusMessage("error", msg, nil)
+	}
+	return types.NewStatusMessage("success", "Saved Info Window Config", nil)
+}
+
 func (a *App) GetSceneItems() types.StatusMessage {
+	log.Printf("GetSceneItems")
 	if a.ObsClient == nil {
 		return types.NewStatusMessage("error", "OBS not connected...", nil)
 	}

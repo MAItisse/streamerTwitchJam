@@ -6,10 +6,6 @@ export function ConnectOBS() {
   return window['go']['main']['App']['ConnectOBS']();
 }
 
-export function GetBounds() {
-  return window['go']['main']['App']['GetBounds']();
-}
-
 export function GetInfoWindowConfig() {
   return window['go']['main']['App']['GetInfoWindowConfig']();
 }
@@ -26,10 +22,22 @@ export function GetVideoOutputSettings() {
   return window['go']['main']['App']['GetVideoOutputSettings']();
 }
 
+export function GetWindowConfig() {
+  return window['go']['main']['App']['GetWindowConfig']();
+}
+
 export function LoadSecretPy() {
   return window['go']['main']['App']['LoadSecretPy']();
 }
 
 export function SaveSecretPy(arg1) {
   return window['go']['main']['App']['SaveSecretPy'](arg1);
+}
+
+export function WriteInfoWindowConfig(arg1) {
+  return window['go']['main']['App']['WriteInfoWindowConfig'](arg1);
+}
+
+export function WriteWindowConfig(arg1) {
+  return window['go']['main']['App']['WriteWindowConfig'](arg1);
 }

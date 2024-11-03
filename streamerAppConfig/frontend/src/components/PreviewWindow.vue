@@ -3,7 +3,9 @@
         :style="{ backgroundImage: 'url(' + bgImage + ')', backgroundSize: 'cover' }">
         <div v-for="(boundary, index) in boundaries" :key="index" :data-index="index" class="boundary"
             :style="calculateBoundaryStyle(boundary)">
-            <div class="w-full h-full flex items-center justify-center text-3xl">{{ index + 1 }}</div>
+            <div
+                class="w-full h-full flex items-center justify-center text-3xl drop-shadow-[0_0px_5.2px_rgba(255,255,255,1)]">
+                {{ index + 1 }}</div>
         </div>
     </div>
 </template>
@@ -25,6 +27,7 @@ const props = defineProps({
     boundaries: {
         type: Array,
         required: true,
+        default: [],
     },
     bgImage: {
         type: String,
@@ -57,6 +60,19 @@ function roundToHundredths(num: number) {
 // Setup interact.js for draggable and resizable functionality
 const setupInteract = () => {
     props.boundaries.forEach((_, index) => {
+        const selector = `.boundary[data-index="${index}"]`;
+        const element = document.querySelector(selector);
+
+        // Check if the element has already been initialized
+        if (element && element.getAttribute('data-interact-initialized')) {
+            return; // Skip this element if already initialized
+        }
+
+        // Mark the element as initialized
+        if (element) {
+            element.setAttribute('data-interact-initialized', 'true');
+        }
+
         interact(`.boundary[data-index="${index}"]`)
             .draggable({
                 modifiers: [
@@ -136,9 +152,9 @@ onMounted(() => {
     setupInteract();
 });
 
-// watch(() => props.boundaries, () => {
-//     setupInteract();
-// }, { deep: true });
+watch(() => props.boundaries, () => {
+    setupInteract();
+}, { deep: true });
 
 </script>
 

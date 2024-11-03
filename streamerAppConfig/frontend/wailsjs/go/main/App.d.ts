@@ -5,8 +5,6 @@ import {config} from '../models';
 
 export function ConnectOBS():Promise<types.StatusMessage>;
 
-export function GetBounds():Promise<types.StatusMessage>;
-
 export function GetInfoWindowConfig():Promise<types.StatusMessage>;
 
 export function GetSceneItems():Promise<types.StatusMessage>;
@@ -15,6 +13,12 @@ export function GetVideoOutputScreenshot(arg1:string):Promise<types.StatusMessag
 
 export function GetVideoOutputSettings():Promise<config.GetVideoSettingsResponse>;
 
+export function GetWindowConfig():Promise<types.StatusMessage>;
+
 export function LoadSecretPy():Promise<types.SecretPy>;
 
 export function SaveSecretPy(arg1:types.SecretPy):Promise<types.StatusMessage>;
+
+export function WriteInfoWindowConfig(arg1:types.InfoWindowData):Promise<types.StatusMessage>;
+
+export function WriteWindowConfig(arg1:types.WindowConfig):Promise<types.StatusMessage>;

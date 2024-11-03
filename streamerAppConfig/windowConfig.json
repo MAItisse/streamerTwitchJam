@@ -1,22 +1,10 @@
 {
   "bounds": {
-    "84": {
-      "left": 0.25,
-      "top": 0,
+    "1": {
+      "left": 0.5,
+      "top": 0.5,
       "right": 1,
-      "bottom": 0.75
-    },
-    "96": {
-      "left": 0.45,
-      "top": 0.25,
-      "right": 1,
-      "bottom": 0.9
-    },
-    "32": {
-      "left": 0.45,
-      "top": 0.25,
-      "right": 1,
-      "bottom": 0.9
+      "bottom": 1
     }
   }
 }
