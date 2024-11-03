@@ -1,0 +1,18 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rocket = {version = "0.5", features=["json"]}
+serde = {version = "1.0", features=["derive", "rc"]}
+ws = { package = "rocket_ws", version = "0.1" }
+log = "0.4"
+rocket_cors = { version = "0.6.0", default-features = false }
+
+[dependencies.uuid]
+version = "1.10"
+features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+]
