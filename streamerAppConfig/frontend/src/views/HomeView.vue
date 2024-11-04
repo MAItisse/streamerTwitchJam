@@ -23,6 +23,7 @@ type Bound = {
 const secretPy = ref({
   "Username": "",
   "Password": "",
+  "SceneName": "Scene",
 })
 
 const savePasswordStatusMessage = ref();
@@ -63,12 +64,12 @@ function connectObs() {
       connectObsStatusMessage.value = res
       console.log("connectObsStatusMessage:", connectObsStatusMessage.value)
 
-      baseWidth.value = connectObsStatusMessage.value.Data.baseWidth;
-      baseHeight.value = connectObsStatusMessage.value.Data.baseHeight;
-
       if (res.Status == "error") {
         return;
       }
+
+      baseWidth.value = connectObsStatusMessage.value.Data.baseWidth;
+      baseHeight.value = connectObsStatusMessage.value.Data.baseHeight;
 
       // Get bounds
       GetWindowConfig().then((res) => {
@@ -369,6 +370,13 @@ ${description}`;
         <div class="flex flex-col">
           <label for="twitchUsername" class="mb-1 text-sm font-medium text-gray-700">Twitch Username</label>
           <input id="twitchUsername" v-model="secretPy.Username" type="text" placeholder="Enter your Twitch username"
+            class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- OBS Scene Name -->
+        <div class="flex flex-col">
+          <label for="obsSceneName" class="mb-1 text-sm font-medium text-gray-700">OBS Scene Name</label>
+          <input id="obsSceneName" v-model="secretPy.SceneName" type="text" placeholder="Enter Target OBS Scene Name"
             class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
 

@@ -92,6 +92,7 @@ export namespace types {
 	export class SecretPy {
 	    Username: string;
 	    Password: string;
+	    SceneName: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new SecretPy(source);
@@ -101,6 +102,7 @@ export namespace types {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Username = source["Username"];
 	        this.Password = source["Password"];
+	        this.SceneName = source["SceneName"];
 	    }
 	}
 	export class StatusMessage {
