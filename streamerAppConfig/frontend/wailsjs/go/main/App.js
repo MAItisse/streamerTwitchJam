@@ -38,6 +38,10 @@ export function WriteInfoWindowConfig(arg1) {
   return window['go']['main']['App']['WriteInfoWindowConfig'](arg1);
 }
 
+export function WriteMovableWindowNames(arg1) {
+  return window['go']['main']['App']['WriteMovableWindowNames'](arg1);
+}
+
 export function WriteWindowConfig(arg1) {
   return window['go']['main']['App']['WriteWindowConfig'](arg1);
 }

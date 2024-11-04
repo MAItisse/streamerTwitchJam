@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { marked } from "marked";
-import { LoadSecretPy, SaveSecretPy, GetWindowConfig, GetInfoWindowConfig, GetSceneItems, ConnectOBS, GetVideoOutputScreenshot, WriteInfoWindowConfig, WriteWindowConfig } from '../../wailsjs/go/main/App';
+import { LoadSecretPy, SaveSecretPy, GetWindowConfig, GetInfoWindowConfig, GetSceneItems, ConnectOBS, GetVideoOutputScreenshot, WriteInfoWindowConfig, WriteWindowConfig, WriteMovableWindowNames } from '../../wailsjs/go/main/App';
 import StatusMessage from '@/components/StatusMessage.vue';
 import PreviewWindow from '@/components/PreviewWindow.vue';
 import { types } from '../../wailsjs/go/models';
@@ -284,13 +284,33 @@ function saveConfig() {
     setSaveSuccessMessage();
   });
 
+  // Collect all the movable names
+  let movableNames: string[] = [];
+  for (let key in sceneItems.value.Data.sceneItems) {
+    const val = sceneItems.value.Data.sceneItems[key];
+    if (val.twitch_movable) {
+      movableNames.push(val.sourceName)
+    }
+  }
+  WriteMovableWindowNames(movableNames).then((res) => {
+    console.log("WriteMovableWindowNames:", res)
+
+    if (res.Status == "error") {
+      finalSaveCount.value -= 100;
+    } else if (res.Status == "success") {
+      finalSaveCount.value += 1;
+    }
+
+    setSaveSuccessMessage();
+  });
+
 }
 
 function setSaveSuccessMessage() {
   if (finalSaveCount.value > 0) {
     let msg: StatusMessage = {
       Status: "success",
-      Message: "Saved configurations Successfully!",
+      Message: "Saved configurations Successfully! (" + finalSaveCount.value + ")",
       Data: null
     }
 
@@ -300,7 +320,8 @@ function setSaveSuccessMessage() {
       finalSaveStatusMessage.value = null;
       finalSaveCount.value = 0
     }, 10000);
-  } else {
+
+  } else if (finalSaveCount.value < 0) {
     // something happened
     let msg: StatusMessage = {
       Status: "error",
