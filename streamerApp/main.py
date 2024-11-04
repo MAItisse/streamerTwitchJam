@@ -124,8 +124,7 @@ def startWebsocketRoom(userId):
     postUrl = f'https://websocket.matissetec.dev/lobby/new?user={userId}'
     print(postUrl)
     response = requests.post(postUrl)
-    ws_url = f'wss://websocket.matissetec.dev/lobby/connect/streamer?user={
-        userId}&key={response.text}'
+    ws_url = f'wss://websocket.matissetec.dev/lobby/connect/streamer?user={userId}&key={response.text}'
     print(ws_url)
     ws_app = websocket.WebSocketApp(
         ws_url,
