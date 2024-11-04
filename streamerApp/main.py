@@ -68,11 +68,11 @@ def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene", sizeOfW
 
 
 def getSizeOfWindow(sceneResponse) -> Tuple[float, float]:
-    return ((float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * sceneResponse['scaleX'],
-            (float(sceneResponse['sourceHeight']) - float(sceneResponse['cropTop'] + sceneResponse['cropBottom'])) * sceneResponse['scaleY'])
+    return (abs(float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * abs(sceneResponse['scaleX']),
+            abs(float(sceneResponse['sourceHeight']) - float(sceneResponse['cropTop'] + sceneResponse['cropBottom'])) * abs(sceneResponse['scaleY']))
 
 
-def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple[float, float]]:
+def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float]]:
     raw_request = {
         "requestType": "GetSceneItemTransform",
         "sceneName": sceneName,
@@ -83,18 +83,26 @@ def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple
                               data=raw_request, raw=True)
     except OBSSDKRequestError as e:
         print(f"item id {sceneItemId} does not exist")
-        return (float(0), float(0)), (float(0), float(0))
+        return (float(0), float(0)), (float(0), float(0)), (float(0), float(0))
     # print(response)
 
     sceneResponse = response['sceneItemTransform']
     # print(sceneResponse)
     sizeOfWindow = getSizeOfWindow(sceneResponse)
-    locationOfWindow = (float(sceneResponse['positionX']), float(
-        sceneResponse['positionY']))
+    # if sceneResponse['scaleX'] sceneResponse['scaleY'] are negative, we want to change the position by that sizeOfWindow[width/height]
+    xPosition = float(sceneResponse['positionX'])
+    yPosition = float(sceneResponse['positionY'])
+
+    if sceneResponse['scaleX'] < 0:
+        xPosition -= sizeOfWindow[0]
+    if sceneResponse['scaleY'] < 0:
+        yPosition -= sizeOfWindow[1]
+
+    locationOfWindow = (xPosition, yPosition)
 
     # print(f"sizeOfWindow: {sizeOfWindow}")
     # print(f"locationOfWindow: {locationOfWindow}")
-    return sizeOfWindow, locationOfWindow
+    return sizeOfWindow, locationOfWindow, (sceneResponse['scaleX'], sceneResponse['scaleY'])
 
 
 def getVideoOutputSettings():
@@ -141,7 +149,7 @@ def runHello(ws):
     wholeData = {'data': []}
     for windowId in IDs:
         # print(f"running for id {windowId}")
-        sizeOfWindow, locationOfWindow = getWindowDetails("Scene", windowId)
+        sizeOfWindow, locationOfWindow, _ = getWindowDetails("Scene", windowId)
         # this data needs to be gathered from the config
         wholeData['data'].append({"data": [
             {
@@ -205,7 +213,7 @@ def on_message(ws, message):
         if windowId == 0:
             print("error name does not exist in data", data)
             return
-        sizeOfWindow, _ = getWindowDetails("Scene", windowId)
+        sizeOfWindow, _, scaleOfWindow = getWindowDetails("Scene", windowId)
         curWindowId = str(windowId)
 
         print(f"curWindowId: {curWindowId}")
@@ -217,8 +225,17 @@ def on_message(ws, message):
 
 
         # get id from name off list we create at beginning
-        transformId(x*float(width), y*float(height),
-                    windowId, "Scene", sizeOfWindow)
+        transformX = x*float(width)
+        transformY = y*float(height)
+
+        # TODO look into why negative scale breaks
+        # if scaleOfWindow[0] < 0:
+        #     print(f"resizing {transformX} to {transformX + sizeOfWindow[0]}")
+        #     transformX += sizeOfWindow[0]
+        # if scaleOfWindow[1] < 0:
+        #     transformY += sizeOfWindow[1]
+
+        transformId(transformX, transformY, windowId, "Scene", sizeOfWindow)
         ws.send(json.dumps({"data": [
             {
                 "name": windowId,
