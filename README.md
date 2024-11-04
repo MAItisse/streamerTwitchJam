@@ -7,13 +7,13 @@ Twitch Hackathon project for https://twitchstreamertools.devpost.com/
 - go to the streamerAppConfig folder
   - go to release
   - extract the proper one for windows or mac
-    - extract to the streamerApp folder
-    - or move the extracted app to the streamerApp folder
+    - move the extracted app to the streamerApp folder
+      - just the application not its folder
     - if you forget to do this, you can always just move the files it saves too
 - go to the streamerApp folder
   - run `pip install -r requirements.txt`
-  - run `python main.py`
     - if you dont have python installed you can get it from the [microsoft store](https://apps.microsoft.com/detail/9nrwmjp3717k?hl=en-US&gl=US)
+  - run `python main.py`
 
 ## How It Works
 - **Click Data Processing:** 
