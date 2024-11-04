@@ -11,10 +11,12 @@ from obsws_python.error import OBSSDKRequestError
 
 from secret import password, username
 
-obsWs = obs.ReqClient(host='localhost', port=4455, password=password, timeout=3)
+obsWs = obs.ReqClient(host='localhost', port=4455,
+                      password=password, timeout=3)
 IDs = []
 windowConfigData = {}
 infoWindowDataConfigData = {}
+
 
 def getSceneItems(sceneName):
     raw_request = {
@@ -23,6 +25,7 @@ def getSceneItems(sceneName):
     }
     response = obsWs.send('GetSceneItemList', data=raw_request, raw=True)
     return response
+
 
 def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
     """
@@ -37,7 +40,8 @@ def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
     jsonData = []
     for sceneItem in itemList['sceneItems']:
         if sceneItem['sourceName'] in itemsToSelect or len(itemsToSelect) == 0:
-            sceneWindowData = getWindowDetails(sceneName, sceneItem['sceneItemId'])
+            sceneWindowData = getWindowDetails(
+                sceneName, sceneItem['sceneItemId'])
             jsonData.append({"windowId": sceneItem['sceneItemId'], "windowName": sceneItem['sourceName'],
                              'width': sceneWindowData[0][0], 'height': sceneWindowData[0][1],
                              'xLocation': sceneWindowData[1][0], 'yLocation': sceneWindowData[1][1]})
@@ -48,22 +52,25 @@ def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
 
     return selectedIds, jsonData
 
-def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene", sizeOfWindow = (100,100)):
+
+def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene", sizeOfWindow=(100, 100)):
     raw_request = {
         "requestType": "SetSceneItemTransform",
         "sceneName": sceneName,
         "sceneItemId": windowId,
         "sceneItemTransform": {
-            "positionX": min(max(x, 0),width - sizeOfWindow[0]),
-            "positionY": min(max(y, 0),height - sizeOfWindow[1]),
+            "positionX": min(max(x, 0), width - sizeOfWindow[0]),
+            "positionY": min(max(y, 0), height - sizeOfWindow[1]),
         }
     }
     # print(f"transform Id request: {raw_request}")
     obsWs.send('SetSceneItemTransform', data=raw_request, raw=True)
 
+
 def getSizeOfWindow(sceneResponse) -> Tuple[float, float]:
     return ((float(sceneResponse['sourceWidth']) - float(sceneResponse['cropLeft'] + sceneResponse['cropRight'])) * sceneResponse['scaleX'],
             (float(sceneResponse['sourceHeight']) - float(sceneResponse['cropTop'] + sceneResponse['cropBottom'])) * sceneResponse['scaleY'])
+
 
 def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple[float, float]]:
     raw_request = {
@@ -72,7 +79,8 @@ def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple
         "sceneItemId": sceneItemId
     }
     try:
-        response = obsWs.send('GetSceneItemTransform', data=raw_request, raw=True)
+        response = obsWs.send('GetSceneItemTransform',
+                              data=raw_request, raw=True)
     except OBSSDKRequestError as e:
         print(f"item id {sceneItemId} does not exist")
         return (float(0), float(0)), (float(0), float(0))
@@ -81,11 +89,13 @@ def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple
     sceneResponse = response['sceneItemTransform']
     # print(sceneResponse)
     sizeOfWindow = getSizeOfWindow(sceneResponse)
-    locationOfWindow = (float(sceneResponse['positionX']), float(sceneResponse['positionY']))
+    locationOfWindow = (float(sceneResponse['positionX']), float(
+        sceneResponse['positionY']))
 
     # print(f"sizeOfWindow: {sizeOfWindow}")
     # print(f"locationOfWindow: {locationOfWindow}")
     return sizeOfWindow, locationOfWindow
+
 
 def getVideoOutputSettings():
     raw_request = {
@@ -94,6 +104,7 @@ def getVideoOutputSettings():
     print(f"transform Id request: {raw_request}")
     response = obsWs.send('GetVideoSettings', data=raw_request, raw=True)
     return response['baseWidth'], response['baseHeight']
+
 
 def getScenes():
     raw_request = {
@@ -106,13 +117,15 @@ def getScenes():
         sceneResponse += f"{scene['sceneName']}, "
     return sceneResponse[:-2]
 
+
 def startWebsocketRoom(userId):
     print("Starting WebSocket room with ID:", userId)
     # Replace with your actual WebSocket server URL
     postUrl = f'https://websocket.matissetec.dev/lobby/new?user={userId}'
     print(postUrl)
     response = requests.post(postUrl)
-    ws_url = f'wss://websocket.matissetec.dev/lobby/connect/streamer?user={userId}&key={response.text}'
+    ws_url = f'wss://websocket.matissetec.dev/lobby/connect/streamer?user={
+        userId}&key={response.text}'
     print(ws_url)
     ws_app = websocket.WebSocketApp(
         ws_url,
@@ -122,6 +135,7 @@ def startWebsocketRoom(userId):
         on_close=on_close
     )
     ws_app.run_forever()
+
 
 def runHello(ws):
     # Receive new x and y positions
@@ -143,34 +157,27 @@ def runHello(ws):
             }]})
     ws.send(json.dumps(wholeData))
 
+
 def sendInfoWindowDataConfig(ws):
     # print("sending InfoWindowDataConfig")
     # print(f"whole data from json {infoWindowDataConfigData}")
     ws.send(json.dumps(infoWindowDataConfigData))
+
 
 def sendWindowConfig(ws):
     # print("sending windowConfig")
     # print(f"whole data from json {windowConfigData}")
     ws.send(json.dumps(windowConfigData))
 
+
 def sendObsSizeConfig(ws):
     # print("sending obs size config")
-    ws.send(json.dumps({"obsSize": {"width":width, "height":height}}))
+    ws.send(json.dumps({"obsSize": {"width": width, "height": height}}))
 
-def moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow):
-    transformId(xLoc, yLoc, windowId, "Scene", sizeOfWindow)
-    ws.send(json.dumps({"data": [
-        {
-            "name": windowId,
-            "x": xLoc,
-            "y": yLoc,
-            "width": f"{sizeOfWindow[0]}px",
-            "height": f"{sizeOfWindow[1]}px",
-            "info": "some data to register later"
-        }]}))
-    print(f"{windowId} Moved window to {xLoc} {yLoc}")
 
 def on_message(ws, message):
+    # print("Received message:", message)
+    # Parse the message if it's in JSON format
     if 'Hello Server!' in message:
         sendObsSizeConfig(ws)
         # might need to add the sleeps so we can insure we send the data with the network restriction on the server
@@ -184,7 +191,7 @@ def on_message(ws, message):
     try:
         data = json.loads(message)
         if 'color' in data:
-            return # this is for the frontend only for now
+            return  # this is for the frontend only for now
         x = data.get('x', .5)
         y = data.get('y', .5)
         windowId = int(data.get('name', 0))
@@ -192,25 +199,31 @@ def on_message(ws, message):
             print("error name does not exist in data", data)
             return
         sizeOfWindow, _ = getWindowDetails("Scene", windowId)
-        jsonConfigData = json.loads(windowConfigData)
-        xLoc = x * float(width)
-        yLoc = y * float(height)
-        # if there are bounds force it on the before sending to websocket area
-        if str(windowId) in jsonConfigData['bounds']:
-            if jsonConfigData['bounds'][str(windowId)]['left'] <= xLoc/width <= jsonConfigData['bounds'][str(windowId)]['right'] \
-             and jsonConfigData['bounds'][str(windowId)]['top'] <= yLoc/height <= jsonConfigData['bounds'][str(windowId)]['bottom']:
-                moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow)
-        # no bounds for this object, it can go anywhere on the screen
-        else:
-            moveObsObject(ws, xLoc, yLoc, windowId, sizeOfWindow)
+
+        # get id from name off list we create at beginning
+        transformId(x*float(width), y*float(height),
+                    windowId, "Scene", sizeOfWindow)
+        ws.send(json.dumps({"data": [
+            {
+                "name": windowId,
+                "x": x*float(width),
+                "y": y*float(height),
+                "width": f"{sizeOfWindow[0]}px",
+                "height": f"{sizeOfWindow[1]}px",
+                "info": "some data to register later"
+            }]}))
+        print(f"{windowId} Moved window to {x} {y}")
     except json.JSONDecodeError:
         print("Received non-JSON message" + message)
+
 
 def on_error(ws, error):
     print("WebSocket error:", error)
 
+
 def on_close(ws, close_status_code, close_msg):
-    print("WebSocket connection closed", close_msg)
+    print("WebSocket connection closed")
+
 
 def on_open(ws):
     print("WebSocket connection opened")
@@ -223,16 +236,18 @@ def on_open(ws):
             ws.send("ping")
     threading.Thread(target=ping, daemon=True).start()
 
+
 def getUserIdFromName(name):
     url = f'https://decapi.me/twitch/id/{name}'
     response = requests.get(url)
     return response.text
 
+
 if __name__ == '__main__':
     width, height = getVideoOutputSettings()
     allScenes = getScenes()
     print(allScenes)
-    # Get names of the scenes wanted to be modified
+    #    Get names of the scenes wanted to be modified
     selectedScene = "Scene"
     # allow for more than 1 scene to be in the scene item list
     # likely this will need to become a map like they have on obs
@@ -240,13 +255,27 @@ if __name__ == '__main__':
     _, jsonData = getSelectedSceneItems(sceneItems, [], selectedScene)
     print(jsonData)
 
-    # get items to select from json data saved above
-    IDs, _ = getSelectedSceneItems(sceneItems,
-                                   ['gitEasy', 'gif', 'guest1',
-                                                'now listening', 'tst', 'coolStreamer',
-                                                'viv', 'clayman', 's9tpepper'],
-                                   selectedScene)
+    # get items to select from json data save above
+
+    # for scene in sceneItems:
+    #     print(scene)
+    #     windowData = getWindowDetails('Scene', scene['sceneItemId'])
+    #     print({"windowId": scene['sceneItemId'], "windowName": scene['sourceName'], 'width': windowData[0][1], 'height': windowData[0][0],'xLocation': windowData[1][0], 'yLocation': windowData[1][1]})
+    #     print(scene['sceneItemId'], scene['sourceName'])
+
+    #                                                       From the config
+
+    movableWindowNames = []
+    with open("movableWindowNames.json", "r", encoding="utf-8") as f:
+        movableWindowNames = json.loads(f.read())
+        print(movableWindowNames)
+
+
+    IDs, _ = getSelectedSceneItems(
+        sceneItems, movableWindowNames, selectedScene)
+    # print(IDs)
     userId = getUserIdFromName(username)
+    # print(userId)
 
     with open("windowConfig.json", "r", encoding="utf-8") as f:
         windowConfigData = f.read()
@@ -256,5 +285,6 @@ if __name__ == '__main__':
         infoWindowDataConfigData = f.read()
         print(infoWindowDataConfigData)
 
-    listener_thread = threading.Thread(target=startWebsocketRoom, args=(userId,))
+    listener_thread = threading.Thread(
+        target=startWebsocketRoom, args=(userId,))
     listener_thread.start()
