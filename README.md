@@ -2,12 +2,14 @@
 Twitch Hackathon project for https://twitchstreamertools.devpost.com/
 
 ## How to use
-- clone the project
+- Add the [Extension](https://dashboard.twitch.tv/extensions/k82fkk45cyr54fkinpozggfporx191-0.0.1) to your twitch account
+- clone this project
 - go to the streamerAppConfig folder
   - go to release
   - extract the proper one for windows or mac
     - extract to the streamerApp folder
     - or move the extracted app to the streamerApp folder
+    - if you forget to do this, you can always just move the files it saves too
 - go to the streamerApp folder
   - run `pip install -r requirements.txt`
   - run `python main.py`
