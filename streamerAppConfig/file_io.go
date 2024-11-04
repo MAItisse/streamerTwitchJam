@@ -146,3 +146,23 @@ func SaveInfoWindowData(filename string, data *types.InfoWindowData) error {
 	_, err = file.Write(bytes)
 	return err
 }
+
+// SaveMovableWindowNames encodes and array of strings to JSON and writes it to specified file
+func SaveMovableWindowNames(filename string, data []string) error {
+	// Open the file for writing; create it if it doesn't exist
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Encode the struct to JSON
+	bytes, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	// Write the JSON data to the file
+	_, err = file.Write(bytes)
+	return err
+}

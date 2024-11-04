@@ -119,3 +119,14 @@ func (a *App) WriteInfoWindowConfig(data types.InfoWindowData) types.StatusMessa
 	}
 	return types.NewStatusMessage("success", "Saved Info Window Config", nil)
 }
+
+func (a *App) WriteMovableWindowNames(data []string) types.StatusMessage {
+	log.Printf("WriteMovableWindowNames")
+	err := SaveMovableWindowNames("movableWindowNames.json", data)
+	if err != nil {
+		msg := fmt.Sprintf("error writing movableWindowNames: %s", err.Error())
+		log.Printf(msg)
+		return types.NewStatusMessage("error", msg, nil)
+	}
+	return types.NewStatusMessage("success", "Saved Window Names", nil)
+}

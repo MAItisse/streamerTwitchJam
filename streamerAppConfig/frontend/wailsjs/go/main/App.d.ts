@@ -21,4 +21,6 @@ export function SaveSecretPy(arg1:types.SecretPy):Promise<types.StatusMessage>;
 
 export function WriteInfoWindowConfig(arg1:types.InfoWindowData):Promise<types.StatusMessage>;
 
+export function WriteMovableWindowNames(arg1:Array<string>):Promise<types.StatusMessage>;
+
 export function WriteWindowConfig(arg1:types.WindowConfig):Promise<types.StatusMessage>;
