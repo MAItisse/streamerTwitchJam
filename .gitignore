@@ -5,3 +5,5 @@ newGame*
 streamerApp/.vs/slnx.sqlite
 streamerApp/venv
 streamerApp/obsConfig.json
+*._.DS_Store
+*.exe
