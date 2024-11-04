@@ -170,9 +170,17 @@ def sendWindowConfig(ws):
     ws.send(json.dumps(windowConfigData))
 
 
+## TODO: BUGFIX: Current production extension expects this double-encoded format, so we have to leave it for now
 def sendObsSizeConfig(ws):
     # print("sending obs size config")
-    ws.send(json.dumps({"obsSize": {"width": width, "height": height}}))
+    ws.send(json.dumps({                # dumps
+        "obsSize": json.dumps({         # double-dumps
+            "obsSize": {                
+                "width": width, 
+                "height": height
+            }
+        }
+    )}))
 
 
 def on_message(ws, message):
@@ -199,6 +207,15 @@ def on_message(ws, message):
             print("error name does not exist in data", data)
             return
         sizeOfWindow, _ = getWindowDetails("Scene", windowId)
+        curWindowId = str(windowId)
+
+        print(f"curWindowId: {curWindowId}")
+
+
+        #########
+        ## TODO : Re-Add boundary constraint verification here
+        #########
+
 
         # get id from name off list we create at beginning
         transformId(x*float(width), y*float(height),
