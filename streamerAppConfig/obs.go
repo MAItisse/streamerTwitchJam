@@ -50,6 +50,10 @@ func (a *App) GetVideoOutputSettings() (*config.GetVideoSettingsResponse, error)
 }
 
 func (a *App) GetSceneItems() types.StatusMessage {
+
+	// TODO: refactor this. Time crunch means it's ugly for now
+	secrets := a.LoadSecretPy()
+
 	log.Printf("GetSceneItems")
 	if a.ObsClient == nil {
 		log.Printf("GetSceneItems: OBS not connected.")
@@ -57,8 +61,7 @@ func (a *App) GetSceneItems() types.StatusMessage {
 	}
 
 	// Get SceneItems
-	sceneName := "Scene"
-	params := sceneitems.NewGetSceneItemListParams().WithSceneName(sceneName)
+	params := sceneitems.NewGetSceneItemListParams().WithSceneName(secrets.SceneName)
 	sceneItemList, err := a.ObsClient.SceneItems.GetSceneItemList(params)
 	if err != nil {
 		return types.NewStatusMessage("error", err.Error(), nil)

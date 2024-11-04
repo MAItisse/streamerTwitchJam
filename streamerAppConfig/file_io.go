@@ -16,8 +16,9 @@ func LoadSecretPy(filename string) (*types.SecretPy, error) {
 	if err != nil {
 		//return nil, err
 		newSecretPy := types.SecretPy{
-			Username: "",
-			Password: "",
+			Username:  "",
+			Password:  "",
+			SceneName: "",
 		}
 		return &newSecretPy, nil
 	}
@@ -39,6 +40,8 @@ func LoadSecretPy(filename string) (*types.SecretPy, error) {
 			secret.Username = value
 		case "password":
 			secret.Password = value
+		case "userSceneName":
+			secret.SceneName = value
 		}
 	}
 	if err := scanner.Err(); err != nil {
@@ -61,6 +64,13 @@ func SaveSecretPy(filename string, secret *types.SecretPy) error {
 		return err
 	}
 	_, err = file.WriteString(fmt.Sprintf("password = \"%s\"\n", secret.Password))
+	if err != nil {
+		return err
+	}
+	_, err = file.WriteString(fmt.Sprintf("userSceneName = \"%s\"\n", secret.SceneName))
+	if err != nil {
+		return err
+	}
 	return err
 }
 

@@ -1,8 +1,9 @@
 package types
 
 type SecretPy struct {
-	Username string
-	Password string
+	Username  string
+	Password  string
+	SceneName string
 }
 
 // Bound represents the bounds of a window.
