@@ -4,11 +4,14 @@ import fs from 'node:fs'
 
 const { username, password } = data;
 
-import { io } from "socket.io-client";
+import WebSocket from 'isomorphic-ws'
 
 const obsWs = new OBSWebSocket();
 
 await obsWs.connect('ws://localhost:4455', password)
+
+const proxyHost = 'websocket.matissetec.dev'
+const isProxySecure = true
 
 let IDs = []
 let windowConfigData = {}
@@ -21,6 +24,7 @@ let ws;
 
 async function getSceneItems(sceneName = 'Scene') {
     const sceneItems = await obsWs.call('GetSceneItemList', { sceneName })
+    return sceneItems
 }
 
 /**
@@ -32,12 +36,14 @@ async function getSceneItems(sceneName = 'Scene') {
         - A list of dictionaries containing details of the selected scene items, including window ID, window name, width, height, x location, and y location.
 */
 async function getSelectedSceneItems(itemList, itemsToSelect = [], sceneName = 'Scene') {
-    selectedIds = []
-    jsonData = []
+    const selectedIds = []
+    const jsonData = []
 
-    for(const sceneItem of itemList) {
+    for(const sceneItem of itemList.sceneItems) {
         if (itemsToSelect.length === 0 || itemsToSelect.includes(sceneItem.sourceName)) {
             const sceneWindowData = await getWindowDetails(sceneName, sceneItem.sceneItemId)
+
+            // console.log('scene window data', sceneWindowData, sceneItem)
 
             jsonData.push({
                 windowId: sceneItem.sceneItemId,
@@ -53,9 +59,9 @@ async function getSelectedSceneItems(itemList, itemsToSelect = [], sceneName = '
         }
     }
 
-    fs.writeFileSync('obsConfig.json', jsonData, { flag: 'w+' })
+    fs.writeFileSync('obsConfig.json', JSON.stringify(jsonData), { flag: 'w+' })
 
-    return selectedIds, jsonData
+    return [selectedIds, jsonData]
 }
 
 async function transformId(x, y, sceneItemId, sceneName = 'Scene', sizeOfWindow = { width: 100, height: 100 }) {
@@ -117,34 +123,37 @@ async function getVideoOutputSettings() {
 }
 
 async function startWebsocketRoom(userId) {
-    const resp = await fetch(`https://websocket.matissetec.dev/lobby/new?user=${userId}`, { method: 'POST' })
-    const key = await response.text()
-    const socketio = io(`wss://websocket.matissetec.dev/lobby/connect/streamer?user=${userId}&key=${key}`);
+    const resp = await fetch(`http${isProxySecure ? 's' : ''}://${proxyHost}/lobby/new?user=${userId}`, { method: 'POST' })
+    const key = await resp.text()
 
-    // TODO: set up socket message/close/error/open hooks
+    if (key.includes('Lobby already in play')) {
+        console.log(key)
+        process.exit()
+        return;
+    }
 
-    socketio.on('connection', (socket) => {
+    const socket = new WebSocket(`ws${isProxySecure ? 's' : ''}://${proxyHost}/lobby/connect/streamer?user=${userId}&key=${key}`)
+
+    console.log('connecting')
+
+    socket.onopen = () => {
+        console.log('socket connected!')
+
         ws = socket;
 
         setInterval(() => {
-            ws.emit('ping')
-        }, 30000)
+            socket.send('ping')
+        }, 30000)        
+    }
 
-        ws.on('error', () => {
-            console.error('websocket error')
-        })
-    
-        ws.on('disconnect', () => {
-            console.log('websocket closed')
-        })
+    socket.onmessage = (data) => {
+        console.log('socket message', data.data)
+        handleSocketMessage(data.data);
+    }
 
-        ws.onAny((data) => {
-            // not sure how this'll look yet
-            console.log('on any data: ', data)
-
-            handleSocketMessage(data);
-        })
-    })
+    socket.onclose = () => {
+        console.log('websocket closed')
+    }
 }
 
 async function handleSocketMessage(data) {
@@ -166,7 +175,7 @@ async function handleSocketMessage(data) {
         return
     }
 
-    if (d.includes("color")) {
+    if ('color' in d) {
         return // frontend only for now
     }
 
@@ -188,7 +197,7 @@ async function handleSocketMessage(data) {
     const transformY = y * videoHeight;
 
     await transformId(transformX, transformY, windowId, "Scene", { width: windowDetails.width, height: windowDetails.height })
-    ws.emit({ data: [
+    ws.send(JSON.stringify({ data: [
         {
             name: windowId,
             x: transformX,
@@ -197,7 +206,7 @@ async function handleSocketMessage(data) {
             height: `${windowDetails.height}px`,
             info: 'some data to register later'
         }
-    ]})
+    ]}))
     console.log(`${windowId} moved window to ${transformX} ${transformY}`)
 }
 
@@ -220,27 +229,27 @@ async function runHello() {
         })
     }
 
-    ws.emit(wholeData)
+    ws.send(JSON.stringify(wholeData))
 }
 
 function sendInfoWindowDataConfig() {
-    ws.emit(infoWindowDataConfigData)
+    ws.send(JSON.stringify(infoWindowDataConfigData))
 }
 
 function sendWindowConfig() {
-    ws.emit(windowConfigData)
+    ws.send(JSON.stringify(windowConfigData))
 }
 
 // TODO: BUGFIX: Current production extension expects this double-encoded format, so we have to leave it for now
 function sendObsSizeConfig() {
-    ws.emit({
+    ws.send(JSON.stringify({
         obsSize: JSON.stringify({
             obsSize: {
                 width: videoWidth,
                 height: videoHeight
             }
         })
-    })
+    }))
 }
 
 async function getTwitchUserIdFromName(name) {
@@ -261,14 +270,14 @@ sceneItems = await getSceneItems(selectedScene)
 
 const movableWindowNames = JSON.parse(fs.readFileSync('movableWindowNames.json', { encoding: 'utf8', flag: 'r' }))
 
-const { ids, _ } = await getSelectedSceneItems(sceneItems, movableWindowNames, selectedScene)
+const [ ids, _ ] = await getSelectedSceneItems(sceneItems, movableWindowNames, selectedScene)
 
 // put the response ids into the global IDs var
 IDs = ids
 
-const userId = await getTwitchUserIdFromName(username)
+const uId = await getTwitchUserIdFromName(username)
 
 windowConfigData = fs.readFileSync('windowConfig.json', { encoding: 'utf-8', flag: 'r' })
 infoWindowDataConfigData = fs.readFileSync('infoWindowDataConfig.json', { encoding: 'utf-8' , flag: 'r' })
 
-startWebsocketRoom(userId)
+startWebsocketRoom(uId)
