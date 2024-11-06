@@ -1,12 +1,14 @@
 import { OBSWebSocket } from 'obs-websocket-js';
-import { username, password } from "./secret.json"
+import data from "./secret.json" assert { type: 'json' }
 import fs from 'node:fs'
+
+const { username, password } = data;
 
 import { io } from "socket.io-client";
 
 const obsWs = new OBSWebSocket();
 
-await obsWs.connect(url = 'ws://localhost:4455', password)
+await obsWs.connect('ws://localhost:4455', password)
 
 let IDs = []
 let windowConfigData = {}
@@ -136,9 +138,9 @@ async function startWebsocketRoom(userId) {
             console.log('websocket closed')
         })
 
-        ws.onAny((evName, data) => {
+        ws.onAny((data) => {
             // not sure how this'll look yet
-            console.log('name', evName, data)
+            console.log('on any data: ', data)
 
             handleSocketMessage(data);
         })
