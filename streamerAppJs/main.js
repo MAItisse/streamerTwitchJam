@@ -12,7 +12,8 @@ let IDs = []
 let windowConfigData = {}
 let infoWindowDataConfigData = {} // lol this variable name
 
-let videoWidth, videoHeight, allScenes, selectedScene, sceneItems
+let videoWidth, videoHeight, allScenes, sceneItems
+let selectedScene = 'Scene'
 
 let ws;
 
@@ -116,9 +117,86 @@ async function getVideoOutputSettings() {
 async function startWebsocketRoom(userId) {
     const resp = await fetch(`https://websocket.matissetec.dev/lobby/new?user=${userId}`, { method: 'POST' })
     const key = await response.text()
-    ws = io(`wss://websocket.matissetec.dev/lobby/connect/streamer?user=${userId}&key=${key}`);
+    const socketio = io(`wss://websocket.matissetec.dev/lobby/connect/streamer?user=${userId}&key=${key}`);
 
     // TODO: set up socket message/close/error/open hooks
+
+    socketio.on('connection', (socket) => {
+        ws = socket;
+
+        setInterval(() => {
+            ws.emit('ping')
+        }, 30000)
+
+        ws.on('error', () => {
+            console.error('websocket error')
+        })
+    
+        ws.on('disconnect', () => {
+            console.log('websocket closed')
+        })
+
+        ws.onAny((evName, data) => {
+            // not sure how this'll look yet
+            console.log('name', evName, data)
+
+            handleSocketMessage(data);
+        })
+    })
+}
+
+async function handleSocketMessage(data) {
+    if (data.includes('Hello Server!')) {
+        sendObsSizeConfig();
+        sendWindowConfig();
+        sendInfoWindowDataConfig()
+        runHello()
+
+        return;
+    }
+
+    let d;
+
+    try {
+        d = JSON.parse(data)
+    } catch (e) {
+        console.error('received non-json message', data)
+        return
+    }
+
+    if (d.includes("color")) {
+        return // frontend only for now
+    }
+
+    const x = d.x || .5
+    const y = d.y || .5
+
+    if (d.name === undefined) {
+        console.error('error name does not exist in data', d)
+        return
+    }
+
+    const windowId = parseInt(d.name, 10)
+
+    const windowDetails = await getWindowDetails('Scene', windowId)
+
+    console.log('curWindowId', windowId)
+
+    const transformX = x * videoWidth;
+    const transformY = y * videoHeight;
+
+    await transformId(transformX, transformY, windowId, "Scene", { width: windowDetails.width, height: windowDetails.height })
+    ws.emit({ data: [
+        {
+            name: windowId,
+            x: transformX,
+            y: transformY,
+            width: `${windowDetails.width}px`,
+            height: `${windowDetails.height}px`,
+            info: 'some data to register later'
+        }
+    ]})
+    console.log(`${windowId} moved window to ${transformX} ${transformY}`)
 }
 
 async function runHello() {
@@ -142,3 +220,53 @@ async function runHello() {
 
     ws.emit(wholeData)
 }
+
+function sendInfoWindowDataConfig() {
+    ws.emit(infoWindowDataConfigData)
+}
+
+function sendWindowConfig() {
+    ws.emit(windowConfigData)
+}
+
+// TODO: BUGFIX: Current production extension expects this double-encoded format, so we have to leave it for now
+function sendObsSizeConfig() {
+    ws.emit({
+        obsSize: JSON.stringify({
+            obsSize: {
+                width: videoWidth,
+                height: videoHeight
+            }
+        })
+    })
+}
+
+async function getTwitchUserIdFromName(name) {
+    const resp = await fetch(`https://decapi.me/twitch/id/${name}`)
+    return resp.text()
+}
+
+// The meat that kicks off everything
+
+const videoSettings = await getVideoOutputSettings()
+videoWidth = videoSettings.width;
+videoHeight = videoSettings.height;
+
+sceneItems = await getSceneItems(selectedScene)
+
+// Leaving out the first getSelectedSceneItems as A) it's not used, and B) calling it multiple times is weird because
+// it also writes to a file. this is a pattern we should completely eliminate
+
+const movableWindowNames = JSON.parse(fs.readFileSync('movableWindowNames.json', { encoding: 'utf8', flag: 'r' }))
+
+const { ids, _ } = await getSelectedSceneItems(sceneItems, movableWindowNames, selectedScene)
+
+// put the response ids into the global IDs var
+IDs = ids
+
+const userId = await getTwitchUserIdFromName(username)
+
+windowConfigData = fs.readFileSync('windowConfig.json', { encoding: 'utf-8', flag: 'r' })
+infoWindowDataConfigData = fs.readFileSync('infoWindowDataConfig.json', { encoding: 'utf-8' , flag: 'r' })
+
+startWebsocketRoom(userId)
