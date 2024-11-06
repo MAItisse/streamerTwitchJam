@@ -64,7 +64,7 @@ async function transformId(x, y, sceneItemId, sceneName = 'Scene', sizeOfWindow 
         sceneItemId,
         sceneItemTransform: {
             positionX: Math.min(Math.max(x, 0), videoWidth - sizeOfWindow.width),
-            positionY: Math.min(Math.max(y, 0), height - sizeOfWindow.height)
+            positionY: Math.min(Math.max(y, 0), videoHeight - sizeOfWindow.height)
         }
     })
 }
