@@ -9,7 +9,7 @@ import time
 
 from obsws_python.error import OBSSDKRequestError
 
-from secret import password, username
+from secret import password, username, userSceneName
 
 obsWs = obs.ReqClient(host='localhost', port=4455,
                       password=password, timeout=3)
@@ -18,16 +18,16 @@ windowConfigData = {}
 infoWindowDataConfigData = {}
 
 
-def getSceneItems(sceneName):
+def getSceneItems():
     raw_request = {
         "requestType": "GetSceneItemList",
-        "sceneName": sceneName,
+        "sceneName": userSceneName,
     }
     response = obsWs.send('GetSceneItemList', data=raw_request, raw=True)
     return response
 
 
-def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
+def getSelectedSceneItems(itemList, itemsToSelect):
     """
     :param itemList: Dictionary representing the list of scene items, expected to have a key 'sceneItems' which is a list of scene item objects.
     :param itemsToSelect: List of item names to select from the scene items. If empty, all items will be selected.
@@ -40,8 +40,7 @@ def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
     jsonData = []
     for sceneItem in itemList['sceneItems']:
         if sceneItem['sourceName'] in itemsToSelect or len(itemsToSelect) == 0:
-            sceneWindowData = getWindowDetails(
-                sceneName, sceneItem['sceneItemId'])
+            sceneWindowData = getWindowDetails(sceneItem['sceneItemId'])
             jsonData.append({"windowId": sceneItem['sceneItemId'], "windowName": sceneItem['sourceName'],
                              'width': sceneWindowData[0][0], 'height': sceneWindowData[0][1],
                              'xLocation': sceneWindowData[1][0], 'yLocation': sceneWindowData[1][1]})
@@ -53,10 +52,10 @@ def getSelectedSceneItems(itemList, itemsToSelect, sceneName="Scene"):
     return selectedIds, jsonData
 
 
-def transformId(x: int, y: int, windowId: int, sceneName: str = "Scene", sizeOfWindow=(100, 100)):
+def transformId(x: int, y: int, windowId: int, sizeOfWindow=(100, 100)):
     raw_request = {
         "requestType": "SetSceneItemTransform",
-        "sceneName": sceneName,
+        "sceneName": userSceneName,
         "sceneItemId": windowId,
         "sceneItemTransform": {
             "positionX": min(max(x, 0), width - sizeOfWindow[0]),
@@ -72,10 +71,10 @@ def getSizeOfWindow(sceneResponse) -> Tuple[float, float]:
             abs(float(sceneResponse['sourceHeight']) - float(sceneResponse['cropTop'] + sceneResponse['cropBottom'])) * abs(sceneResponse['scaleY']))
 
 
-def getWindowDetails(sceneName, sceneItemId) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float]]:
+def getWindowDetails(sceneItemId) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float]]:
     raw_request = {
         "requestType": "GetSceneItemTransform",
-        "sceneName": sceneName,
+        "sceneName": userSceneName,
         "sceneItemId": sceneItemId
     }
     try:
@@ -149,7 +148,7 @@ def runHello(ws):
     wholeData = {'data': []}
     for windowId in IDs:
         # print(f"running for id {windowId}")
-        sizeOfWindow, locationOfWindow, _ = getWindowDetails("Scene", windowId)
+        sizeOfWindow, locationOfWindow, _ = getWindowDetails(windowId)
         # this data needs to be gathered from the config
         wholeData['data'].append({"data": [
             {
@@ -213,7 +212,7 @@ def on_message(ws, message):
         if windowId == 0:
             print("error name does not exist in data", data)
             return
-        sizeOfWindow, _, scaleOfWindow = getWindowDetails("Scene", windowId)
+        sizeOfWindow, _, scaleOfWindow = getWindowDetails(windowId)
         curWindowId = str(windowId)
 
         print(f"curWindowId: {curWindowId}")
@@ -235,7 +234,7 @@ def on_message(ws, message):
         # if scaleOfWindow[1] < 0:
         #     transformY += sizeOfWindow[1]
 
-        transformId(transformX, transformY, windowId, "Scene", sizeOfWindow)
+        transformId(transformX, transformY, windowId, sizeOfWindow)
         ws.send(json.dumps({"data": [
             {
                 "name": windowId,
@@ -278,15 +277,16 @@ def getUserIdFromName(name):
 
 if __name__ == '__main__':
     width, height = getVideoOutputSettings()
-    allScenes = getScenes()
-    print(allScenes)
+    # allScenes = getScenes()
+    # print(allScenes)
     #    Get names of the scenes wanted to be modified
-    selectedScene = "Scene"
+    # selectedScene = "Scene"
+
     # allow for more than 1 scene to be in the scene item list
     # likely this will need to become a map like they have on obs
-    sceneItems = getSceneItems(selectedScene)
-    _, jsonData = getSelectedSceneItems(sceneItems, [], selectedScene)
-    print(jsonData)
+    sceneItems = getSceneItems()
+    _, jsonData = getSelectedSceneItems(sceneItems, [])
+    # print(jsonData)
 
     # get items to select from json data save above
 
@@ -296,16 +296,12 @@ if __name__ == '__main__':
     #     print({"windowId": scene['sceneItemId'], "windowName": scene['sourceName'], 'width': windowData[0][1], 'height': windowData[0][0],'xLocation': windowData[1][0], 'yLocation': windowData[1][1]})
     #     print(scene['sceneItemId'], scene['sourceName'])
 
-    #                                                       From the config
-
     movableWindowNames = []
     with open("movableWindowNames.json", "r", encoding="utf-8") as f:
         movableWindowNames = json.loads(f.read())
         print(movableWindowNames)
 
-
-    IDs, _ = getSelectedSceneItems(
-        sceneItems, movableWindowNames, selectedScene)
+    IDs, _ = getSelectedSceneItems(sceneItems, movableWindowNames)
     # print(IDs)
     userId = getUserIdFromName(username)
     # print(userId)
