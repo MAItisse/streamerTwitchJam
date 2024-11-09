@@ -1,5 +1,8 @@
 ﻿console.log = () => {};
 
+const TestAuth = {userId: 468106723, channelId: 468106723}
+const TESTING = window.location.hostname === "localhost";
+
 DOMPurify.addHook('afterSanitizeAttributes', function (node) {
     if ('target' in node) {
         node.setAttribute('target', '_blank');
@@ -378,87 +381,116 @@ document.addEventListener("mousemove", (e) => {
 });
 
 
-window.Twitch.ext.onContext((context) => {
-    // Get the player's width
-    let resolutions = context.displayResolution.split("x");
-    let newWidth = parseInt(resolutions[0], 10);  // Update playerWidth
-    let newHeight = parseInt(resolutions[1], 10); // Update playerHeight
-    if (newWidth !== playerWidth || newHeight !== playerHeight) {
-        playerWidth = newWidth;
-        playerHeight = newHeight;
-        console.log("Player width:", playerWidth);
-        console.log("Player height:", playerHeight);
-        updateObsScreen(obsScreenData);
-    }
-});
-window.Twitch.ext.onAuthorized(function (auth) {
-    Twitch.ext.bits.getProducts().then(function (products) {
-        console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
+if (TESTING) {
+        // TODO: REMOVE THIS
+        // TODO: IF THIS IS PUSHED FEEL FREE TO YELL AT VIV
+        // TODO: VIV MESSED UP: P: P: :P
         const buttonsContainer = document.getElementById('bits-buttons-container');
         // Clear any existing buttons, this gets called every reauthorization
         buttonsContainer.innerHTML = '';
 
-        // Iterate through each product and create a button
-        products.forEach(function (product) {
+        for (let i = 0; i < 3; i++) {
+            // Iterate through each product and create a button
             const button = document.createElement('button');
 
             const topText = document.createElement('span');
             topText.classList.add('top-text');
-            topText.textContent = `${product.displayName}`; // Top text (number range)
+            topText.textContent = `TEST BIT`; // Top text (number range)
 
             const bottomText = document.createElement('span');
             bottomText.classList.add('bottom-text');
-            bottomText.textContent = `bits ${product.cost.amount}`; // Top text (number range)
+            bottomText.textContent = `bits 3794`; // Top text (number range)
+            button.classList.add('bits-button');
 
             button.appendChild(topText);
             button.appendChild(document.createElement('br')); // Line break between top and bottom text
             button.appendChild(bottomText);
-            // Set the button text to display the amount of bits
+            buttonsContainer.appendChild(button);
+        }
+        runGameJam(TestAuth);
+} else {
+    window.Twitch.ext.onContext((context) => {
+        // Get the player's width
+        let resolutions = context.displayResolution.split("x");
+        let newWidth = parseInt(resolutions[0], 10);  // Update playerWidth
+        let newHeight = parseInt(resolutions[1], 10); // Update playerHeight
+        if (newWidth !== playerWidth || newHeight !== playerHeight) {
+            playerWidth = newWidth;
+            playerHeight = newHeight;
+            console.log("Player width:", playerWidth);
+            console.log("Player height:", playerHeight);
+            updateObsScreen(obsScreenData);
+        }
+    });
+    window.Twitch.ext.onAuthorized(function (auth) {
+        Twitch.ext.bits.getProducts().then(function (products) {
+            console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
+            const buttonsContainer = document.getElementById('bits-buttons-container');
+            // Clear any existing buttons, this gets called every reauthorization
+            buttonsContainer.innerHTML = '';
 
-            // Assign the SKU as a data attribute for later reference
-            button.dataset.sku = product.sku;
+            // Iterate through each product and create a button
+            products.forEach(function (product) {
+                const button = document.createElement('button');
 
-            // Optionally, add a class for styling
-            button.classList.add('bits-button');
+                const topText = document.createElement('span');
+                topText.classList.add('top-text');
+                topText.textContent = `${product.displayName}`; // Top text (number range)
 
-            // Add an event listener for button clicks
-            button.addEventListener('click', function () {
-                // Handle the button click
-                console.log("just clicked ", this.dataset.sku)
-                Twitch.ext.bits.useBits(this.dataset.sku);
+                const bottomText = document.createElement('span');
+                bottomText.classList.add('bottom-text');
+                bottomText.textContent = `bits ${product.cost.amount}`; // Top text (number range)
+
+                button.appendChild(topText);
+                button.appendChild(document.createElement('br')); // Line break between top and bottom text
+                button.appendChild(bottomText);
+                // Set the button text to display the amount of bits
+
+                // Assign the SKU as a data attribute for later reference
+                button.dataset.sku = product.sku;
+
+                // Optionally, add a class for styling
+                button.classList.add('bits-button');
+
+                // Add an event listener for button clicks
+                button.addEventListener('click', function () {
+                    // Handle the button click
+                    console.log("just clicked ", this.dataset.sku)
+                    Twitch.ext.bits.useBits(this.dataset.sku);
+                });
+
+                // Append the button to the container
+                buttonsContainer.appendChild(button);
             });
 
-            // Append the button to the container
-            buttonsContainer.appendChild(button);
+            // Make sure the bits buttons container is visible
+            document.getElementById('top-left-menu').classList.add('visible');
+        }).catch(function (error) {
+            console.error('Error fetching Bits products:', error);
         });
-
-        // Make sure the bits buttons container is visible
-        document.getElementById('top-left-menu').classList.add('visible');
-    }).catch(function (error) {
-        console.error('Error fetching Bits products:', error);
+        runGameJam(auth);
     });
-    runGameJam(auth);
-});
 
-window.Twitch.ext.bits.onTransactionComplete(function (transactionObject) {
-    console.log("we just completed the transaction")
-    // console.log(transactionObject);
-    userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
-    console.log(userId);
-    const data = {
-        r: getRandomColor(),
-        g: getRandomColor(),
-        b: getRandomColor(),
-    };
-    console.log("new color data:", data);
-    const tWindows = document.getElementsByClassName("draggableWindow");
-    for (let i = 0; i < tWindows.length; i++) {
-        tWindows[i].style.setProperty("--r", data.r);
-        tWindows[i].style.setProperty("--g", data.g);
-        tWindows[i].style.setProperty("--b", data.b);
+    window.Twitch.ext.bits.onTransactionComplete(function (transactionObject) {
+        console.log("we just completed the transaction")
+        // console.log(transactionObject);
+        userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
+        console.log(userId);
+        const data = {
+            r: getRandomColor(),
+            g: getRandomColor(),
+            b: getRandomColor(),
+        };
+        console.log("new color data:", data);
+        const tWindows = document.getElementsByClassName("draggableWindow");
+        for (let i = 0; i < tWindows.length; i++) {
+            tWindows[i].style.setProperty("--r", data.r);
+            tWindows[i].style.setProperty("--g", data.g);
+            tWindows[i].style.setProperty("--b", data.b);
+        }
+    });
+
+    function getRandomColor() {
+        return Math.floor(Math.random() * 255);
     }
-});
-
-function getRandomColor() {
-    return Math.floor(Math.random() * 255);
 }
