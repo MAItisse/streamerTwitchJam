@@ -2,7 +2,6 @@
 import { OBSConnectionStatus, useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
 import { useAppStore } from '../store/appStore';
-import DashboardPage from './DashboardPage.vue';
 
 const configStore = useConfigStore();
 const statusStore = useStatusStore();
@@ -37,7 +36,8 @@ async function disconnect() {
 
 <template>
     <section>
-        <div class="flex flex-col items-center justify-center px-2 py-1 bg-gray-100 rounded-lg shadow-lg max-w-md mx-auto">
+        <div
+            class="flex flex-col items-center justify-center px-2 py-1 bg-gray-100 rounded-lg shadow-lg max-w-md mx-auto">
             <form class="w-full space-y-0">
 
                 <!-- OBS Password Row -->
@@ -87,7 +87,6 @@ async function disconnect() {
         </div>
     </section>
     <section>
-        <DashboardPage></DashboardPage>
     </section>
 </template>
 

@@ -1,17 +1,9 @@
-// export interface Boundary {
-//     x: number;
-//     y: number;
-//     width: number;
-//     height: number;
-// }
 
-// export interface SceneItem {
-//     id: string;
-//     boundary: Boundary;
-//     enabled: boolean;
-// }
+export type Boundary = {
+    left: number;
+    right: number;
+    bottom: number;
+    top: number;
+};
 
-// export interface ConnectionStatus {
-//     obsConnected: boolean;
-//     proxyConnected: boolean;
-// }
+export type BoundaryWithKey = Boundary & { key: string };

@@ -20,6 +20,19 @@ export const useConfigStore = defineStore('config', {
         sceneItems: JSON.parse(localStorage.getItem(KEY_SCENE_ITEMS) || '[]') || []
     }),
     actions: {
+        saveAllToLocalStorage() {
+            console.log("configStore: saveAllToLocalStorage()")
+            this.saveLoginToLocalStorage();
+            this.saveSettingsToLocalStorage();
+        },
+        loadAllFromLocalStorage() {
+            console.log("configStore: loadAllFromLocalStorage()")
+            this.loadLoginFromLocalStorage();
+            this.loadSettingsFromLocalStorage();
+        },
+
+
+        // Save/Load login configs
         saveLoginToLocalStorage() {
             console.log("configStore: saveLoginToLocalStorage()")
             localStorage.setItem(KEY_OBS_HOST, this.obsHost);
@@ -37,23 +50,17 @@ export const useConfigStore = defineStore('config', {
             this.obsSceneName = localStorage.getItem(KEY_OBS_SCENE_NAME) || '';
         },
 
-        saveAllToLocalStorage() {
-            console.log("configStore: saveAllToLocalStorage()")
-            this.saveLoginToLocalStorage();
 
+        // Save/Load User Settings. These are boundaries/windowconfigs/etc
+        saveSettingsToLocalStorage() {
+            console.log("configStore: saveSettingsToLocalStorage()")
             localStorage.setItem(KEY_BOUNDARIES, JSON.stringify(this.boundaries));
             localStorage.setItem(KEY_SCENE_ITEMS, JSON.stringify(this.sceneItems));
         },
-        loadAllFromLocalStorage() {
-            console.log("configStore: loadAllFromLocalStorage()")
-            this.loadLoginFromLocalStorage();
-
+        loadSettingsFromLocalStorage() {
+            console.log("configStore: loadSettingsFromLocalStorage()")
             this.boundaries = JSON.parse(localStorage.getItem(KEY_BOUNDARIES) || '[]') || [];
             this.sceneItems = JSON.parse(localStorage.getItem(KEY_SCENE_ITEMS) || '[]') || [];
         },
-        // updateBoundary(id, newBoundary) {
-        //   const index = this.boundaries.findIndex(boundary => boundary.id === id);
-        //   if (index !== -1) this.boundaries[index] = newBoundary;
-        // }
     }
 });
