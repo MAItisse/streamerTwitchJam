@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
+import { Boundaries } from '../types';
 
 export function useProxyWebSocket() {
 
@@ -12,7 +13,7 @@ export function useProxyWebSocket() {
     const onCloseCallback: Ref<null | (() => void)> = ref(null);
 
     const proxyHost = 'websocket.matissetec.dev';
-    const isProxySecure = false;
+    const isProxySecure = true;
     const pingTimeout = 30000;
 
     let socket: WebSocket | null = null;
@@ -117,6 +118,7 @@ export function useProxyWebSocket() {
     }
 
     const sendObsSizeConfig = async () => {
+        console.log("useProxyWebSockets: sendObsSizeConfig()");
         /*
             *** NOTE: TODO: note the double-encoded JSON
 
@@ -143,6 +145,7 @@ export function useProxyWebSocket() {
     }
 
     const sendWindowConfig = async () => {
+        console.log("useProxyWebSockets: sendWindowConfig()");
         /* 
             *** NOTE: TODO: note the double-encoded JSON
 
@@ -155,18 +158,24 @@ export function useProxyWebSocket() {
                 }
             }
         */
-
-        const tempBoundaries = {
-            "84": { "left": 0.45, "right": 1, "bottom": 0.5, "top": 0 },
-            "96": { "left": 0.45, "right": 1, "bottom": 0.9, "top": 0.25 },
+        let bounds = {} as Boundaries;
+        for (const key in configStore.sourceToBoundaryMap) {
+            console.log("key:", key);
+            if (configStore.sourceToBoundaryMap.hasOwnProperty(key)) {
+                const boundary_key = configStore.sourceToBoundaryMap[key];
+                bounds[key] = configStore.bounds[boundary_key];
+            }
         }
+
         const payload = JSON.stringify(JSON.stringify({
-            bounds: tempBoundaries // TODO: use configStore.boundaries
+            bounds: bounds //tempBoundaries // TODO: use configStore.boundaries
         }))
+        console.log("payload = ", payload);
         await send(payload);
     }
 
     const sendInfoWindowDataConfig = async () => {
+        console.log("useProxyWebSockets: sendInfoWindowDataConfig()");
         /*
             *** NOTE: TODO: note the double-encoded JSON
 
@@ -181,19 +190,22 @@ export function useProxyWebSocket() {
             }
         */
 
-        const tempInfoWindowConfig = {
-            "84": {
-                title: "Cool title here!",
-                description: "### also\n- this\n- and this"
-            }
-        };
+        // const tempInfoWindowConfig = {
+        //     "84": {
+        //         title: "Cool title here!",
+        //         description: "### also\n- this\n- and this"
+        //     }
+        // };
         const payload = JSON.stringify(JSON.stringify({
-            infoWindow: tempInfoWindowConfig // TODO: use configStore.infoWindowConfig
+            infoWindow: configStore.sourceInfoCards
         }));
+        console.log("payload = ", payload);
         await send(payload);
     }
 
+
     const runHello = async () => {
+
         // wholeData.data.push({
         //     name: window.id,
         //     x: window.x,
@@ -206,21 +218,31 @@ export function useProxyWebSocket() {
         //     zIndex: 10
         // })
 
-        const tempWindowData = [
-            {
-                name: 84,
-                x: 200,
-                y: 200,
-                width: '300px',
-                height: '300px',
-                info: 'some data to register later',
-                zIndex: 10
+        let sourceData: { name: any; x: any; y: any; width: any; height: any; info: string; zIndex: number; }[] = [];
+
+        configStore.obsSceneItems.forEach((scene: any, _: number) => {
+
+            const t = scene.sceneItemTransform;
+            const width = (t.sourceWidth - t.cropLeft + t.cropRight) * t.scaleX;
+            const height = (t.sourceHeight - t.cropTop + t.cropBottom) * t.scaleY;
+
+            if (scene.sceneItemId in configStore.sourceToBoundaryMap) {
+                let w = {
+                    name: scene.sceneItemId,
+                    x: scene.sceneItemTransform.positionX,
+                    y: scene.sceneItemTransform.positionY,
+                    width: `${width}px`,
+                    height: `${height}px`,
+                    info: 'some data to register later',
+                    zIndex: 10
+                };
+                console.log('w = ', w);
+                sourceData.push(w);
             }
-        ];
+        });
 
         const payload = JSON.stringify({
-            // TODO: use configStore.windowDetails
-            data: tempWindowData
+            data: sourceData
         });
         await send(payload);
     }

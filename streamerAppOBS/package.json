@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.15",
     "interactjs": "^1.10.27",
     "marked": "^15.0.0",
     "obs-websocket-js": "^5.0.6",

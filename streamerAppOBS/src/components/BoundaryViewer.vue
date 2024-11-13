@@ -10,7 +10,10 @@ const appStore = useAppStore();
 
 const previewWidth = 320; // Set a fixed width for the preview window
 const previewHeight = computed(() => {
-    return (configStore.videoSettings.baseHeight / configStore.videoSettings.baseWidth) * previewWidth;
+    const baseWidth = configStore.videoSettings?.baseWidth || 1980;
+    const baseHeight = configStore.videoSettings?.baseHeight || 1080;
+
+    return (baseHeight / baseWidth) * previewWidth;
 });
 
 const configStore = useConfigStore();

@@ -42,6 +42,7 @@ ${description}`;
                     <tbody>
                         <tr class="border-b border-gray-200 fade-row">
                             <td class="p-2 pb-6 space-y-2 bg-gray-200 border border-gray-400">
+                                <!-- Info Card Title -->
                                 <div class="flex flex-col">
                                     <label class="mb-1 text-sm font-medium text-gray-700">
                                         Title:
@@ -50,7 +51,7 @@ ${description}`;
                                         placeholder="Enter your OBS WebSocket Password" />
                                 </div>
 
-                                <!-- Description Textarea -->
+                                <!-- Info Card Description Textarea -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                     <textarea v-model="item.info_description"
@@ -60,11 +61,11 @@ ${description}`;
                                 <div>
                                     Preview:
                                 </div>
-                                <div v-html="renderMarkdown(item.info_title, item.info_description)"
-                                    class="ml-4 w-64 p-4 bg-white border border-gray-300 rounded-lg shadow-lg prose prose-sm max-w-none">
+
+                                <div v-html="renderMarkdown(item.info_title || '', item.info_description || '')"
+                                    class="ml-4 w-64 p-4 bg-white border bg-gray-100 border-gray-300 rounded-lg shadow-xl prose prose-sm max-w-none">
                                 </div>
                             </td>
-
                         </tr>
                     </tbody>
                 </table>
@@ -74,12 +75,12 @@ ${description}`;
 </template>
 
 <style scoped lang="scss">
-
 .card-title {
     font-size: 16px;
     font-weight: 800;
 
 }
+
 table {
     border-radius: 8px; // TODO: this isn't working for some reason
 }
@@ -121,7 +122,8 @@ input {
     box-sizing: border-box;
 }
 
-textarea, input {
+textarea,
+input {
     border-radius: 10px;
 }
 </style>

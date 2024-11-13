@@ -1,27 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useConfigStore } from '../store/configStore';
 
 
 const configStore = useConfigStore();
 
-onMounted(() => {
-
-});
-
 const numSceneItems = computed(() => {
     return Object.keys(configStore.obsSceneItems).length;
 })
 
-const toggleSceneItem = (sceneItem: any) => {
-    if (!('twitch_movable' in sceneItem)) {
-        // nothing to toggle? should never happen
-        return;
-    }
-    if (sceneItem.twitch_movable == true) {
-
-    }
-}
 </script>
 
 <template>

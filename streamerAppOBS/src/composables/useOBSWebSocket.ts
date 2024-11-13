@@ -86,6 +86,21 @@ export function useOBSWebSocket() {
         return res;
     }
 
+    const setSceneItemTransform = async (sceneItemId: number, positionX: number, positionY: number) => {
+        if (!socket.value) throw Error("OBS Disconnected.");
+
+        const res = await socket.value.call("SetSceneItemTransform", {
+            sceneName: configStore.obsSceneName,
+            sceneItemId: Number(sceneItemId),
+            sceneItemTransform: {
+                positionX: positionX,
+                positionY: positionY,
+            }
+        });
+        console.log("useOBSWebSocket: setSceneItemTransform() response:", res);
+        return res;
+    }
+
     onMounted(init);
     onUnmounted(close);
 
@@ -97,5 +112,6 @@ export function useOBSWebSocket() {
         getVideoSettings,
         getSceneItems,
         getSourceScreenshot,
+        setSceneItemTransform
     };
 }

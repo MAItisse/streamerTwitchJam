@@ -55,11 +55,11 @@ export const useConfigStore = defineStore('config', {
         },
         loadLoginFromLocalStorage() {
             console.log("configStore: loadLoginFromLocalStorage()")
-            this.obsHost = localStorage.getItem(KEY_OBS_HOST) || '';
-            this.obsPort = localStorage.getItem(KEY_OBS_PORT) || '';
+            this.obsHost = localStorage.getItem(KEY_OBS_HOST) || 'localhost';
+            this.obsPort = localStorage.getItem(KEY_OBS_PORT) || '4455';
             this.obsPassword = localStorage.getItem(KEY_OBS_PASSWORD) || '';
             this.twitchUsername = localStorage.getItem(KEY_TWITCH_USERNAME) || '';
-            this.obsSceneName = localStorage.getItem(KEY_OBS_SCENE_NAME) || '';
+            this.obsSceneName = localStorage.getItem(KEY_OBS_SCENE_NAME) || 'Scene';
         },
 
 
@@ -68,6 +68,22 @@ export const useConfigStore = defineStore('config', {
             console.log("configStore: saveSettingsToLocalStorage()")
             console.log("saving bounds: ", this.bounds);
             console.log("bounds stringified: ", JSON.stringify(this.bounds))
+
+            // Clear old values firt
+            Object.keys(this.sourceToBoundaryMap).forEach(key => { delete this.sourceToBoundaryMap[key]; })
+            Object.keys(this.sourceInfoCards).forEach(key => { delete this.sourceInfoCards[key]; })
+
+            // Convert the front-end states into a storable format
+            this.obsSceneItems.forEach((scene: any, _: number) => {
+                if (('twitch_movable' in scene) && scene.twitch_movable == true) {
+                    this.sourceToBoundaryMap[scene.sceneItemId] = scene.boundary_key;
+                    this.sourceInfoCards[scene.sceneItemId] = {
+                        title: scene.info_title,
+                        description: scene.info_description
+                    }
+                }
+            });
+
             localStorage.setItem(KEY_BOUNDS, JSON.stringify(this.bounds));
             localStorage.setItem(KEY_SOURCE_INFO_CARDS, JSON.stringify(this.sourceInfoCards));
             localStorage.setItem(KEY_SOURCE_TO_BOUNDARY_MAP, JSON.stringify(this.sourceToBoundaryMap));
@@ -86,7 +102,7 @@ export const useConfigStore = defineStore('config', {
 
                 const loadedSourceInfoCards = (JSON.parse(localStorage.getItem(KEY_SOURCE_INFO_CARDS) || '{}') || {}) as SourceInfoCards;
                 Object.keys(this.sourceInfoCards).forEach(key => { delete this.sourceInfoCards[key]; })
-                Object.keys(loadedSourceInfoCards).forEach(key => { this.sourceToBoundaryMap[key] = loadedSourceToBoundaryMap[key]; })
+                Object.keys(loadedSourceInfoCards).forEach(key => { this.sourceInfoCards[key] = loadedSourceInfoCards[key]; })
 
             } catch (e) {
                 // If a parse error occurs just ...nuke all the settings back to defaults

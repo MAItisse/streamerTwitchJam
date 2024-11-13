@@ -17,7 +17,7 @@ export type SourceToBoundaryMap = {
 
 export type SourceInfoCard = {
     title: string | null;
-    desc: string | null;
+    description: string | null;
 };
 export type SourceInfoCards = {
     [key: string]: SourceInfoCard;
@@ -30,4 +30,16 @@ export type OBSVideoSettings = {
     baseHeight: number;
     outputWidth: number;
     outputHeight: number;
+}
+
+
+export type SetSceneItemTransformRequest = {
+    sceneName: string;
+    sceneItemId: number;
+    sceneItemTransform: SceneItemTransform;
+}
+
+export type SceneItemTransform = {
+    positionX: number;
+    positionY: number;
 }
