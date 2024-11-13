@@ -39,7 +39,8 @@ async function disconnect() {
         <div
             class="flex flex-col items-center justify-center px-2 py-1 bg-gray-100 rounded-lg shadow-lg max-w-md mx-auto">
             <form class="w-full space-y-0">
-
+                <h1 class="mb-0 text-lg p-1 mb-4 font-extrabold">Enter Connection Details
+                </h1>
                 <!-- OBS Password Row -->
                 <div class="flex flex-col">
                     <label for="obsPassword" class="mb-1 text-sm font-medium text-gray-700">OBS WebSocket Server
@@ -85,8 +86,6 @@ async function disconnect() {
                 Disconnect
             </button>
         </div>
-    </section>
-    <section>
     </section>
 </template>
 

@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, Ref } from 'vue';
 import { OBSConnectionStatus, useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
 import OBSWebSocket from 'obs-websocket-js';
@@ -7,9 +7,10 @@ export function useOBSWebSocket() {
 
     const statusStore = useStatusStore();
     const configStore = useConfigStore();
+    const onOpenCallback: Ref<null | (() => void)> = ref(null);
 
     // let socket: OBSWebSocket | null = null;
-    let socket = ref();
+    let socket = ref<OBSWebSocket | null>();
 
     const init = () => {
         // TODO: maybe do some stuff here?
@@ -29,9 +30,14 @@ export function useOBSWebSocket() {
 
             // We have to wait for the "Hello" and "Identified"
             // before we kick off barking orders at OBS
-            socket.value.on('Identified', () => {
+            socket.value.on('Identified', async () => {
                 console.log("\tOBS is connected!");
                 statusStore.obsConnectionStatus = OBSConnectionStatus.Open;
+
+                if (onOpenCallback.value != null) {
+                    onOpenCallback.value();
+                }
+
             });
             socket.value.on('ConnectionClosed', () => {
                 console.log("OBS WebSocket has ConnectionClosed!");
@@ -53,23 +59,31 @@ export function useOBSWebSocket() {
         }
     }
 
-    const getVideoOutputSettings = async () => {
+    const getVideoSettings = async () => {
         if (!socket.value) throw Error("OBS Disconnected.");
 
         const res = await socket.value.call('GetVideoSettings');
-
-        // const { baseWidth: width, baseHeight: height } = res;
-        return {
-            width: res.baseWidth,
-            height: res.baseHeight
-        };
+        console.log("useOBSWebSocket: getVideoSettings() response:", res);
+        return res;
     }
 
     const getSceneItems = async (sceneName = 'Scene') => {
         if (!socket.value) throw Error("OBS Disconnected.");
 
-        const sceneItems = await socket.value.call('GetSceneItemList', { sceneName })
-        return sceneItems
+        const res = await socket.value.call('GetSceneItemList', { sceneName })
+        console.log("useOBSWebSocket: getSceneItems() response:", res);
+        return res.sceneItems;
+    }
+
+    const getSourceScreenshot = async (sourceName: string) => {
+        if (!socket.value) throw Error("OBS Disconnected.");
+
+        const res = await socket.value.call('GetSourceScreenshot', {
+            imageFormat: 'png',
+            sourceName: sourceName
+        });
+        console.log("useOBSWebSocket: getSourceScreenshot() response:", res);
+        return res;
     }
 
     onMounted(init);
@@ -78,8 +92,10 @@ export function useOBSWebSocket() {
     return {
         socket,
         connect,
+        onOpenCallback,
         close,
-        getVideoOutputSettings,
-        getSceneItems
+        getVideoSettings,
+        getSceneItems,
+        getSourceScreenshot,
     };
 }

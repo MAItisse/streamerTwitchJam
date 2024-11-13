@@ -17,10 +17,13 @@ export const useAppStore = defineStore({
             console.log("useAppStore: connect()");
             try {
 
+                // Setup OBS websocket callback
+                this.obsWebSocket.onOpenCallback = this.obsOnOpen;
+
                 // Connect to OBS WebSocket
                 await this.obsWebSocket.connect();
 
-                // Setup proxy callbacks
+                // Setup proxy websocket callbacks
                 this.proxyWebSocket.onOpenCallback = this.proxyOnOpen;
                 this.proxyWebSocket.onMessageCallback = this.proxyOnMessage;
                 this.proxyWebSocket.onCloseCallback = this.proxyOnClose;
@@ -32,6 +35,12 @@ export const useAppStore = defineStore({
                 throw e;
             }
 
+        },
+
+        async obsOnOpen() {
+            // Fetch some info that we'll need after OBS finishes connecting
+            this.configStore.videoSettings = await this.obsWebSocket.getVideoSettings();
+            this.configStore.obsSceneItems = await this.obsWebSocket.getSceneItems();
         },
 
         proxyOnOpen() {
@@ -67,5 +76,25 @@ export const useAppStore = defineStore({
         saveToLocalStorage() {
             // Save other items if necessary
         },
+
+        async getSourceScreenshot(sourceName: string) {
+            console.log("appStore: getSourceScreenshot() with:", sourceName);
+            try {
+                let res = await this.obsWebSocket.getSourceScreenshot(sourceName);
+                return res.imageData;
+            } catch (e) {
+                return '';
+            }
+        },
+
+        async broadcastCurrentSettings() {
+            console.log("appStore: broadcastUpdatedSettings()");
+
+            // TODO: build the windowConfig object
+            
+
+
+            // TODO: build the infoWindowConfig object
+        }
     },
 });

@@ -134,8 +134,8 @@ export function useProxyWebSocket() {
         let payload = JSON.stringify(JSON.stringify({
             obsSize: {
                 obsSize: {
-                    width: 1920, // TODO: configStore.baseWidth,
-                    height: 1080, // TODO: configStore.baseHeight,
+                    width: configStore.videoSettings.baseWidth,
+                    height: configStore.videoSettings.baseHeight,
                 }
             }
         }))

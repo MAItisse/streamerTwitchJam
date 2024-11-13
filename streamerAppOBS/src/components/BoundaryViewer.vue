@@ -1,48 +1,29 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, type PropType } from 'vue';
-import interact from 'interactjs';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useConfigStore } from '../store/configStore';
-import { BoundaryWithKey } from '../types';
+import { useAppStore } from '../store/appStore';
+import { Boundary } from '../types';
+import interact from 'interactjs';
 
-// Props
-const props = defineProps({
-    videoWidth: {
-        type: Number,
-        required: true,
-    },
-    videoHeight: {
-        type: Number,
-        required: true,
-    },
-    boundaries: {
-        type: Array as PropType<BoundaryWithKey[]>,
-        required: true,
-        default: [],
-    },
-    bgImage: {
-        type: String,
-        required: true
-    }
+
+const appStore = useAppStore();
+
+const previewWidth = 320; // Set a fixed width for the preview window
+const previewHeight = computed(() => {
+    return (configStore.videoSettings.baseHeight / configStore.videoSettings.baseWidth) * previewWidth;
 });
 
-// Emit changes to the parent component
-const emit = defineEmits(['update:uniqueBounds']);
-
-// const previewWindow = ref(null); // TODO: implement screenshot loading feature
-const previewWidth = 640; // Set a fixed width for the preview window
-const previewHeight = (props.videoHeight / props.videoWidth) * previewWidth;
-
 const configStore = useConfigStore();
-const obsPreviewSourceSelect = ref();
+const previewSceneItemSelect = ref("");
+const previewBackgroundImage = ref("");
 
-
-// Calculate boundary style based on video dimensions
-const calculateBoundaryStyle = (boundary: BoundaryWithKey) => {
+// calculate boundary style based on video dimensions
+const calculateBoundaryStyle = (boundary: Boundary) => {
     return {
         left: `${Math.max(0, boundary.left * previewWidth)}px`,
-        top: `${Math.max(0, boundary.top * previewHeight)}px`,
+        top: `${Math.max(0, boundary.top * previewHeight.value)}px`,
         width: `${Math.max(0, (boundary.right - boundary.left) * previewWidth)}px`,
-        height: `${Math.max(0, (boundary.bottom - boundary.top) * previewHeight)}px`,
+        height: `${Math.max(0, (boundary.bottom - boundary.top) * previewHeight.value)}px`,
     };
 };
 
@@ -52,26 +33,26 @@ const roundToThousandths = (num: number) => {
 
 // Setup interact.js dragging/resizing handlers
 const setupInteract = () => {
-    props.boundaries.forEach((_, index) => {
-        const selector = `.boundary[data-index="${index}"]`;
+    Object.keys(configStore.bounds).forEach(key => {
+        const selector = `.boundary[data-index="${key}"]`;
         const element = document.querySelector(selector);
 
         // Check if the element has already been initialized
         if (element && element.getAttribute('data-interact-initialized')) {
-            return; // Skip this element if already initialized
+            return; // skip this element if already initialized
         }
 
-        // Mark the element as initialized
+        // mark the element as initialized
         if (element) {
             element.setAttribute('data-interact-initialized', 'true');
         }
 
-        interact(`.boundary[data-index="${index}"]`)
+        interact(`.boundary[data-index="${key}"]`)
             .draggable({
                 modifiers: [
                     interact.modifiers.restrictSize({
                         min: { width: 20, height: 20 },
-                        max: { width: previewWidth, height: previewHeight },
+                        max: { width: previewWidth, height: previewHeight.value },
                     }),
                     interact.modifiers.restrictEdges({
                         outer: "parent",
@@ -84,17 +65,18 @@ const setupInteract = () => {
 
                     // Set the new position while restricting to the preview window
                     target.style.left = `${Math.max(0, Math.min(x, previewWidth - target.offsetWidth))}px`;
-                    target.style.top = `${Math.max(0, Math.min(y, previewHeight - target.offsetHeight))}px`;
+                    target.style.top = `${Math.max(0, Math.min(y, previewHeight.value - target.offsetHeight))}px`;
+
                 },
                 onend(event) {
                     const { target } = event;
                     const index = target.getAttribute('data-index');
-                    props.boundaries[index].left = roundToThousandths(parseFloat(target.style.left) / previewWidth);
-                    props.boundaries[index].top = roundToThousandths(parseFloat(target.style.top) / previewHeight);
-                    props.boundaries[index].right = roundToThousandths((parseFloat(target.style.left) + parseFloat(target.style.width)) / previewWidth);
-                    props.boundaries[index].bottom = roundToThousandths((parseFloat(target.style.top) + parseFloat(target.style.height)) / previewHeight);
-                    emit('update:uniqueBounds', [...props.boundaries]);
-                    return null;
+                    configStore.bounds[index].left = roundToThousandths(parseFloat(target.style.left) / previewWidth);
+                    configStore.bounds[index].top = roundToThousandths(parseFloat(target.style.top) / previewHeight.value);
+                    configStore.bounds[index].right = roundToThousandths((parseFloat(target.style.left) + parseFloat(target.style.width)) / previewWidth);
+                    configStore.bounds[index].bottom = roundToThousandths((parseFloat(target.style.top) + parseFloat(target.style.height)) / previewHeight.value);
+                    // emit('update:uniqueBounds', props.boundaries);
+                    return true;
                 },
             })
             .resizable({
@@ -102,7 +84,7 @@ const setupInteract = () => {
                 modifiers: [
                     interact.modifiers.restrictSize({
                         min: { width: 20, height: 20 },
-                        max: { width: previewWidth, height: previewHeight },
+                        max: { width: previewWidth, height: previewHeight.value },
                     }),
                     interact.modifiers.restrictEdges({
                         outer: "parent",
@@ -133,11 +115,11 @@ const setupInteract = () => {
                 onend(event) {
                     const { target } = event;
                     const index = target.getAttribute('data-index');
-                    props.boundaries[index].left = roundToThousandths(parseFloat(target.style.left) / previewWidth);
-                    props.boundaries[index].top = roundToThousandths(parseFloat(target.style.top) / previewHeight);
-                    props.boundaries[index].right = roundToThousandths((parseFloat(target.style.left) + parseFloat(target.style.width)) / previewWidth);
-                    props.boundaries[index].bottom = roundToThousandths((parseFloat(target.style.top) + parseFloat(target.style.height)) / previewHeight);
-                    emit('update:uniqueBounds', [...props.boundaries]);
+                    configStore.bounds[index].left = roundToThousandths(parseFloat(target.style.left) / previewWidth);
+                    configStore.bounds[index].top = roundToThousandths(parseFloat(target.style.top) / previewHeight.value);
+                    configStore.bounds[index].right = roundToThousandths((parseFloat(target.style.left) + parseFloat(target.style.width)) / previewWidth);
+                    configStore.bounds[index].bottom = roundToThousandths((parseFloat(target.style.top) + parseFloat(target.style.height)) / previewHeight.value);
+                    // emit('update:uniqueBounds', props.boundaries);
                     return null;
                 },
             });
@@ -147,58 +129,62 @@ const setupInteract = () => {
 // Initialize interact on mount and when preview dimensions change
 onMounted(() => {
     setupInteract();
+    Object.keys(configStore.bounds).forEach(key => {
+        console.log("key:", key);
+    });
 });
 
-watch(() => props.boundaries, () => {
+watch(() => configStore.bounds, () => {
     console.log("BoundaryViewer: watch props.boundaries fired.")
     setupInteract();
 }, { deep: true });
 
-const loadPreviewScreenshot = () => {
-    console.log("BoundaryViewer: loadPreviewScreenshot");
-
-    // TODO:
-
+const loadPreviewScreenshot = async () => {
+    console.log("BoundaryViewer: loadPreviewScreenshot:", previewSceneItemSelect.value);
+    try {
+        let res = await appStore.getSourceScreenshot(previewSceneItemSelect.value);
+        console.log("BoundaryView: loadPreviewScreenshot() returns:", res);
+        previewBackgroundImage.value = res;
+    } catch (e) {
+        console.log("BoundaryViewer: loadPreviewScreenshot() error:", e);
+    }
 }
-
 </script>
 
 <template>
-    <section>
-        <div class="flex flex-col mt-4 items-center justify-center p-6 bg-gray-100 rounded-lg shadow-lg mx-auto">
-            <div class="display-inline p-2">
-                Select your main display source:
-                <select v-model="obsPreviewSourceSelect"
-                    class="border-gray-300 py-4  rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                    <option disabled value="">Select Source</option>
-                    <option v-for="source in configStore.sceneItems" :value="source.sourceName">
-                        {{ source.sourceName }}
-                    </option>
-                </select>
-                <button type="button" @click="loadPreviewScreenshot"
-                    class="m-4 px-4 py-0.5 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]">
-                    Load Screenshot
-                </button>
+    <div class="flex flex-col items-center justify-center p-1 bg-gray-100 shadow-lg">
+        <div class="display-inline p-0">
+            Preview source:
+            <select v-model="previewSceneItemSelect"
+                class="border-gray-300 py-1  rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <option disabled value="">Select Source</option>
+                <option v-for="source in configStore.obsSceneItems" :key="source.sourceName" :value="source.sourceName">
+                    {{ source.sourceName }}
+                </option>
+            </select>
+            <button type="button" @click="loadPreviewScreenshot"
+                class="m-4 px-4 py-0.5 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]">
+                Load
+            </button>
+        </div>
+        <div class="preview-window select-none"
+            :style="{ backgroundImage: 'url(' + previewBackgroundImage + ')', backgroundSize: 'cover', aspectRatio: configStore.videoSettings.baseWidth + '/' + configStore.videoSettings.baseHeight }">
+            <div v-for="(boundary, key, index) in configStore.bounds" :key="key" :data-index="key" class="boundary"
+                :style="calculateBoundaryStyle(boundary)">
+                <div
+                    class="w-full h-full flex items-center justify-center text-3xl drop-shadow-[0_0px_5.2px_rgba(255,255,255,1)]">
+                    {{ index + 1 }}</div>
             </div>
-            <div class="preview-window select-none"
-                :style="{ backgroundImage: 'url(' + bgImage + ')', backgroundSize: 'cover', aspectRatio: videoWidth + '/' + videoHeight }">
-                <div v-for="(boundary, index) in boundaries" :key="index" :data-index="index" class="boundary"
-                    :style="calculateBoundaryStyle(boundary)">
-                    <div
-                        class="w-full h-full flex items-center justify-center text-3xl drop-shadow-[0_0px_5.2px_rgba(255,255,255,1)]">
-                        {{ index + 1 }}</div>
-                </div>
-                <div class="select-none">
-                    {{ videoWidth }} x {{ videoHeight }}
-                </div>
+            <div class="select-none">
+                {{ configStore.videoSettings.baseWidth }} x {{ configStore.videoSettings.baseHeight }}
             </div>
         </div>
-    </section>
+    </div>
 </template>
 
 <style scoped lang="scss">
 .preview-window {
-    width: 640px;
+    width: 320px;
     border: 2px solid #333;
     position: relative;
     background-color: #fafafa;
