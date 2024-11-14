@@ -82,14 +82,19 @@ function removeBoundary(key: string) {
                         </button>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="6">
+                        <button type="button" @click="addBoundary"
+                            class="m-2 px-8 py-1 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
+                            <FontAwesomeIcon class="mr-2" icon="plus"></FontAwesomeIcon>
+                            Add new Boundary
+                        </button>
+                    </td>
+                </tr>
             </transition-group>
         </table>
         <div class="flex flex-row-reverse">
-            <button type="button" @click="addBoundary"
-                class="m-2 px-2.5 py-0.5 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
-                <FontAwesomeIcon icon="plus"></FontAwesomeIcon>
-                Add new Boundary
-            </button>
+
         </div>
     </div>
 </template>

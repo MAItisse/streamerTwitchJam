@@ -32,10 +32,10 @@ ${description}`;
                 movable source on your stream
             </span>
         </div>
-        <table v-for="(item, key) in enabledSceneItems" :key="key" class="mb-4 w-full rounded-2xl">
+        <table v-for="(item, key) in enabledSceneItems" :key="key" class="mb-4 w-full border-4 border-gray-300 rounded-2xl">
             <thead>
                 <tr>
-                    <th class="p-2 text-left border border-gray-300">
+                    <th class="p-2 text-left border bg-gray-300 border-gray-300">
                         <div class="card-title">
                             {{ item.sourceName }}
                         </div>
@@ -44,7 +44,7 @@ ${description}`;
             </thead>
             <tbody>
                 <tr class="border-b border-gray-200 fade-row">
-                    <td class="p-2 pb-6 space-y-2 bg-gray-200 border border-gray-400">
+                    <td class="p-2 pb-6 space-y-2 bg-gray-100 border border-gray-400">
                         <!-- Info Card Title -->
                         <div class="flex flex-col">
                             <label class="mb-1 text-sm font-medium text-gray-700">

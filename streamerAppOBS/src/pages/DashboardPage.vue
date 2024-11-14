@@ -65,8 +65,6 @@ function disconnect() {
         </div>
         <div class="card">
             <BoundaryTable></BoundaryTable>
-        </div>
-        <div class="card">
             <BoundaryViewer></BoundaryViewer>
         </div>
         <div class="card">
