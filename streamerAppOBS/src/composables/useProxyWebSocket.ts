@@ -1,7 +1,15 @@
-import { onMounted, onUnmounted, Ref, ref } from 'vue';
+import { onUnmounted, Ref, ref } from 'vue';
 import { useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
 import { Boundaries } from '../types';
+
+export class InvalidTwitchUsernameError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "InvalidTwitchUsernameError";
+        Object.setPrototypeOf(this, InvalidTwitchUsernameError.prototype);
+    }
+}
 
 export function useProxyWebSocket() {
 
@@ -14,19 +22,20 @@ export function useProxyWebSocket() {
 
     const proxyHost = 'websocket.matissetec.dev';
     const isProxySecure = true;
-    const pingTimeout = 30000;
+    const pingTimeout = 10000;
 
     let socket: WebSocket | null = null;
     let twitchUserId: string | null = null;
     let pingKeepAliveIntervalId: NodeJS.Timeout | null = null;
 
-    const init = () => {
-        // TODO: maybe do some stuff here?
-    }
-
     const fetchTwitchUserId = async () => {
         const resp = await fetch(`https://decapi.me/twitch/id/${configStore.twitchUsername}`);
         const text = await resp.text();
+
+        if (text.includes('User not found')) {
+            console.log("useProxyWebSockets: fetchTwitchUserId error: Invalid Twitch Username");
+            throw new InvalidTwitchUsernameError("Invalid Twitch Username");
+        }
         return text;
     }
 
@@ -35,7 +44,7 @@ export function useProxyWebSocket() {
         const key = await resp.text()
         if (key.includes('Lobby already in play')) {
             console.log(key)
-            // TODO: probably throw something here
+            // TODO: maybe throw something here?
             return null;
         }
         return key
@@ -190,12 +199,15 @@ export function useProxyWebSocket() {
             }
         */
 
-        // const tempInfoWindowConfig = {
-        //     "84": {
-        //         title: "Cool title here!",
-        //         description: "### also\n- this\n- and this"
-        //     }
-        // };
+        // Truncate title and description fields before sending... just in case
+        Object.keys(configStore.sourceInfoCards).forEach(key => {
+            let title = configStore.sourceInfoCards[key].title || '';
+            let description = configStore.sourceInfoCards[key].description || '';
+
+            configStore.sourceInfoCards[key].title = title.slice(0, 64);
+            configStore.sourceInfoCards[key].description = description.slice(0, 256);
+        });
+
         const payload = JSON.stringify(JSON.stringify({
             infoWindow: configStore.sourceInfoCards
         }));
@@ -254,8 +266,6 @@ export function useProxyWebSocket() {
         }
     }
 
-
-    onMounted(init);
     onUnmounted(close);
 
     return {

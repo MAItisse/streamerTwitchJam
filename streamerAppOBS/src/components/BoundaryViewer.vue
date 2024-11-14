@@ -132,9 +132,6 @@ const setupInteract = () => {
 // Initialize interact on mount and when preview dimensions change
 onMounted(() => {
     setupInteract();
-    Object.keys(configStore.bounds).forEach(key => {
-        console.log("key:", key);
-    });
 });
 
 watch(() => configStore.bounds, () => {
@@ -155,9 +152,9 @@ const loadPreviewScreenshot = async () => {
 </script>
 
 <template>
-    <div class="flex flex-col items-center justify-center p-1 bg-gray-100 shadow-lg">
-        <div class="display-inline p-0">
-            Preview source:
+    <div class="w-full">
+        <div class="flex justify-center items-center">
+            <span class="mr-1">Preview source:</span>
             <select v-model="previewSceneItemSelect"
                 class="border-gray-300 py-1  rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                 <option disabled value="">Select Source</option>
@@ -166,20 +163,22 @@ const loadPreviewScreenshot = async () => {
                 </option>
             </select>
             <button type="button" @click="loadPreviewScreenshot"
-                class="m-4 px-4 py-0.5 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]">
+                class="m-2 px-4 py-0.5 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]">
                 Load
             </button>
         </div>
-        <div class="preview-window select-none"
-            :style="{ backgroundImage: 'url(' + previewBackgroundImage + ')', backgroundSize: 'cover', aspectRatio: configStore.videoSettings.baseWidth + '/' + configStore.videoSettings.baseHeight }">
-            <div v-for="(boundary, key, index) in configStore.bounds" :key="key" :data-index="key" class="boundary"
-                :style="calculateBoundaryStyle(boundary)">
-                <div
-                    class="w-full h-full flex items-center justify-center text-3xl drop-shadow-[0_0px_5.2px_rgba(255,255,255,1)]">
-                    {{ index + 1 }}</div>
-            </div>
-            <div class="select-none">
-                {{ configStore.videoSettings.baseWidth }} x {{ configStore.videoSettings.baseHeight }}
+        <div class="flex justify-center">
+            <div class="preview-window select-none"
+                :style="{ backgroundImage: 'url(' + previewBackgroundImage + ')', backgroundSize: 'cover', aspectRatio: configStore.videoSettings.baseWidth + '/' + configStore.videoSettings.baseHeight }">
+                <div v-for="(boundary, key, index) in configStore.bounds" :key="key" :data-index="key" class="boundary"
+                    :style="calculateBoundaryStyle(boundary)">
+                    <div
+                        class="w-full h-full text-yellow-500 flex items-center justify-center text-3xl drop-shadow-[0_0px_5.2px_rgba(0,0,0,1)]">
+                        {{ index + 1 }}</div>
+                </div>
+                <div class="select-none">
+                    {{ configStore.videoSettings.baseWidth }} x {{ configStore.videoSettings.baseHeight }}
+                </div>
             </div>
         </div>
     </div>

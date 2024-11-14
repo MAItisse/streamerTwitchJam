@@ -31,7 +31,7 @@ export const useConfigStore = defineStore('config', {
     }),
     actions: {
 
-        // Save/Load all state (probaly not really necessary)
+        // Save/Load all state
         saveAllToLocalStorage() {
             console.log("configStore: saveAllToLocalStorage()")
             this.saveLoginToLocalStorage();
@@ -69,7 +69,7 @@ export const useConfigStore = defineStore('config', {
             console.log("saving bounds: ", this.bounds);
             console.log("bounds stringified: ", JSON.stringify(this.bounds))
 
-            // Clear old values firt
+            // Clear old values first
             Object.keys(this.sourceToBoundaryMap).forEach(key => { delete this.sourceToBoundaryMap[key]; })
             Object.keys(this.sourceInfoCards).forEach(key => { delete this.sourceInfoCards[key]; })
 
@@ -105,7 +105,7 @@ export const useConfigStore = defineStore('config', {
                 Object.keys(loadedSourceInfoCards).forEach(key => { this.sourceInfoCards[key] = loadedSourceInfoCards[key]; })
 
             } catch (e) {
-                // If a parse error occurs just ...nuke all the settings back to defaults
+                // If a parse error occurs just ...nuke all the settings back to defaults ._.
                 console.error("configStore: loadSettingsFromLocalStorage error:", e);
                 this.resetSettings();
             }

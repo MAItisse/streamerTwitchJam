@@ -1,20 +1,29 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useConfigStore } from '../store/configStore';
-import LoginPage from './LoginPage.vue';
 import BoundaryTable from '../components/BoundaryTable.vue';
 import SceneItemTable from '../components/SceneItemTable.vue';
 import BoundaryViewer from '../components/BoundaryViewer.vue';
 import SceneItemPopupEditor from '../components/SceneItemPopupEditor.vue';
 import { useAppStore } from '../store/appStore';
+import { useRouter } from 'vue-router';
+import { useStatusStore } from '../store/statusStore';
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 
+const router = useRouter();
 const appStore = useAppStore();
 const configStore = useConfigStore();
-
+const statusStore = useStatusStore();
 
 onMounted(() => {
     console.log("DashboardPage: onMounted()");
-    configStore.loadAllFromLocalStorage();
+
+    if (!statusStore.isObsConnected || !statusStore.isProxyConnected) {
+        console.warn("isObsConnected: ", statusStore.isObsConnected);
+        console.warn("isProxyConnected: ", statusStore.isProxyConnected);
+        router.push("/");
+    }
 });
 
 const saveConfig = () => {
@@ -25,47 +34,51 @@ const saveConfig = () => {
 
     // Adapt current configStore settings to expected server format and send them out
     appStore.broadcastCurrentSettings();
+
+    toast("Settings Saved Successfully!", {
+        "theme": "dark",
+        "type": "default",
+        "transition": "flip",
+        "dangerouslyHTMLString": true
+    })
 }
 
+function disconnect() {
+    console.log("LoginPage: disconnect()");
+    appStore.disconnect();
+    router.push("/");
+}
 
 </script>
 
 <template>
-    <section class="flex justify-center">
-        <div class="flex flex-col justify-center max-w-[450px]">
-            <div class="card-collection">
-                <div>
-                    <LoginPage></LoginPage>
-                </div>
-                <div>
-                    <BoundaryTable></BoundaryTable>
-                </div>
-                <div>
-                    <BoundaryViewer></BoundaryViewer>
-                </div>
-                <div>
-                    <SceneItemTable></SceneItemTable>
-                </div>
-                <div>
-                    <SceneItemPopupEditor></SceneItemPopupEditor>
-                </div>
-                <div>
-                    <button type="button" @click="saveConfig"
-                        class="w-full py-2 font-bold text-2xl text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-green-800 transition active:scale-[.98]">
-                        Save Config!
-                    </button>
-                    <!-- TODO: add "save" confirmation messages -->
-                </div>
-            </div>
+    <div class="card-collection">
+        <div class="card">
+            <button type="button" @click="disconnect" class="w-ful m-0 px-20 py-1.5 font-semibold text-white bg-red-600 
+                    rounded hover:bg-red-700 
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    transition active:scale-[.95]">
+                Disconnect
+            </button>
         </div>
-    </section>
+        <div class="card">
+            <BoundaryTable></BoundaryTable>
+        </div>
+        <div class="card">
+            <BoundaryViewer></BoundaryViewer>
+        </div>
+        <div class="card">
+            <SceneItemTable></SceneItemTable>
+        </div>
+        <div class="card">
+            <SceneItemPopupEditor></SceneItemPopupEditor>
+        </div>
+        <div class="card">
+            <button type="button" @click="saveConfig"
+                class="w-full py-2 font-bold text-2xl text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-green-800 transition active:scale-[.98]">
+                Confirm Settings
+            </button>
+            <!-- TODO: add "save" confirmation messages -->
+        </div>
+    </div>
 </template>
-
-<style scoped lang="scss">
-.card-collection {
-    div {
-        // margin-top: 16px;
-        margin-bottom: 16px;
-    }
-}
-</style>

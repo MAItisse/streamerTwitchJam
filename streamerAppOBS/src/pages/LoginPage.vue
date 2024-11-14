@@ -2,10 +2,16 @@
 import { OBSConnectionStatus, useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
 import { useAppStore } from '../store/appStore';
+import { computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import Spinner from '../components/Spinner.vue';
+import { useProxyWebSocket } from '../composables/useProxyWebSocket';
 
 const configStore = useConfigStore();
 const statusStore = useStatusStore();
 const appStore = useAppStore();
+const proxyWebSocket = useProxyWebSocket();
+const router = useRouter();
 
 async function connect() {
     console.log("LoginPage: connect()");
@@ -14,79 +20,99 @@ async function connect() {
         configStore.saveLoginToLocalStorage();
         console.log("\tsaving login details to localStorage...");
 
-        //
-        // TODO
-        //
-
         appStore.connect();
 
-        // router.push("/dashboard");
     } catch (e) {
         console.error("\terror caught: ", e);
     }
 
 }
 
-async function disconnect() {
-    console.log("LoginPage: disconnect()");
-    appStore.disconnect();
-}
+const isConnecting = computed(() => {
+    const obsConnecting = statusStore.obsConnectionStatus == OBSConnectionStatus.Connecting;
+    let proxyConnecting = false;
+
+    if (proxyWebSocket.socket) {
+        const s = proxyWebSocket.socket as WebSocket;
+        if (s.readyState == WebSocket.CONNECTING) {
+            proxyConnecting = true;
+        }
+    }
+    return obsConnecting || proxyConnecting;
+});
+
+watch(statusStore, (statusStore) => {
+    if (statusStore.isObsConnected && statusStore.isProxyConnected) {
+        router.push("/dashboard");
+    }
+});
 
 </script>
 
 <template>
-    <section>
-        <div
-            class="flex flex-col items-center justify-center px-2 py-1 bg-gray-100 rounded-lg shadow-lg max-w-md mx-auto">
-            <form class="w-full space-y-0">
-                <h1 class="mb-0 text-lg p-1 mb-4 font-extrabold">Enter Connection Details
-                </h1>
-                <!-- OBS Password Row -->
-                <div class="flex flex-col">
-                    <label for="obsPassword" class="mb-1 text-sm font-medium text-gray-700">OBS WebSocket Server
-                        Password:</label>
-                    <input id="obsPassword" v-model="configStore.obsPassword" type="password"
-                        placeholder="Enter your OBS WebSocket Password"
-                        class="px-3 py-0 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        :class="{ 'bg-red-200': statusStore.obsConnectionStatus == OBSConnectionStatus.AuthenticationError }" />
-                    <div v-if="statusStore.obsConnectionStatus == OBSConnectionStatus.AuthenticationError"
+    <div class="card-collection">
+        <div class="card">
+            <div class="w-full">
+                <form>
+                    <h1 class="mb-0 text-lg p-1 mb-4 font-extrabold">Enter Connection Details
+                    </h1>
+                    <div v-if="statusStore.generalErrorMessage"
                         class="flex flex-col items-center font-medium text-red-700">
-                        Invalid Password!
+                        {{ statusStore.generalErrorMessage }}
                     </div>
+                    <!-- OBS Password Row -->
+                    <div class="flex flex-col">
+                        <label for="obsPassword" class="mb-1 text-sm font-medium text-gray-700">OBS WebSocket Server
+                            Password:
+                        </label>
+                        <input id="obsPassword" v-model="configStore.obsPassword" type="password" autocomplete="on"
+                            placeholder="Enter your OBS WebSocket Password"
+                            class="px-3 py-0 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            :class="{ 'bg-red-200': statusStore.obsConnectionStatus == OBSConnectionStatus.AuthenticationError }" />
+                        <div v-if="statusStore.obsConnectionStatus == OBSConnectionStatus.AuthenticationError"
+                            class="flex flex-col items-center font-medium text-red-700">
+                            Invalid Password!
+                        </div>
+                    </div>
+
+                    <!-- Twitch Username Row -->
+                    <div class="flex flex-col">
+                        <label for="twitchUsername" class="mb-1 text-sm font-medium text-gray-700">Twitch
+                            Username:</label>
+                        <input id="twitchUsername" v-model="configStore.twitchUsername" type="text" autocomplete="on"
+                            placeholder="Enter your Twitch username"
+                            class="px-3 py-0 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            :class="{ 'bg-red-200': statusStore.invalidTwitchUsername }" />
+                        <div v-if="statusStore.invalidTwitchUsername"
+                            class="flex flex-col items-center font-medium text-red-700">
+                            Username not found!
+                        </div>
+                    </div>
+
+                    <!-- OBS Scene Name -->
+                    <div class="flex flex-col">
+                        <label for="obsSceneName" class="mb-1 text-sm font-medium text-gray-700">OBS Scene
+                            Name:</label>
+                        <input id="obsSceneName" v-model="configStore.obsSceneName" type="text" autocomplete="on"
+                            placeholder="Enter Target OBS Scene Name"
+                            class="px-3 py-0 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+
+                </form>
+                <!-- Connect Button -->
+                <div class="p-2 mt-2">
+                    <!-- v-if="!statusStore.isProxyConnected && !statusStore.isObsConnected" -->
+                    <button type="button" @click="connect"
+                        class="w-full py-2 font-semibold text-white bg-blue-600 rounded 
+                    hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]"
+                        :disabled="statusStore.isProxyConnected || statusStore.isObsConnected">
+                        <Spinner v-if="isConnecting"></Spinner>
+                        {{ isConnecting ? 'Connecting...' : 'Connect!' }}
+                    </button>
                 </div>
-
-                <!-- Twitch Username Row -->
-                <div class="flex flex-col">
-                    <label for="twitchUsername" class="mb-1 text-sm font-medium text-gray-700">Twitch Username:</label>
-                    <input id="twitchUsername" v-model="configStore.twitchUsername" type="text"
-                        placeholder="Enter your Twitch username"
-                        class="px-3 py-0 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-
-                <!-- OBS Scene Name -->
-                <div class="flex flex-col">
-                    <label for="obsSceneName" class="mb-1 text-sm font-medium text-gray-700">OBS Scene Name:</label>
-                    <input id="obsSceneName" v-model="configStore.obsSceneName" type="text"
-                        placeholder="Enter Target OBS Scene Name"
-                        class="px-3 py-0 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-
-            </form>
-            <!-- Connect Button -->
-            <button type="button" @click="connect"
-                class="w-full m-4 px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]"
-                v-if="!statusStore.isProxyConnected && !statusStore.isObsConnected"
-                :disabled="statusStore.isProxyConnected || statusStore.isObsConnected">
-                Connect to OBS
-            </button>
-
-            <!-- Disconnect Button -->
-            <button v-if="statusStore.isProxyConnected || statusStore.isObsConnected" type="button" @click="disconnect"
-                class="w-full m-4 px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]">
-                Disconnect
-            </button>
+            </div>
         </div>
-    </section>
+    </div>
 </template>
 
 <style scoped></style>

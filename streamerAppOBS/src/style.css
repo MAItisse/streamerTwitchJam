@@ -1,3 +1,99 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: all 0.5s ease;
+}
+
+.fade-enter-from {
+    opacity: 0;
+    transform: translateY(-30px);
+    /* Slide-in effect */
+}
+
+.fade-enter-to {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-leave-to {
+    opacity: 0;
+    transform: translateX(-100px);
+    /* Slide-out effect */
+}
+
+.pagefade-enter-active,
+.pagefade-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.pagefade-enter-from,
+.pagefade-leave-to {
+    opacity: 0;
+}
+
+/* General Markdown text styles */
+.markdown-content {
+    /* line-height: 1.0; */
+    font-family: sans-serif;
+    white-space: pre-wrap;
+    /* Ensures line breaks are respected */
+}
+
+/* Headings */
+.markdown-content h1 {
+    font-size: 2em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.markdown-content h2 {
+    font-size: 1.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.markdown-content h3 {
+    font-size: 1.25em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Paragraphs and text */
+.markdown-content p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Lists */
+.markdown-content ul,
+.markdown-content ol {
+    padding-left: 1.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Code blocks */
+.markdown-content pre,
+.markdown-content code {
+    background-color: #f6f8fa;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+/* Blockquote */
+.markdown-content blockquote {
+    border-left: 4px solid #ddd;
+    padding-left: 1em;
+    color: #666;
+    margin: 0.5em 0;
+}

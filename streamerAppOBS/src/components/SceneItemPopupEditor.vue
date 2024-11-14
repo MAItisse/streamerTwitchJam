@@ -21,56 +21,52 @@ ${description}`;
 
 <template>
     <div>
-        <div class="flex flex-col p-2 bg-gray-100 rounded-lg shadow-lg">
+        <div class="mb-2">
             <h1 class="mb-0 text-lg font-extrabold">Setup Info Cards</h1>
             <span class="font-semibold text-gray-500 text-sm">
                 These info cards only appear when a viewer hovers over a
                 movable source on your stream
             </span>
-
-            <div class="items-center mt-2 justify-center bg-gray-100 rounded-lg mx-auto">
-                <table v-for="(item, key) in enabledSceneItems" :key="key" class="w-full mb-4 table-fixed rounded-2xl">
-                    <thead>
-                        <tr>
-                            <th class="p-2 text-left border border-gray-300">
-                                <div class="card-title">
-                                    {{ item.sourceName }}
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-gray-200 fade-row">
-                            <td class="p-2 pb-6 space-y-2 bg-gray-200 border border-gray-400">
-                                <!-- Info Card Title -->
-                                <div class="flex flex-col">
-                                    <label class="mb-1 text-sm font-medium text-gray-700">
-                                        Title:
-                                    </label>
-                                    <input v-model="item.info_title" type="text"
-                                        placeholder="Enter your OBS WebSocket Password" />
-                                </div>
-
-                                <!-- Info Card Description Textarea -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <textarea v-model="item.info_description"
-                                        class="w-full p-2 border border-gray-300 rounded" rows="4"
-                                        placeholder="Enter description in Markdown"></textarea>
-                                </div>
-                                <div>
-                                    Preview:
-                                </div>
-
-                                <div v-html="renderMarkdown(item.info_title || '', item.info_description || '')"
-                                    class="ml-4 w-64 p-4 bg-white border bg-gray-100 border-gray-300 rounded-lg shadow-xl prose prose-sm max-w-none">
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
+        <table v-for="(item, key) in enabledSceneItems" :key="key" class="mb-4 w-full rounded-2xl">
+            <thead>
+                <tr>
+                    <th class="p-2 text-left border border-gray-300">
+                        <div class="card-title">
+                            {{ item.sourceName }}
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b border-gray-200 fade-row">
+                    <td class="p-2 pb-6 space-y-2 bg-gray-200 border border-gray-400">
+                        <!-- Info Card Title -->
+                        <div class="flex flex-col">
+                            <label class="mb-1 text-sm font-medium text-gray-700">
+                                Title:
+                            </label>
+                            <input v-model="item.info_title" type="text"
+                                placeholder="Enter your OBS WebSocket Password" />
+                        </div>
+
+                        <!-- Info Card Description Textarea -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea v-model="item.info_description" class="w-full p-2 border border-gray-300 rounded"
+                                rows="4" placeholder="Enter description in Markdown"></textarea>
+                        </div>
+                        <div>
+                            Preview (approximately):
+                        </div>
+
+                        <div v-html="renderMarkdown(item.info_title || '', item.info_description || '')"
+                            class="ml-4 w-64 p-4 bg-white border bg-gray-100 border-gray-300 rounded-lg shadow-xl markdown-content prose prose-sm max-w-none">
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </template>
 

@@ -10,13 +10,15 @@
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",
+    "floating-vue": "^5.2.2",
     "interactjs": "^1.10.27",
     "marked": "^15.0.0",
     "obs-websocket-js": "^5.0.6",
     "pinia": "^2.2.6",
     "type-fest": "^4.26.1",
     "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vue3-toastify": "^0.2.4"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

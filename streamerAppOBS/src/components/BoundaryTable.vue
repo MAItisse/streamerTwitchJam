@@ -31,77 +31,63 @@ function removeBoundary(key: string) {
 </script>
 
 <template>
-    <section>
-        <div>
-            <div class="flex flex-col mt-2 items-center justify-center p-2 bg-gray-100 rounded-lg shadow-lg mx-auto">
-                <div class="w-full">
-                    <div>
-                        <div class="overflow-x-auto">
-                            <h1 class="mb-0 text-md font-extrabold">Setup Screen Boundaries
-                            </h1>
-                            <span class="font-semibold text-gray-500 text-sm">Users can't move OBS
-                                Sources outside of
-                                their
-                                assigned boundaries</span>
-                            <div>
-
-                                <table class="min-w-full bg-white">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Top</th>
-                                            <th>Left</th>
-                                            <th>Right</th>
-                                            <th>Bottom</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <transition-group name="fade" tag="tbody">
-                                        <tr v-for="(boundary, key, ind) in configStore.bounds" :key="key"
-                                            class="hover:bg-gray-50 fade-row">
-
-                                            <td>
-                                                {{ ind + 1 }}
-                                            </td>
-
-                                            <!-- Position -->
-                                            <td>
-                                                <input type="number" min="0" max="1" step="0.001"
-                                                    v-model.number="boundary.top">
-                                            </td>
-                                            <td>
-                                                <input type="number" min="0" max="1" step="0.001"
-                                                    v-model.number="boundary.left">
-                                            </td>
-                                            <td>
-                                                <input type="number" min="0" max="1" step="0.001"
-                                                    v-model.number="boundary.right">
-                                            </td>
-                                            <td>
-                                                <input type="number" min="0" max="1" step="0.001"
-                                                    v-model.number="boundary.bottom">
-                                            </td>
-                                            <td>
-                                                <button type="button" v-if="Object.keys(configStore.bounds).length > 1"
-                                                    @click="removeBoundary(key as string)"
-                                                    class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-md px-2.5 py-1 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900 transition active:scale-[.95]">X</button>
-                                            </td>
-                                        </tr>
-                                    </transition-group>
-                                </table>
-                                <div class="flex flex-row-reverse">
-                                    <button type="button" @click="addBoundary"
-                                        class="m-2 px-2.5 py-0.5 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
-                                        Add new Boundary
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="w-full">
+        <div class="mb-2">
+            <h1 class="mb-0 text-md font-extrabold">Setup Screen Boundaries
+            </h1>
+            <span class="font-semibold text-gray-500 text-sm">Users can't move OBS
+                Sources outside of
+                their
+                assigned boundaries</span>
         </div>
-    </section>
+        <table class="w-full bg-white">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Top</th>
+                    <th>Left</th>
+                    <th>Right</th>
+                    <th>Bottom</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <transition-group name="fade" tag="tbody">
+                <tr v-for="(boundary, key, ind) in configStore.bounds" :key="key" class="hover:bg-gray-50 fade-row">
+                    <td>
+                        {{ ind + 1 }}
+                    </td>
+
+                    <!-- Position -->
+                    <td>
+                        <input type="number" min="0" max="1" step="0.001" v-model.number="boundary.top">
+                    </td>
+                    <td>
+                        <input type="number" min="0" max="1" step="0.001" v-model.number="boundary.left">
+                    </td>
+                    <td>
+                        <input type="number" min="0" max="1" step="0.001" v-model.number="boundary.right">
+                    </td>
+                    <td>
+                        <input type="number" min="0" max="1" step="0.001" v-model.number="boundary.bottom">
+                    </td>
+                    <td class="">
+                        <button type="button" @click="removeBoundary(key as string)"
+                            class="focus:outline-none text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300 
+                            font-medium rounded-lg text-md px-2.5 py-2 transition active:scale-[.95]"
+                            :class="{ 'invisible': Object.keys(configStore.bounds).length == 1 }">
+                            X
+                        </button>
+                    </td>
+                </tr>
+            </transition-group>
+        </table>
+        <div class="flex flex-row-reverse">
+            <button type="button" @click="addBoundary"
+                class="m-2 px-2.5 py-0.5 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
+                Add new Boundary
+            </button>
+        </div>
+    </div>
 </template>
 
 <!-- <td class="px-6 py-4 border-b border-gray-200"> -->

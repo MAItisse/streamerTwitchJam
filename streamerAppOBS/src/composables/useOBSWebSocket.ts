@@ -1,7 +1,7 @@
-import { ref, onMounted, onUnmounted, Ref } from 'vue';
+import { ref, onUnmounted, Ref } from 'vue';
 import { OBSConnectionStatus, useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
-import OBSWebSocket from 'obs-websocket-js';
+import OBSWebSocket, { OBSWebSocketError } from 'obs-websocket-js';
 
 export function useOBSWebSocket() {
 
@@ -9,12 +9,7 @@ export function useOBSWebSocket() {
     const configStore = useConfigStore();
     const onOpenCallback: Ref<null | (() => void)> = ref(null);
 
-    // let socket: OBSWebSocket | null = null;
     let socket = ref<OBSWebSocket | null>();
-
-    const init = () => {
-        // TODO: maybe do some stuff here?
-    }
 
     const connect = async () => {
         close();
@@ -24,29 +19,36 @@ export function useOBSWebSocket() {
         const protocol = "ws";
         const address = `${protocol}://${configStore.obsHost}:${configStore.obsPort}`;
 
-        try {
-            statusStore.obsConnectionStatus = OBSConnectionStatus.Connecting;
-            socket.value.connect(address, configStore.obsPassword);
 
-            // We have to wait for the "Hello" and "Identified"
-            // before we kick off barking orders at OBS
-            socket.value.on('Identified', async () => {
-                console.log("\tOBS is connected!");
-                statusStore.obsConnectionStatus = OBSConnectionStatus.Open;
+        // We have to wait for the "Hello" and "Identified"
+        // before we kick off barking orders at OBS
+        socket.value.on('Identified', async () => {
+            console.log("\tOBS is connected!");
+            statusStore.obsConnectionStatus = OBSConnectionStatus.Open;
 
-                if (onOpenCallback.value != null) {
-                    onOpenCallback.value();
-                }
+            if (onOpenCallback.value != null) {
+                onOpenCallback.value();
+            }
 
-            });
-            socket.value.on('ConnectionClosed', () => {
-                console.log("OBS WebSocket has ConnectionClosed!");
-                statusStore.obsConnectionStatus = OBSConnectionStatus.Closed;
-            })
-        } catch (e) {
-            console.warn("useOBSWebSocket: connect() - EXCEPTION:", e);
-            statusStore.obsConnectionStatus = OBSConnectionStatus.AuthenticationError;
-        }
+        });
+
+        statusStore.obsConnectionStatus = OBSConnectionStatus.Connecting;
+        await socket.value.connect(address, configStore.obsPassword).catch((e) => {
+            console.warn("caught error:", e, e.code, e.name, e.message);
+            if (e instanceof OBSWebSocketError && e.message == "Authentication failed.") {
+                console.warn("authentication error");
+                statusStore.generalErrorMessage = e.message;
+                statusStore.obsConnectionStatus = OBSConnectionStatus.AuthenticationError;
+            } else {
+                statusStore.generalErrorMessage = `OBS Connection Error: ${e.message}`;
+            }
+            throw e;
+        });
+
+        socket.value.on('ConnectionClosed', () => {
+            console.log("OBS WebSocket has ConnectionClosed!");
+            statusStore.obsConnectionStatus = OBSConnectionStatus.Closed;
+        });
     }
 
     const close = () => {
@@ -101,7 +103,6 @@ export function useOBSWebSocket() {
         return res;
     }
 
-    onMounted(init);
     onUnmounted(close);
 
     return {
