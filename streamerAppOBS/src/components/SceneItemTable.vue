@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useConfigStore } from '../store/configStore';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 
 const configStore = useConfigStore();
@@ -17,6 +18,7 @@ const numSceneItems = computed(() => {
         <div v-if="numSceneItems > 0">
             <div class="overflow-x-auto">
                 <h1 class="mb-0 text-md font-extrabold">
+                    <FontAwesomeIcon class="mr-1" icon="object-group"></FontAwesomeIcon>
                     Choose Sources
                 </h1>
                 <div class="font-semibold text-gray-500 text-sm">

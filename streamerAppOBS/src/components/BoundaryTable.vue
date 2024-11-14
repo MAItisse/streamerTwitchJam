@@ -2,6 +2,8 @@
 import { onMounted } from 'vue';
 import { useConfigStore } from '../store/configStore';
 import { generateKey } from '../utils';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const configStore = useConfigStore();
 
@@ -33,7 +35,9 @@ function removeBoundary(key: string) {
 <template>
     <div class="w-full">
         <div class="mb-2">
-            <h1 class="mb-0 text-md font-extrabold">Setup Screen Boundaries
+            <h1 class="mb-0 text-md font-extrabold">
+                <FontAwesomeIcon class="mr-1" icon="object-ungroup"></FontAwesomeIcon>
+                Setup Screen Boundaries
             </h1>
             <span class="font-semibold text-gray-500 text-sm">Users can't move OBS
                 Sources outside of
@@ -71,11 +75,10 @@ function removeBoundary(key: string) {
                         <input type="number" min="0" max="1" step="0.001" v-model.number="boundary.bottom">
                     </td>
                     <td class="">
-                        <button type="button" @click="removeBoundary(key as string)"
-                            class="focus:outline-none text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300 
+                        <button type="button" @click="removeBoundary(key as string)" class="focus:outline-none text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300 
                             font-medium rounded-lg text-md px-2.5 py-2 transition active:scale-[.95]"
                             :class="{ 'invisible': Object.keys(configStore.bounds).length == 1 }">
-                            X
+                            <FontAwesomeIcon icon="times"></FontAwesomeIcon>
                         </button>
                     </td>
                 </tr>
@@ -84,6 +87,7 @@ function removeBoundary(key: string) {
         <div class="flex flex-row-reverse">
             <button type="button" @click="addBoundary"
                 class="m-2 px-2.5 py-0.5 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
+                <FontAwesomeIcon icon="plus"></FontAwesomeIcon>
                 Add new Boundary
             </button>
         </div>

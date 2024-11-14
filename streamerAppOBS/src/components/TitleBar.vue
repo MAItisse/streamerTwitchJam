@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useStatusStore } from '../store/statusStore';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const statusStore = useStatusStore();
 
@@ -39,19 +40,12 @@ const proxyTooltip = computed(() => {
                         <span>OBS:</span>
                         <div class="flex items-center space-x-1" :class="obsConnectionColor">
                             <span v-if="statusStore.isObsConnected">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 2a10 10 0 100 20 10 10 0 000-20zm-2.93 9.34L7 12.41l-1.41-1.41L4.22 13l2.78 2.78L12 10.78 9.07 7.84z" />
-                                </svg>
+                                <FontAwesomeIcon icon="signal-perfect"></FontAwesomeIcon>
+                                <!-- <FontAwesomeIcon icon="plug"></FontAwesomeIcon> -->
                                 <span></span>
                             </span>
                             <span v-else>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 2a10 10 0 100 20 10 10 0 000-20zm-2.93 9.34L7 12.41l-1.41-1.41L4.22 13l2.78 2.78L12 10.78 9.07 7.84z" />
-                                </svg>
+                                <FontAwesomeIcon icon="times-circle"></FontAwesomeIcon>
                                 <span></span>
                             </span>
                         </div>
@@ -63,19 +57,12 @@ const proxyTooltip = computed(() => {
                         <span>Web:</span>
                         <div class="flex items-center space-x-1" :class="proxyConnectionColor">
                             <span v-if="statusStore.isProxyConnected">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 2a10 10 0 100 20 10 10 0 000-20zm-2.93 9.34L7 12.41l-1.41-1.41L4.22 13l2.78 2.78L12 10.78 9.07 7.84z" />
-                                </svg>
+                                <FontAwesomeIcon icon="signal-perfect"></FontAwesomeIcon>
+                                <!-- <FontAwesomeIcon icon="plug"></FontAwesomeIcon> -->
                                 <span></span>
                             </span>
                             <span v-else>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 2a10 10 0 100 20 10 10 0 000-20zm-2.93 9.34L7 12.41l-1.41-1.41L4.22 13l2.78 2.78L12 10.78 9.07 7.84z" />
-                                </svg>
+                                <FontAwesomeIcon icon="times-circle"></FontAwesomeIcon>
                                 <span></span>
                             </span>
                         </div>

@@ -6,6 +6,7 @@ import { computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Spinner from '../components/Spinner.vue';
 import { useProxyWebSocket } from '../composables/useProxyWebSocket';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const configStore = useConfigStore();
 const statusStore = useStatusStore();
@@ -106,8 +107,14 @@ watch(statusStore, (statusStore) => {
                         class="w-full py-2 font-semibold text-white bg-blue-600 rounded 
                     hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]"
                         :disabled="statusStore.isProxyConnected || statusStore.isObsConnected">
-                        <Spinner v-if="isConnecting"></Spinner>
-                        {{ isConnecting ? 'Connecting...' : 'Connect!' }}
+                        <div v-if="isConnecting">
+                            <Spinner v-if="isConnecting"></Spinner>
+                            Connecting...
+                        </div>
+                        <div v-else>
+                            <span class="mr-2">Connect</span>
+                            <FontAwesomeIcon icon="plug"></FontAwesomeIcon>
+                        </div>
                     </button>
                 </div>
             </div>

@@ -4,6 +4,7 @@ import { useConfigStore } from '../store/configStore';
 import { useAppStore } from '../store/appStore';
 import { Boundary } from '../types';
 import interact from 'interactjs';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 
 const appStore = useAppStore();
@@ -154,7 +155,6 @@ const loadPreviewScreenshot = async () => {
 <template>
     <div class="w-full">
         <div class="flex justify-center items-center">
-            <span class="mr-1">Preview source:</span>
             <select v-model="previewSceneItemSelect"
                 class="border-gray-300 py-1  rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                 <option disabled value="">Select Source</option>
@@ -162,9 +162,13 @@ const loadPreviewScreenshot = async () => {
                     {{ source.sourceName }}
                 </option>
             </select>
+            <FontAwesomeIcon class="ml-1" icon="question-circle"
+                v-tooltip="'Select your primary screen source to help line up your boundaries'">
+            </FontAwesomeIcon>
             <button type="button" @click="loadPreviewScreenshot"
                 class="m-2 px-4 py-0.5 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]">
                 Load
+                <FontAwesomeIcon icon="download"></FontAwesomeIcon>
             </button>
         </div>
         <div class="flex justify-center">

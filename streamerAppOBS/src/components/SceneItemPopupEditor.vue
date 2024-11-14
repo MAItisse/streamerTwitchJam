@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useConfigStore } from '../store/configStore';
 import { marked } from 'marked';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const configStore = useConfigStore();
 
@@ -22,7 +23,10 @@ ${description}`;
 <template>
     <div>
         <div class="mb-2">
-            <h1 class="mb-0 text-lg font-extrabold">Setup Info Cards</h1>
+            <h1 class="mb-0 text-lg font-extrabold">
+                <FontAwesomeIcon class="mr-1" icon="address-card"></FontAwesomeIcon>
+                Setup Info Cards
+            </h1>
             <span class="font-semibold text-gray-500 text-sm">
                 These info cards only appear when a viewer hovers over a
                 movable source on your stream

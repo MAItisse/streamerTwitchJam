@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router';
 import { useStatusStore } from '../store/statusStore';
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -58,6 +59,7 @@ function disconnect() {
                     rounded hover:bg-red-700 
                     focus:outline-none focus:ring-2 focus:ring-blue-500 
                     transition active:scale-[.95]">
+                <FontAwesomeIcon icon="power-off" class="mr-2"></FontAwesomeIcon>
                 Disconnect
             </button>
         </div>
@@ -77,6 +79,7 @@ function disconnect() {
             <button type="button" @click="saveConfig"
                 class="w-full py-2 font-bold text-2xl text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-green-800 transition active:scale-[.98]">
                 Confirm Settings
+                <FontAwesomeIcon icon="rocket"></FontAwesomeIcon>
             </button>
             <!-- TODO: add "save" confirmation messages -->
         </div>
