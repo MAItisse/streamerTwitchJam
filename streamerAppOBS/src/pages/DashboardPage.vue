@@ -11,11 +11,17 @@ import { useStatusStore } from '../store/statusStore';
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useProxyWebSocket } from '../composables/useProxyWebSocket';
 
 const router = useRouter();
 const appStore = useAppStore();
 const configStore = useConfigStore();
 const statusStore = useStatusStore();
+
+const proxyWebSocket = useProxyWebSocket();
+
+let proxyReconnectIntervalId: NodeJS.Timeout | null = null;
+let obsStatusCheckIntervalId: NodeJS.Timeout | null = null;
 
 onMounted(() => {
     console.log("DashboardPage: onMounted()");
@@ -26,14 +32,32 @@ onMounted(() => {
         router.push("/");
     }
 
-    // TODO: when we're on this page, try to reconnect either socket if they disconnect
+    proxyReconnectIntervalId = setInterval(() => {
+        // console.log("Is proxy still connected?", statusStore.isProxyConnected);
+        if (!statusStore.isProxyConnected) {
+            console.log("DashboardPage: Found disconnected web proxy... trying to reconnect.");
+            proxyWebSocket.connect();
+        }
+    }, 10000);
 
+    obsStatusCheckIntervalId = setInterval(() => {
+        // console.log("Is OBS still connected? ", statusStore.isObsConnected);
+        if (!statusStore.isObsConnected) {
+            // If OBS disappears (likely a program close), we should shutdown too
+            appStore.disconnect();
+        }
+    }, 10000);
 });
 
 onUnmounted(() => {
 
     // TODO: clear any reconnect intervals
-
+    if (proxyReconnectIntervalId) {
+        clearInterval(proxyReconnectIntervalId);
+    }
+    if (obsStatusCheckIntervalId) {
+        clearInterval(obsStatusCheckIntervalId);
+    }
 });
 
 const saveConfig = () => {

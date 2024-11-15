@@ -5,14 +5,12 @@ import { useConfigStore } from './store/configStore';
 import { useAppStore } from './store/appStore';
 import { useStatusStore } from './store/statusStore';
 
-const configStore = useConfigStore();
 
 onMounted(() => {
   console.log("App: onMounted()");
   useAppStore();
   useStatusStore();
   useConfigStore().loadAllFromLocalStorage();
-  configStore.loadAllFromLocalStorage();
 });
 
 </script>

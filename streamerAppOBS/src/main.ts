@@ -9,13 +9,22 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import "./style.css";
 import "./assets/scss/index.scss";
 import 'floating-vue/dist/style.css';
-import { faPlus, faTimes, faPlug, faSpinner, faRocket, faPowerOff, faSignalPerfect, faTimesCircle, faDownload, faQuestionCircle, faObjectUngroup, faObjectGroup, faAddressCard } from '@fortawesome/free-solid-svg-icons'
+import {
+    faPlus, faTimes, faPlug, faSpinner, faRocket, faPowerOff, faSignalPerfect,
+    faTimesCircle, faDownload, faQuestionCircle, faObjectUngroup,
+    faObjectGroup, faAddressCard, faCog
+} from '@fortawesome/free-solid-svg-icons'
+import {
+    faTwitch
+} from '@fortawesome/free-brands-svg-icons'
 
 
 const pinia = createPinia();
 const app = createApp(App);
 
-library.add(faPlus, faTimes, faPlug, faSpinner, faRocket, faPowerOff, faSignalPerfect, faTimesCircle, faDownload, faQuestionCircle, faObjectUngroup, faObjectGroup, faAddressCard);
+library.add(faPlus, faTimes, faPlug, faSpinner, faRocket, faPowerOff, faSignalPerfect,
+    faTimesCircle, faDownload, faQuestionCircle, faObjectUngroup,
+    faObjectGroup, faAddressCard, faTwitch, faCog);
 app.component("font-awesome-icon", FontAwesomeIcon);
 dom.watch();
 

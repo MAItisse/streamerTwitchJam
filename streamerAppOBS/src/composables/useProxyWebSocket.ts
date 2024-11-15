@@ -11,6 +11,14 @@ export class InvalidTwitchUsernameError extends Error {
     }
 }
 
+export class LobbyTakenError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "LobbyTakenError";
+        Object.setPrototypeOf(this, LobbyTakenError.prototype);
+    }
+}
+
 export function useProxyWebSocket() {
 
     const statusStore = useStatusStore();
@@ -43,9 +51,7 @@ export function useProxyWebSocket() {
         const resp = await fetch(`http${isProxySecure ? 's' : ''}://${proxyHost}/lobby/new?user=${twitchUserId}`, { method: 'POST' })
         const key = await resp.text()
         if (key.includes('Lobby already in play')) {
-            console.log(key)
-            // TODO: maybe throw something here?
-            return null;
+            throw new LobbyTakenError("Lobby is taken.");
         }
         return key
     }

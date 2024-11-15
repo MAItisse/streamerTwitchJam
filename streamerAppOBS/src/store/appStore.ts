@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { useStatusStore } from './statusStore';
 import { useConfigStore } from './configStore';
-import { InvalidTwitchUsernameError, useProxyWebSocket } from '../composables/useProxyWebSocket';
+import { InvalidTwitchUsernameError, LobbyTakenError, useProxyWebSocket } from '../composables/useProxyWebSocket';
 import { useOBSWebSocket } from '../composables/useOBSWebSocket';
 
 export const useAppStore = defineStore({
@@ -81,18 +81,19 @@ export const useAppStore = defineStore({
                         });
                     })
                     .catch((e) => {
-                        console.log("appStore: connect(): Proxy connection error", e);
+                        console.log("appStore: obsOnOpen(): Proxy connection error", e.message);
                         if (e instanceof InvalidTwitchUsernameError) {
                             this.statusStore.invalidTwitchUsername = true;
+                        } else if (e instanceof LobbyTakenError) {
+                            this.statusStore.generalErrorMessage = 'Lobby Conflict';
                         } else {
                             this.statusStore.generalErrorMessage = e.message;
                         }
-                        
                         this.disconnect();
                     });
 
-            }).catch(() => {
-                // catch any errors and discard because we've populated the necessary error states
+            }).catch((e) => {
+                console.warn("appStore: obsOnOpen(): Unexpected error:", e);
             });
         },
 

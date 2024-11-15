@@ -161,7 +161,6 @@ const loadPreviewScreenshot = async () => {
     console.log("BoundaryViewer: loadPreviewScreenshot:", previewSceneItemSelect.value);
     try {
         let res = await appStore.getSourceScreenshot(previewSceneItemSelect.value);
-        console.log("BoundaryView: loadPreviewScreenshot() returns:", res);
         previewBackgroundImage.value = res;
     } catch (e) {
         console.log("BoundaryViewer: loadPreviewScreenshot() error:", e);

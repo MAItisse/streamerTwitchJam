@@ -63,8 +63,9 @@ watch(statusStore, (statusStore) => {
                     </div>
                     <!-- OBS Password Row -->
                     <div class="flex flex-col">
-                        <label for="obsPassword" class="mb-1 text-sm font-medium text-gray-700">OBS WebSocket Server
-                            Password:
+                        <label for="obsPassword" class="mb-1 text-sm font-medium text-gray-700">
+                            <FontAwesomeIcon class="mr-1" icon="cog"></FontAwesomeIcon>
+                            OBS WebSocket Password:
                         </label>
                         <input id="obsPassword" v-model="configStore.obsPassword" type="password" autocomplete="on"
                             placeholder="Enter your OBS WebSocket Password"
@@ -78,8 +79,10 @@ watch(statusStore, (statusStore) => {
 
                     <!-- Twitch Username Row -->
                     <div class="flex flex-col">
-                        <label for="twitchUsername" class="mb-1 text-sm font-medium text-gray-700">Twitch
-                            Username:</label>
+                        <label for="twitchUsername" class="mb-1 text-sm font-medium text-gray-700">
+                            <FontAwesomeIcon class="mr-1" :icon="['fab', 'twitch']"></FontAwesomeIcon>
+                            Twitch Username:
+                        </label>
                         <input id="twitchUsername" v-model="configStore.twitchUsername" type="text" autocomplete="on"
                             placeholder="Enter your Twitch username"
                             class="px-3 py-0 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -92,11 +95,13 @@ watch(statusStore, (statusStore) => {
 
                     <!-- OBS Scene Name -->
                     <div class="flex flex-col">
-                        <label for="obsSceneName" class="mb-1 text-sm font-medium text-gray-700">OBS Scene
-                            Name:</label>
+                        <label for="obsSceneName" class="mb-1 text-sm font-medium text-gray-700">
+                            <FontAwesomeIcon class="mr-1" icon="object-group"></FontAwesomeIcon>
+                            OBS Scene Name:
+                        </label>
                         <input id="obsSceneName" v-model="configStore.obsSceneName" type="text" autocomplete="on"
                             placeholder="Enter Target OBS Scene Name"
-                            class="px-3 py-0 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            class="px-3 py-0 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                             :class="{ 'bg-red-200': statusStore.invalidSceneName }" />
                         <div v-if="statusStore.invalidSceneName"
                             class="flex flex-col items-center font-medium text-red-700">
