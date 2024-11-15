@@ -96,7 +96,12 @@ watch(statusStore, (statusStore) => {
                             Name:</label>
                         <input id="obsSceneName" v-model="configStore.obsSceneName" type="text" autocomplete="on"
                             placeholder="Enter Target OBS Scene Name"
-                            class="px-3 py-0 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                            class="px-3 py-0 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            :class="{ 'bg-red-200': statusStore.invalidSceneName }" />
+                        <div v-if="statusStore.invalidSceneName"
+                            class="flex flex-col items-center font-medium text-red-700">
+                            OBS Scene not found!
+                        </div>
                     </div>
 
                 </form>
@@ -113,7 +118,7 @@ watch(statusStore, (statusStore) => {
                         </div>
                         <div v-else>
                             <span class="mr-2">Connect</span>
-                            <FontAwesomeIcon icon="plug"></FontAwesomeIcon>
+                            <FontAwesomeIcon icon="plug" class="rotate-45"></FontAwesomeIcon>
                         </div>
                     </button>
                 </div>

@@ -1,5 +1,5 @@
 import { onUnmounted, Ref, ref } from 'vue';
-import { useStatusStore } from '../store/statusStore';
+import { ProxyConnectionStatus, useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
 import { Boundaries } from '../types';
 
@@ -92,7 +92,7 @@ export function useProxyWebSocket() {
         socket.onopen = async () => {
             console.log('Proxy WebSocket connected!')
             startPingLoop();
-            statusStore.proxyConnectionStatus = true;
+            statusStore.proxyConnectionStatus = ProxyConnectionStatus.Open;
             if (onOpenCallback.value != null) {
                 onOpenCallback.value();
             }
@@ -114,13 +114,13 @@ export function useProxyWebSocket() {
                 stopPingLoop();
             }
             socket = null;
-            statusStore.proxyConnectionStatus = false;
+            statusStore.proxyConnectionStatus = ProxyConnectionStatus.Closed;
         }
 
     }
 
     const send = async (message: string) => {
-        if (socket && statusStore.proxyConnectionStatus == true) {
+        if (socket && statusStore.proxyConnectionStatus == ProxyConnectionStatus.Open) {
             console.log("useProxyWebsockets: >>>>>>>> ", message);
             socket.send(message);
         }

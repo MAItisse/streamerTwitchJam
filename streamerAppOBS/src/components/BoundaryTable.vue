@@ -2,7 +2,6 @@
 import { onMounted } from 'vue';
 import { useConfigStore } from '../store/configStore';
 import { generateKey } from '../utils';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const configStore = useConfigStore();
@@ -36,7 +35,7 @@ function removeBoundary(key: string) {
     <div class="w-full">
         <div class="mb-2">
             <h1 class="mb-0 text-md font-extrabold">
-                <FontAwesomeIcon class="mr-1" icon="object-ungroup"></FontAwesomeIcon>
+                <FontAwesomeIcon class="mr-1 text-xl" icon="object-ungroup"></FontAwesomeIcon>
                 Setup Screen Boundaries
             </h1>
             <span class="font-semibold text-gray-500 text-sm">Users can't move OBS
@@ -46,7 +45,7 @@ function removeBoundary(key: string) {
         </div>
         <table class="w-full bg-white">
             <thead>
-                <tr>
+                <tr class="bg-gray-300">
                     <th>#</th>
                     <th>Top</th>
                     <th>Left</th>

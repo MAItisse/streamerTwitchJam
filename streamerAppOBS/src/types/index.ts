@@ -32,6 +32,14 @@ export type OBSVideoSettings = {
     outputHeight: number;
 }
 
+// export type SceneItems = SceneItem[];
+
+// export type SceneItem = {
+//     sceneItemId: number,
+//     sourceName: string,
+
+// }
+
 
 export type SetSceneItemTransformRequest = {
     sceneName: string;

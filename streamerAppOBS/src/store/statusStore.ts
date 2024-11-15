@@ -9,18 +9,29 @@ export enum OBSConnectionStatus {
     Closed = 'Closed',
 };
 
+export enum ProxyConnectionStatus {
+    Connecting = 'Connecting',
+    AuthenticationError = 'AuthenticationError',
+    Open = 'Open',
+    Error = 'Error',
+    Closing = 'Closing',
+    Closed = 'Closed',
+};
+
 export const useStatusStore = defineStore('status', {
     state: () => ({
         generalErrorMessage: null as null | string,
         invalidTwitchUsername: false,
+        invalidSceneName: false,
         obsConnectionStatus: OBSConnectionStatus.Closed,
-        proxyConnectionStatus: false,
+        proxyConnectionStatus: ProxyConnectionStatus.Closed,
     }),
     getters: {
         getGeneralErrorMessage: (state) => state.generalErrorMessage,
         getInvalidTwitchUsername: (state) => state.invalidTwitchUsername,
+        getInvalidSceneName: (state) => state.invalidSceneName,
         isObsConnected: (state) => state.obsConnectionStatus == OBSConnectionStatus.Open,
-        isProxyConnected: (state) => state.proxyConnectionStatus == true,
+        isProxyConnected: (state) => state.proxyConnectionStatus == ProxyConnectionStatus.Open,
     },
     actions: {
         setGeneralErrorMessage(message: string) {
@@ -29,10 +40,13 @@ export const useStatusStore = defineStore('status', {
         setInvalidTwitchUsername(isInvalid: boolean) {
             this.invalidTwitchUsername = isInvalid;
         },
+        setInvalidSceneName(isInvalid: boolean) {
+            this.invalidSceneName = isInvalid;
+        },
         setObsConnectionStatus(status: OBSConnectionStatus) {
             this.obsConnectionStatus = status
         },
-        setProxyConnectionStatus(status: boolean) {
+        setProxyConnectionStatus(status: ProxyConnectionStatus) {
             this.proxyConnectionStatus = status;
         }
     }

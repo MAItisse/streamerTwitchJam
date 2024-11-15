@@ -18,7 +18,7 @@ const numSceneItems = computed(() => {
         <div v-if="numSceneItems > 0">
             <div class="overflow-x-auto">
                 <h1 class="mb-0 text-md font-extrabold">
-                    <FontAwesomeIcon class="mr-1" icon="object-group"></FontAwesomeIcon>
+                    <FontAwesomeIcon class="mr-1 text-xl" icon="object-group"></FontAwesomeIcon>
                     Choose Sources
                 </h1>
                 <div class="font-semibold text-gray-500 text-sm">
@@ -27,21 +27,21 @@ const numSceneItems = computed(() => {
                 <div class="pt-2">
                     <table class="w-full bg-white">
                         <thead>
-                            <tr>
+                            <tr class="bg-gray-300">
                                 <th>
                                     Source Name
                                 </th>
                                 <th>
                                     Movable?
                                 </th>
-                                <th class="">
+                                <th>
                                     Boundary
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="item in configStore.obsSceneItems" :key="item.sceneItemId"
-                                :class="{ 'hover:bg-gray-50': true, 'bg-blue-200': item.twitch_movable, 'hover:bg-blue-300': item.twitch_movable }">
+                                :class="{ 'hover:bg-gray-50': true, 'bg-blue-200': item.twitch_movable, 'hover:bg-blue-400': item.twitch_movable }">
 
                                 <!-- Source Name -->
                                 <td>
@@ -50,12 +50,9 @@ const numSceneItems = computed(() => {
 
                                 <!-- Enabled Checkbox -->
                                 <td>
-                                    <!-- @change="toggleSceneItem(item)" -->
-
                                     <input type="checkbox" v-model="item.twitch_movable"
                                         class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
                                 </td>
-
                                 <!-- Boundary Dropdown -->
                                 <td>
                                     <select v-if="item.twitch_movable" v-model="item.boundary_key"
@@ -77,10 +74,6 @@ const numSceneItems = computed(() => {
 </template>
 
 <style scoped lang="scss">
-th {
-    background-color: #d8d8d8;
-}
-
 th,
 td {
     border-bottom-width: 2px;

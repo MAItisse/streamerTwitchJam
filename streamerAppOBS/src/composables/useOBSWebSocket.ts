@@ -24,19 +24,19 @@ export function useOBSWebSocket() {
         // before we kick off barking orders at OBS
         socket.value.on('Identified', async () => {
             console.log("\tOBS is connected!");
+
             statusStore.obsConnectionStatus = OBSConnectionStatus.Open;
 
             if (onOpenCallback.value != null) {
                 onOpenCallback.value();
             }
-
         });
 
         statusStore.obsConnectionStatus = OBSConnectionStatus.Connecting;
         await socket.value.connect(address, configStore.obsPassword).catch((e) => {
             console.warn("caught error:", e, e.code, e.name, e.message);
             if (e instanceof OBSWebSocketError && e.message == "Authentication failed.") {
-                console.warn("authentication error");
+                console.warn("OBS authentication error");
                 statusStore.generalErrorMessage = e.message;
                 statusStore.obsConnectionStatus = OBSConnectionStatus.AuthenticationError;
             } else {
@@ -69,12 +69,22 @@ export function useOBSWebSocket() {
         return res;
     }
 
-    const getSceneItems = async (sceneName = 'Scene') => {
+    const getSceneItems = async () => {
         if (!socket.value) throw Error("OBS Disconnected.");
 
-        const res = await socket.value.call('GetSceneItemList', { sceneName })
-        console.log("useOBSWebSocket: getSceneItems() response:", res);
-        return res.sceneItems;
+        const sceneName = configStore.obsSceneName;
+
+        try {
+            const res = await socket.value.call('GetSceneItemList', { sceneName })
+            console.log("useOBSWebSocket: getSceneItems() response:", res);
+            return res.sceneItems;
+        } catch (e) {
+            if (e instanceof OBSWebSocketError && e.message.includes('No source')) {
+                console.warn("invalid OBS scene name");
+                statusStore.invalidSceneName = true;
+                throw e;
+            }
+        }
     }
 
     const getSourceScreenshot = async (sourceName: string) => {

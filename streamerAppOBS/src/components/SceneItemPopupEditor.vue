@@ -24,7 +24,7 @@ ${description}`;
     <div>
         <div class="mb-2">
             <h1 class="mb-0 text-lg font-extrabold">
-                <FontAwesomeIcon class="mr-1" icon="address-card"></FontAwesomeIcon>
+                <FontAwesomeIcon class="mr-1 text-xl" icon="address-card"></FontAwesomeIcon>
                 Setup Info Cards
             </h1>
             <span class="font-semibold text-gray-500 text-sm">
@@ -32,7 +32,8 @@ ${description}`;
                 movable source on your stream
             </span>
         </div>
-        <table v-for="(item, key) in enabledSceneItems" :key="key" class="mb-4 w-full border-4 border-gray-300 rounded-2xl">
+        <table v-for="(item, key) in enabledSceneItems" :key="key"
+            class="mb-4 w-full border-4 border-gray-300 rounded-2xl">
             <thead>
                 <tr>
                     <th class="p-2 text-left border bg-gray-300 border-gray-300">
@@ -60,12 +61,14 @@ ${description}`;
                             <textarea v-model="item.info_description" class="w-full p-2 border border-gray-300 rounded"
                                 rows="4" placeholder="Enter description in Markdown"></textarea>
                         </div>
-                        <div>
-                            Preview (approximately):
-                        </div>
+                        <div class="flex flex-col justify-center items-center">
 
-                        <div v-html="renderMarkdown(item.info_title || '', item.info_description || '')"
-                            class="ml-4 w-64 p-4 bg-white border bg-gray-100 border-gray-300 rounded-lg shadow-xl markdown-content prose prose-sm max-w-none">
+                        <div class="mb-2 mt-4">
+                            Info Card Preview:
+                        </div>
+                            <div v-html="renderMarkdown(item.info_title || '', item.info_description || '')"
+                                class="ml-4 w-64 p-4 bg-white border bg-gray-100 border-gray-300 rounded-lg shadow-xl markdown-content prose prose-sm max-w-none">
+                            </div>
                         </div>
                     </td>
                 </tr>

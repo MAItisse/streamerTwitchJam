@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useConfigStore } from '../store/configStore';
 import BoundaryTable from '../components/BoundaryTable.vue';
 import SceneItemTable from '../components/SceneItemTable.vue';
@@ -25,6 +25,15 @@ onMounted(() => {
         console.warn("isProxyConnected: ", statusStore.isProxyConnected);
         router.push("/");
     }
+
+    // TODO: when we're on this page, try to reconnect either socket if they disconnect
+
+});
+
+onUnmounted(() => {
+
+    // TODO: clear any reconnect intervals
+
 });
 
 const saveConfig = () => {

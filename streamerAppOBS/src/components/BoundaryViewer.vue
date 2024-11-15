@@ -132,8 +132,25 @@ const setupInteract = () => {
 
 // Initialize interact on mount and when preview dimensions change
 onMounted(() => {
+
+    // TODO: finish implementing this...
+
+    // Make a best-guess at the pre-selected preview source dropdown
+    getMostLikelyMainDisplay();
+
     setupInteract();
 });
+
+const getMostLikelyMainDisplay = () => {
+    // let currentMaxScore = 0;
+    let currentSceneItemId = 0;
+
+    Object.keys(configStore.obsSceneItems).forEach(() => {
+
+    });
+
+    return currentSceneItemId;
+}
 
 watch(() => configStore.bounds, () => {
     console.log("BoundaryViewer: watch props.boundaries fired.")
@@ -158,18 +175,19 @@ const loadPreviewScreenshot = async () => {
             <select v-model="previewSceneItemSelect"
                 class="border-gray-300 py-1  rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                 <option disabled value="">Select Source</option>
-                <option v-for="source in configStore.obsSceneItems" :key="source.sourceName" :value="source.sourceName">
+                <option v-for="source in configStore.obsSceneItems" :key="source.sceneItemId"
+                    :value="source.sourceName">
                     {{ source.sourceName }}
                 </option>
             </select>
-            <FontAwesomeIcon class="ml-1" icon="question-circle"
-                v-tooltip="'Select your primary screen source to help line up your boundaries'">
-            </FontAwesomeIcon>
             <button type="button" @click="loadPreviewScreenshot"
                 class="m-2 px-4 py-0.5 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition active:scale-[.95]">
                 Load
                 <FontAwesomeIcon icon="download"></FontAwesomeIcon>
             </button>
+            <FontAwesomeIcon class="ml-1 text-gray-600 text-xl" icon="question-circle"
+                v-tooltip="'Select your primary screen source to help line up your boundaries'">
+            </FontAwesomeIcon>
         </div>
         <div class="flex justify-center">
             <div class="preview-window select-none"

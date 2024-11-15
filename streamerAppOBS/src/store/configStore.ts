@@ -18,7 +18,7 @@ export const useConfigStore = defineStore('config', {
         obsPort: '4455',
         obsPassword: '',
         twitchUsername: '',
-        obsSceneName: '',
+        obsSceneName: 'Scene',
 
         // Persisted user settings
         bounds: {} as Boundaries,

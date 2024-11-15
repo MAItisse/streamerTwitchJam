@@ -19,6 +19,7 @@ export const useAppStore = defineStore({
             // Reset error states
             this.statusStore.generalErrorMessage = null;
             this.statusStore.invalidTwitchUsername = false;
+            this.statusStore.invalidSceneName = false;
 
             // Setup OBS websocket callback
             this.obsWebSocket.onOpenCallback = this.obsOnOpen;
@@ -28,47 +29,16 @@ export const useAppStore = defineStore({
             this.proxyWebSocket.onMessageCallback = this.proxyOnMessage;
             this.proxyWebSocket.onCloseCallback = this.proxyOnClose;
 
-            let obsConnected = false;
-
-            try {
-                // Connect to OBS WebSocket
-                await this.obsWebSocket.connect();
-                obsConnected = true;
-            } catch (e) {
-                console.log("appStore: connect(): OBS connection error", e);
-                return;
-            } finally {
-                // Ensure Proxy WebSocket is closed if OBS connection fails
-                if (!obsConnected) {
-                    try {
-                        this.proxyWebSocket.close();
-                    } catch (closeError) {
-                        console.log("appStore: connect(): Error closing Proxy WebSocket", closeError);
-                    }
-                }
-            }
-
-            let proxyConnected = false;
-
-            try {
-                // Connect to Proxy WebSocket
-                await this.proxyWebSocket.connect();
-                proxyConnected = true;
-            } catch (e) {
-                console.log("appStore: connect(): Proxy connection error", e);
-                if (e instanceof InvalidTwitchUsernameError) {
-                    this.statusStore.invalidTwitchUsername = true;
-                }
-            } finally {
-                // Ensure OBS WebSocket is closed if Proxy connection fails
-                if (!proxyConnected) {
-                    try {
-                        this.obsWebSocket.close();
-                    } catch (closeError) {
-                        console.log("appStore: connect(): Error closing OBS WebSocket", closeError);
-                    }
-                }
-            }
+            /**
+             * This is where the main chain of events begins:
+             * - Connect to OBS (or error)
+             * - Wait for OBS identification OK (or error)
+             * - getVideoOutputSettings from OBS
+             * - getSceneItems() from OBS (or error)
+             * - Connect to Web Proxy
+             * - Redirect to Dashboard
+             */
+            await this.obsWebSocket.connect();
         },
 
         // obsOnOpen is called after the OBS websocket has connected and identified us and is ready to take commands
@@ -76,21 +46,53 @@ export const useAppStore = defineStore({
         async obsOnOpen() {
             // Fetch some info that we'll need after OBS finishes connecting
             this.configStore.videoSettings = await this.obsWebSocket.getVideoSettings();
-            this.configStore.obsSceneItems = await this.obsWebSocket.getSceneItems();
 
-            // At this point we have all the data we need to repopulate frontend states
-            this.configStore.obsSceneItems.forEach((scene: any, index: number) => {
-                if (scene.sceneItemId in this.configStore.sourceToBoundaryMap) {
-                    const boundaryKey = this.configStore.sourceToBoundaryMap[scene.sceneItemId];
-                    this.configStore.obsSceneItems[index].twitch_movable = true;
-                    this.configStore.obsSceneItems[index].boundary_key = boundaryKey;
+            /**
+             * Basic logic here is:
+             * - Try to getSceneItems(), if error then abort all connections
+             * - Connect to proxy web socket, if error abort all connections
+             * - Repopulate all frontend states for rendering
+             * - (then when both websockets are "OPEN" a trigger will redirect user to /dashboard)
+             */
+            await this.obsWebSocket.getSceneItems().catch((e) => {
+                // if getSceneItems failed, it's probably due to invalid Scene Name, so we abort
+                this.disconnect();
+                throw e;
+            }).then((sceneItems) => {
 
-                    const { title, description } = this.configStore.sourceInfoCards[scene.sceneItemId];
-                    this.configStore.obsSceneItems[index].info_title = title;
-                    this.configStore.obsSceneItems[index].info_description = description;
+                this.configStore.obsSceneItems = sceneItems;
 
-                    console.log("setting index", index, "to movable, and boundaryKey to:", boundaryKey);
-                }
+                this.proxyWebSocket.connect()
+                    .then(() => {
+
+                        // At this point we have all the data we need to repopulate frontend states
+                        this.configStore.obsSceneItems.forEach((scene: any, index: number) => {
+                            if (scene.sceneItemId in this.configStore.sourceToBoundaryMap) {
+                                const boundaryKey = this.configStore.sourceToBoundaryMap[scene.sceneItemId];
+                                this.configStore.obsSceneItems[index].twitch_movable = true;
+                                this.configStore.obsSceneItems[index].boundary_key = boundaryKey;
+
+                                const { title, description } = this.configStore.sourceInfoCards[scene.sceneItemId];
+                                this.configStore.obsSceneItems[index].info_title = title;
+                                this.configStore.obsSceneItems[index].info_description = description;
+
+                                console.log("setting index", index, "to movable, and boundaryKey to:", boundaryKey);
+                            }
+                        });
+                    })
+                    .catch((e) => {
+                        console.log("appStore: connect(): Proxy connection error", e);
+                        if (e instanceof InvalidTwitchUsernameError) {
+                            this.statusStore.invalidTwitchUsername = true;
+                        } else {
+                            this.statusStore.generalErrorMessage = e.message;
+                        }
+                        
+                        this.disconnect();
+                    });
+
+            }).catch(() => {
+                // catch any errors and discard because we've populated the necessary error states
             });
         },
 
@@ -125,10 +127,10 @@ export const useAppStore = defineStore({
                 }
 
                 // Verify target window is valid
-                // if (!(transformRequest.name in this.configStore.bounds)) {
-                //     throw new Error('Invalid boundary ID: ' + transformRequest.name);
+                if (!(transformRequest.name in this.configStore.bounds)) {
+                    throw new Error('Invalid boundary ID: ' + transformRequest.name);
 
-                // }
+                }
 
                 // // Clamp the move within the associated boundary
                 // const boundaryKey = this.configStore.sourceToBoundaryMap[transformRequest.name];
