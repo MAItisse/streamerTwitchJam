@@ -128,10 +128,10 @@ export const useAppStore = defineStore({
                 }
 
                 // Verify target window is valid
-                if (!(transformRequest.name in this.configStore.bounds)) {
-                    throw new Error('Invalid boundary ID: ' + transformRequest.name);
+                // if (!(transformRequest.name in this.configStore.bounds)) {
+                //     throw new Error('Invalid boundary ID: ' + transformRequest.name);
 
-                }
+                // }
 
                 // // Clamp the move within the associated boundary
                 // const boundaryKey = this.configStore.sourceToBoundaryMap[transformRequest.name];

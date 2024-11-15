@@ -87,10 +87,8 @@ export function useProxyWebSocket() {
         console.log('fetching lobby key...');
         let lobbyKey = await fetchLobbyKey();
         if (!lobbyKey) {
-            // TODO: report this issue to the user
             return;
         }
-        console.log("\t key:", lobbyKey);
 
         // Connect to proxy lobby
         socket = new WebSocket(`ws${isProxySecure ? 's' : ''}://${proxyHost}/lobby/connect/streamer?user=${twitchUserId}&key=${lobbyKey}`);
@@ -105,16 +103,15 @@ export function useProxyWebSocket() {
         }
 
         socket.onmessage = async (event) => {
-            console.log('TODO: handle Proxy message... ', event.data);
             if (onMessageCallback.value != null) {
-                await onMessageCallback.value(event);
+                onMessageCallback.value(event);
             }
         }
 
         socket.onclose = async () => {
             console.log('useProxyWebSocket.socket.onclose: websocket closed')
             if (onCloseCallback.value != null) {
-                await onCloseCallback.value();
+                onCloseCallback.value();
             }
             if (pingKeepAliveIntervalId) {
                 stopPingLoop();
@@ -127,7 +124,7 @@ export function useProxyWebSocket() {
 
     const send = async (message: string) => {
         if (socket && statusStore.proxyConnectionStatus == ProxyConnectionStatus.Open) {
-            console.log("useProxyWebsockets: >>>>>>>> ", message);
+            console.log("useProxyWebsockets: send()");
             socket.send(message);
         }
     }
@@ -175,7 +172,6 @@ export function useProxyWebSocket() {
         */
         let bounds = {} as Boundaries;
         for (const key in configStore.sourceToBoundaryMap) {
-            console.log("key:", key);
             if (configStore.sourceToBoundaryMap.hasOwnProperty(key)) {
                 const boundary_key = configStore.sourceToBoundaryMap[key];
                 bounds[key] = configStore.bounds[boundary_key];
@@ -185,7 +181,6 @@ export function useProxyWebSocket() {
         const payload = JSON.stringify(JSON.stringify({
             bounds: bounds //tempBoundaries // TODO: use configStore.boundaries
         }))
-        console.log("payload = ", payload);
         await send(payload);
     }
 
@@ -217,7 +212,6 @@ export function useProxyWebSocket() {
         const payload = JSON.stringify(JSON.stringify({
             infoWindow: configStore.sourceInfoCards
         }));
-        console.log("payload = ", payload);
         await send(payload);
     }
 
@@ -254,7 +248,6 @@ export function useProxyWebSocket() {
                     info: 'some data to register later',
                     zIndex: 10
                 };
-                console.log('w = ', w);
                 sourceData.push(w);
             }
         });
