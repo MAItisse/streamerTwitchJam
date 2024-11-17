@@ -110,7 +110,7 @@ function disconnect() {
             <button type="button" @click="saveConfig"
                 class="w-full py-2 font-bold text-2xl text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-green-800 transition active:scale-[.98]">
                 Confirm Settings
-                <FontAwesomeIcon icon="rocket"></FontAwesomeIcon>
+                <FontAwesomeIcon icon="rocket" class="ml-2"></FontAwesomeIcon>
             </button>
             <!-- TODO: add "save" confirmation messages -->
         </div>

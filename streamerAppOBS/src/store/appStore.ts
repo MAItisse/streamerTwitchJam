@@ -105,10 +105,8 @@ export const useAppStore = defineStore({
         // proxyOnMessage is called from onmessage in the proxyWebSocket
         async proxyOnMessage(event: any) {
             const message = event.data;
-            console.log("hijacked proxy message: ", message);
 
             if (typeof message == "string" && message.includes('Hello Server!')) {
-                console.info("saying hello to the server!");
                 await this.proxyWebSocket.sendObsSizeConfig();
                 await this.proxyWebSocket.sendWindowConfig();
                 await this.proxyWebSocket.sendInfoWindowDataConfig()
@@ -119,6 +117,7 @@ export const useAppStore = defineStore({
             try {
                 const transformRequest = JSON.parse(message);
                 console.log("appStore: proxyOnMessage() received SetSceneTransformItem request from user: ", transformRequest.userId);
+                console.log("transformRequest: ", transformRequest);
 
                 // Verify received payload has necessary fields
                 if (!(transformRequest.hasOwnProperty('name') &&
@@ -128,20 +127,24 @@ export const useAppStore = defineStore({
                 }
 
                 // Verify target window is valid
-                // if (!(transformRequest.name in this.configStore.bounds)) {
-                //     throw new Error('Invalid boundary ID: ' + transformRequest.name);
+                if (!(transformRequest.name in this.configStore.sourceToBoundaryMap)) {
+                    throw new Error('Invalid boundary ID: ' + transformRequest.name);
+                }
 
-                // }
+                // Find the associated boundary
+                const boundaryKey = this.configStore.sourceToBoundaryMap[transformRequest.name];
+                if (boundaryKey == "locked") {
+                    return;
+                }
+                if (boundaryKey != "none") {
+                    const boundary = this.configStore.bounds[boundaryKey];
 
-                // // Clamp the move within the associated boundary
-                // const boundaryKey = this.configStore.sourceToBoundaryMap[transformRequest.name];
-                // const boundary = this.configStore.bounds[boundaryKey];
-
-                // let newX = transformRequest.x;
-                // let newY = transformRequest.y;
-
-                // newX = Math.max(boundary.left, Math.min(newX, boundary.right));
-                // newY = Math.max(boundary.top, Math.min(newY, boundary.bottom));
+                    // Clamp the new position within the associated boundary
+                    let newX = transformRequest.x;
+                    let newY = transformRequest.y;
+                    newX = Math.max(boundary.left, Math.min(newX, boundary.right));
+                    newY = Math.max(boundary.top, Math.min(newY, boundary.bottom));
+                }
 
                 // Move the specified scene item 
                 await this.obsWebSocket.setSceneItemTransform(

@@ -34,19 +34,20 @@ const proxyTooltip = computed(() => {
 
                 <!-- Status Indicators -->
                 <div class="flex space-x-1">
+
                     <div v-tooltip="obsTooltip"
                         class="flex items-center space-x-0.5 px-3 bg-gray-100 rounded-full shadow-inner border border-gray-300">
                         <!-- OBS Status -->
                         <span>OBS:</span>
                         <div class="flex items-center space-x-1" :class="obsConnectionColor">
                             <span v-if="statusStore.isObsConnected">
-                                <FontAwesomeIcon icon="signal-perfect"></FontAwesomeIcon>
-                                <!-- <FontAwesomeIcon icon="plug"></FontAwesomeIcon> -->
-                                <span></span>
+                                <FontAwesomeIcon icon="signal-perfect" class="fa-fade"
+                                    style="--fa-animation-duration: 2s; --fa-fade-opacity: 0.7;">
+                                </FontAwesomeIcon>
                             </span>
                             <span v-else>
-                                <FontAwesomeIcon icon="times-circle"></FontAwesomeIcon>
-                                <span></span>
+                                <FontAwesomeIcon icon="times-circle" class="fa-fade"
+                                    style="--fa-animation-duration: 1.0s; --fa-fade-opacity: 0.75;"></FontAwesomeIcon>
                             </span>
                         </div>
                     </div>
@@ -57,13 +58,13 @@ const proxyTooltip = computed(() => {
                         <span>Web:</span>
                         <div class="flex items-center space-x-1" :class="proxyConnectionColor">
                             <span v-if="statusStore.isProxyConnected">
-                                <FontAwesomeIcon icon="signal-perfect"></FontAwesomeIcon>
-                                <!-- <FontAwesomeIcon icon="plug"></FontAwesomeIcon> -->
-                                <span></span>
+                                <FontAwesomeIcon icon="signal-perfect" class="fa-fade"
+                                    style="--fa-animation-duration: 2s; --fa-fade-opacity: 0.7;">
+                                </FontAwesomeIcon>
                             </span>
                             <span v-else>
-                                <FontAwesomeIcon icon="times-circle"></FontAwesomeIcon>
-                                <span></span>
+                                <FontAwesomeIcon icon="times-circle" class="fa-fade"
+                                    style="--fa-animation-duration: 1.0s; --fa-fade-opacity: 0.75;"></FontAwesomeIcon>
                             </span>
                         </div>
                     </div>

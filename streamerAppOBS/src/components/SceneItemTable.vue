@@ -57,8 +57,9 @@ const numSceneItems = computed(() => {
                                 <td>
                                     <select v-if="item.twitch_movable" v-model="item.boundary_key"
                                         class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                                        <option disabled value="">Select Boundary</option>
+                                        <!-- <option disabled value="">Select Boundary</option> -->
                                         <option value="none" selected>None</option>
+                                        <option value="locked" selected>Locked</option>
                                         <option v-for="(_, key, ind) in configStore.bounds" :key="key" :value="key">
                                             #{{ ind + 1 }}
                                         </option>

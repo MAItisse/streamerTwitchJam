@@ -81,7 +81,7 @@ function removeBoundary(key: string) {
                         </button>
                     </td>
                 </tr>
-                <tr>
+                <tr key="add-btn">
                     <td colspan="6">
                         <button type="button" @click="addBoundary"
                             class="m-2 px-8 py-1 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
