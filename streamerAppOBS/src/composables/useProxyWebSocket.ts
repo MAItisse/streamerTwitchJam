@@ -235,8 +235,8 @@ export function useProxyWebSocket() {
         configStore.obsSceneItems.forEach((scene: any, _: number) => {
 
             const t = scene.sceneItemTransform;
-            const width = (t.sourceWidth - t.cropLeft + t.cropRight) * t.scaleX;
-            const height = (t.sourceHeight - t.cropTop + t.cropBottom) * t.scaleY;
+            const width = (t.sourceWidth - (t.cropLeft + t.cropRight)) * t.scaleX;
+            const height = (t.sourceHeight - (t.cropTop + t.cropBottom)) * t.scaleY;
 
             if (scene.sceneItemId in configStore.sourceToBoundaryMap) {
                 let w = {
