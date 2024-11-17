@@ -355,6 +355,8 @@ document.addEventListener("mousedown", (e) => {
     }
 });
 
+let mouseTimer;
+
 document.addEventListener("mousemove", (e) => {
     if (isDragging && draggedElement) {
         const x = (e.clientX - rect.left - offsetX) / rect.width;
@@ -378,6 +380,11 @@ document.addEventListener("mousemove", (e) => {
         draggedElement.style.left = constrainedX * 100 + "%";
         draggedElement.style.top = constrainedY * 100 + "%";
     }
+    document.body.classList.add('visible');
+    // set a timer until windows disappear
+    mouseTimer = setTimeout(() => {
+        document.body.classList.remove('visible');
+    }, 2500);
 });
 
 
