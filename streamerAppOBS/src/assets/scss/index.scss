@@ -1,11 +1,45 @@
-
 $palette-1: #4C6983;
 $palette-2: #38556A;
 $palette-3: #273952;
 
+$small-bp: 335px;
+$large-bp: 380px;
+
 .title-bar {
     background: $palette-1;
 
+    .small-title-name {
+        display: none;
+    }
+
+    .medium-title-name {
+        display: none;
+    }
+
+    .large-title-name {
+        display: none;
+    }
+
+    // Small screens
+    @media (max-width: $small-bp) {
+        .small-title-name {
+            display: block;
+        }
+    }
+
+    // Medium screens
+    @media (min-width: ($small-bp + 1px)) and (max-width: ($large-bp - 1px)) {
+        .medium-title-name {
+            display: block;
+        }
+    }
+
+    // Large screens
+    @media (min-width: $large-bp) {
+        .large-title-name {
+            display: block;
+        }
+    }
 }
 
 html {
