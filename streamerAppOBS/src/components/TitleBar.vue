@@ -27,11 +27,19 @@ const proxyTooltip = computed(() => {
         <div class="title-bar mb-1 py-1 shadow-md">
             <div class="max-w-lg mx-auto flex items-center justify-between px-4">
                 <!-- Logo -->
-                <h1
-                    class="inline-block bg-gray-100 rounded-full text-xl font-extrabold text-gray-800 tracking-wide shadow-sm px-3">
-                    Chat Plays <span class="text-blue-600">OBS</span>
-                </h1>
+                <div class="title-name">
+                    <div class="small-title-name">
+                    </div>
+                    <h1
+                        class="medium-title-name inline-block bg-gray-100 rounded-full text-sm font-extrabold text-gray-800 tracking-wide shadow-sm px-3">
+                        Chat Plays <span class="text-blue-600">OBS</span>
+                    </h1>
+                    <h1
+                        class="large-title-name inline-block bg-gray-100 rounded-full text-xl font-extrabold text-gray-800 tracking-wide shadow-sm px-3">
+                        Chat Plays <span class="text-blue-600">OBS</span>
+                    </h1>
 
+                </div>
                 <!-- Status Indicators -->
                 <div class="flex space-x-1">
 
