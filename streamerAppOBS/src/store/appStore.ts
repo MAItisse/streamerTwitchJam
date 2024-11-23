@@ -136,21 +136,21 @@ export const useAppStore = defineStore({
                 if (boundaryKey == "locked") {
                     return;
                 }
+                let newX = transformRequest.x;
+                let newY = transformRequest.y;
                 if (boundaryKey != "none") {
                     const boundary = this.configStore.bounds[boundaryKey];
 
                     // Clamp the new position within the associated boundary
-                    let newX = transformRequest.x;
-                    let newY = transformRequest.y;
-                    newX = Math.max(boundary.left, Math.min(newX, boundary.right));
-                    newY = Math.max(boundary.top, Math.min(newY, boundary.bottom));
+                    newX = Math.max(boundary.left, Math.min(transformRequest.x, boundary.right));
+                    newY = Math.max(boundary.top, Math.min(transformRequest.y, boundary.bottom));
                 }
 
                 // Move the specified scene item 
                 await this.obsWebSocket.setSceneItemTransform(
                     transformRequest.name,
-                    transformRequest.x * this.configStore.videoSettings.baseWidth,
-                    transformRequest.y * this.configStore.videoSettings.baseHeight);
+                    newX * this.configStore.videoSettings.baseWidth,
+                    newY * this.configStore.videoSettings.baseHeight);
 
                 // Update all clients with window positions
                 this.broadcastCurrentSettings();
