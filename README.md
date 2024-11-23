@@ -3,18 +3,21 @@ Twitch Hackathon project for https://twitchstreamertools.devpost.com/
 
 ## How to use
 - Add the [Extension](https://dashboard.twitch.tv/extensions/k82fkk45cyr54fkinpozggfporx191-0.0.1) to your twitch account
-- clone this project
-- go to the streamerAppConfig folder
-  - go to release
-  - extract the proper one for windows or mac
-    - move the extracted app to the streamerApp folder
-      - just the application not its folder
-    - if you forget to do this, you can always just move the files it saves too
-- go to the streamerApp folder
-  - run `pip install -r requirements.txt`
-    - if you dont have python installed you can get it from the [microsoft store](https://apps.microsoft.com/detail/9nrwmjp3717k?hl=en-US&gl=US)
-  - run `python main.py`
+- Hosted Option
+  - add this to your obs custom docks
+  - `https://stg.chronx.dev/chat-plays-obs/index.html#/`
+  - add that dock to your obs view
+- Local option
+  - clone this project
+  - go to the streamerAppOBS folder
+  - open terminal
+  - `npm install`
+  - `npm run dev`
+  - add `localhost:5173` as the url for the custom dock
+  - add that dock to your obs view
 
+![img.png](images%2FobsExtensionView.png)
+![img.png](images%2FstreamView.png)
 ## How It Works
 - **Click Data Processing:** 
   - Users interact via clicks in the frontend.
@@ -27,6 +30,6 @@ Twitch Hackathon project for https://twitchstreamertools.devpost.com/
   - Supports multiple concurrent streams with separate configurations.
   
 ### Graph of the system
-![vivGraphDescription.png](vivGraphDescription.png)
+![vivGraphDescription.png](images%2FvivGraphDescription.png)
 
-provided by vivax3794
+Graph provided by vivax3794
