@@ -2,47 +2,136 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Extension Configuration</title>
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
+    /* Reset some default styles */
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      line-height: 1.6;
       padding: 20px;
     }
+
     .container {
-      margin: auto;
+      max-width: 800px;
+      margin: 40px auto;
       background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
     }
+
     h1 {
-      font-size: 24px;
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #4a90e2;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    p {
+      margin-bottom: 15px;
+    }
+
+    ol {
+      margin-left: 20px;
       margin-bottom: 20px;
     }
-    p {
-      line-height: 2;
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .instructions img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 15px auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .note {
+      background-color: #fffbcc;
+      border-left: 4px solid #ffe58f;
+      padding: 10px 15px;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Extension Configuration</h1>
-    <p>
-      Open OBS, go to the menu on the top and click on Docks>Custom Browser Docks:</br>
-      Fill in a name you will recognize for the dock, and paste the URL:</br>
-      <i>https://stg.chronx.dev/chat-plays-obs/index.html#/</i></br>
-      hit "Apply" and a new window dock with the name you selected should pop up.</br>
-      Follow the instructions provided in the newly created Dock.</br>
-      Add the dock to a part of your obs if you want to be able to change things live. </br>
-      <img src="imgs/hostedExample.png" alt="hosted dock image">
-      </br>
-      </br>
-      If you would like to run this locally you can pull the project from streamerTwitchJam <a href="https://github.com/MAItisse/streamerTwitchJam?tab=readme-ov-file#chat-plays-obs" target="_blank"  rel="noreferrer">github project</a>
-    </p>
+    <h2>Chat Plays OBS</h2>
+    <p>Follow the steps below to integrate Chat Plays OBS with your OBS setup:</p>
+    <ol class="instructions">
+      <li>
+        Open OBS and navigate to the top menu. Click on <strong>Docks</strong> &gt; <strong>Custom Browser Docks</strong>.
+        <figure>
+          <img src="imgs/customDock.png" alt="Location of Custom Dock in OBS">
+          <figcaption>Custom Browser Docks in OBS</figcaption>
+        </figure>
+      </li>
+      <li>
+        Enter a recognizable name for the dock and paste the following URL:
+        <blockquote>
+          <a href="https://stg.chronx.dev/chat-plays-obs/index.html#/" target="_blank" rel="noopener noreferrer">https://stg.chronx.dev/chat-plays-obs/index.html#/</a>
+        </blockquote>
+        Click <strong>Apply</strong>. A new window dock with your selected name should appear.
+      </li>
+      <li>
+        (Optional) Add the dock to a specific area in OBS if you want to make live changes.
+        <figure>
+          <img src="imgs/hostedExample.png" alt="Hosted Dock Example">
+          <figcaption>Hosted Dock in OBS</figcaption>
+        </figure>
+      </li>
+      <li>
+        Follow the instructions provided in the newly created dock to complete the setup.
+      </li>
+    </ol>
+    <div class="note">
+      <p>If you prefer to run this locally, you can clone the project from the <a href="https://github.com/MAItisse/streamerTwitchJam?tab=readme-ov-file#chat-plays-obs" target="_blank" rel="noreferrer">GitHub repository</a>. Note that you will need <strong>npm</strong> installed to run it locally.</p>
+    </div>
   </div>
 </body>
 </html>
