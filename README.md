@@ -2,22 +2,27 @@
 Twitch Hackathon project for https://twitchstreamertools.devpost.com/
 
 ## How to use
-- Add the [Extension](https://dashboard.twitch.tv/extensions/k82fkk45cyr54fkinpozggfporx191-0.0.1) to your twitch account
-- Hosted Option
-  - add this to your obs custom docks
-  - `https://stg.chronx.dev/chat-plays-obs/index.html#/`
-  - add that dock to your obs view
-- Local option
-  - clone this project
-  - go to the streamerAppOBS folder
-  - open terminal
-  - `npm install`
-  - `npm run dev`
-  - add `localhost:5173` as the url for the custom dock
-  - add that dock to your obs view
+- Step 1: Add the [Extension](https://dashboard.twitch.tv/extensions/k82fkk45cyr54fkinpozggfporx191-0.0.1) to your twitch account
+- Step 2 
+  - add one of these to your obs custom docks
+  - ![obsCustomBrowser.png](images%2FobsCustomBrowser.png)
+  - Option 1: Hosted Option
+    - `https://stg.chronx.dev/chat-plays-obs/index.html#/`
+    - ![hostedDashboard.png](images%2FhostedDashboard.png)
+    - add that dock to your obs view
+  - Option 2: Local option
+    - clone this project
+    - go to the streamerAppOBS folder
+    - open terminal
+    - `npm install`
+    - `npm run dev`
+    - add `localhost:5173` as the url for the custom dock
+    - ![localDashboard.png](images%2FlocalDashboard.png)
+    - add that dock to your obs view
+    
 
-![img.png](images%2FobsExtensionView.png)
-![img.png](images%2FstreamView.png)
+## Results
+![streamView.png](images%2FstreamView.png)
 ## How It Works
 - **Click Data Processing:** 
   - Users interact via clicks in the frontend.
