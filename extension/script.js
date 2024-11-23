@@ -381,17 +381,16 @@ document.addEventListener("mousemove", (e) => {
         draggedElement.style.top = constrainedY * 100 + "%";
     }
     document.body.classList.add('visible');
+
+    clearTimeout(mouseTimer);
     // set a timer until windows disappear
     mouseTimer = setTimeout(() => {
         document.body.classList.remove('visible');
-    }, 2500);
+    }, 5000);
 });
 
 
 if (TESTING) {
-        // TODO: REMOVE THIS
-        // TODO: IF THIS IS PUSHED FEEL FREE TO YELL AT VIV
-        // TODO: VIV MESSED UP: P: P: :P
         const buttonsContainer = document.getElementById('bits-buttons-container');
         // Clear any existing buttons, this gets called every reauthorization
         buttonsContainer.innerHTML = '';
