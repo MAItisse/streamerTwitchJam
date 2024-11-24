@@ -1,7 +1,7 @@
 import { onUnmounted, Ref, ref } from 'vue';
 import { ProxyConnectionStatus, useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
-import { Boundaries } from '../types';
+import { Boundary, Boundaries } from '../types';
 
 export class InvalidTwitchUsernameError extends Error {
     constructor(message: string) {
@@ -174,7 +174,21 @@ export function useProxyWebSocket() {
         for (const key in configStore.sourceToBoundaryMap) {
             if (configStore.sourceToBoundaryMap.hasOwnProperty(key)) {
                 const boundary_key = configStore.sourceToBoundaryMap[key];
-                bounds[key] = configStore.bounds[boundary_key];
+                if (boundary_key == "locked") {
+                    // Generate a 0-sized boundary for this card to effectively lock it
+                    const lockedSceneItemInd = configStore.obsSceneItems.findIndex(item => item.sceneItemId == key);
+                    const lockedSceneItem = configStore.obsSceneItems[lockedSceneItemInd];
+                    const transform = lockedSceneItem.sceneItemTransform;
+                    const lockedBoundary: Boundary = {
+                        left: transform.positionX / configStore.videoSettings.baseWidth,
+                        top: transform.positionY / configStore.videoSettings.baseHeight,
+                        right: transform.positionX / configStore.videoSettings.baseWidth,
+                        bottom: transform.positionY / configStore.videoSettings.baseHeight,
+                    };
+                    bounds[key] = lockedBoundary;
+                } else {
+                    bounds[key] = configStore.bounds[boundary_key];
+                }
             }
         }
 
