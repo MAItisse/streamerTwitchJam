@@ -175,7 +175,7 @@ export function useProxyWebSocket() {
             if (configStore.sourceToBoundaryMap.hasOwnProperty(key)) {
                 const boundary_key = configStore.sourceToBoundaryMap[key];
                 if (boundary_key == "locked") {
-                    // Generate a tiny boundary for this card to effectively lock it
+                    // Generate a 0-sized boundary for this card to effectively lock it
                     const lockedSceneItemInd = configStore.obsSceneItems.findIndex(item => item.sceneItemId == key);
                     const lockedSceneItem = configStore.obsSceneItems[lockedSceneItemInd];
                     const transform = lockedSceneItem.sceneItemTransform;
@@ -195,7 +195,6 @@ export function useProxyWebSocket() {
         const payload = JSON.stringify(JSON.stringify({
             bounds: bounds //tempBoundaries // TODO: use configStore.boundaries
         }))
-        console.log("sendWindowConfig payload = ", payload);
         await send(payload);
     }
 
