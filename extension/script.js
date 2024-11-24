@@ -1,4 +1,4 @@
-﻿console.log = () => {};
+﻿// console.log = () => {};
 
 const TestAuth = {userId: 468106723, channelId: 468106723}
 const TESTING = window.location.hostname === "localhost";

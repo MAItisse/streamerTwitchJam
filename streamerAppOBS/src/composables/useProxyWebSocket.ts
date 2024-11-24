@@ -229,6 +229,23 @@ export function useProxyWebSocket() {
         await send(payload);
     }
 
+    const sendWindowLocations = async (width, height, windowId, sizeOfWindow) => {
+        // likely we need to add some scale factor
+        let data = {
+            "data": [
+                {
+                    "name": windowId,
+                    "x": width,
+                    "y": height,
+                    "width": sizeOfWindow['sceneItemTransform']['width'] + "px",
+                    "height": sizeOfWindow['sceneItemTransform']['height'] + "px",
+                    "info": "some data to register later"
+                }]
+        }
+        console.log("the stringified data looks like ", JSON.stringify(data))
+        await send(JSON.stringify(data));
+    }
+
 
     const runHello = async () => {
 
@@ -292,6 +309,7 @@ export function useProxyWebSocket() {
         sendObsSizeConfig,
         sendWindowConfig,
         sendInfoWindowDataConfig,
+        sendWindowLocations,
         runHello
     };
 }

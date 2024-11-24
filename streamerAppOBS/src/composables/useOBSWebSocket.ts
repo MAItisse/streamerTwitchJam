@@ -113,6 +113,17 @@ export function useOBSWebSocket() {
         return res;
     }
 
+    const getWindowDetail = async (sceneItemId: number) => {
+        if (!socket.value) throw Error("OBS Disconnected.");
+
+        const res = await socket.value.call("GetSceneItemTransform", {
+            sceneName: configStore.obsSceneName,
+            sceneItemId: Number(sceneItemId),
+        });
+        console.log("useOBSWebSocket: getWindowDetail() response:", res);
+        return res;
+    }
+
     onUnmounted(close);
 
     return {
@@ -123,6 +134,7 @@ export function useOBSWebSocket() {
         getVideoSettings,
         getSceneItems,
         getSourceScreenshot,
-        setSceneItemTransform
+        setSceneItemTransform,
+        getWindowDetail
     };
 }

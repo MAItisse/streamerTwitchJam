@@ -153,7 +153,9 @@ export const useAppStore = defineStore({
                     newY * this.configStore.videoSettings.baseHeight);
 
                 // Update all clients with window positions
-                this.broadcastCurrentSettings();
+                let sizeOfWindow = await this.obsWebSocket.getWindowDetail(transformRequest.name);
+                console.log("proxy data sending: ", newX * this.configStore.videoSettings.baseWidth, newY * this.configStore.videoSettings.baseHeight, transformRequest.name, sizeOfWindow)
+                await this.proxyWebSocket.sendWindowLocations(newX * this.configStore.videoSettings.baseWidth, newY * this.configStore.videoSettings.baseHeight, transformRequest.name, sizeOfWindow);
 
             } catch (e) {
                 console.log("appStore: invalid sceneItem transform request: ", e);
@@ -163,6 +165,7 @@ export const useAppStore = defineStore({
         // proxyOnClose is called from onclose in the proxyWebSocket
         proxyOnClose() {
             console.log("appStore: proxyOnClose()");
+            this.proxyWebSocket.close();
         },
 
         disconnect() {
