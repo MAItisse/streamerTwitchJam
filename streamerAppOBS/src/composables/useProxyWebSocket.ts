@@ -176,7 +176,7 @@ export function useProxyWebSocket() {
                 const boundary_key = configStore.sourceToBoundaryMap[key];
                 if (boundary_key == "locked") {
                     // Generate a 0-sized boundary for this card to effectively lock it
-                    const lockedSceneItemInd = configStore.obsSceneItems.findIndex(item => item.sceneItemId == key);
+                    const lockedSceneItemInd = configStore.obsSceneItems.findIndex((item: any) => item.sceneItemId == key);
                     const lockedSceneItem = configStore.obsSceneItems[lockedSceneItemInd];
                     const transform = lockedSceneItem.sceneItemTransform;
                     const lockedBoundary: Boundary = {
