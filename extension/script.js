@@ -85,12 +85,15 @@ function updateObsScreen(data) {
 
         node.style.left = x;
         node.style.top = y;
-        node.style.zIndex = obsWindow.zIndex;
         console.log(obsWindow);
         console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth);
         console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight);
         node.style.width = Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) + "px"; // obsWindow.width;
         node.style.height = Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight) + "px"; // obsWindow.height;
+
+        // run some calculation for the zIndex -- or do on backend with obsWindow.zIndex
+        node.style.zIndex = Math.max(1000 -parseInt((Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) +
+                             Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight))/10),1);
     }
 }
 
@@ -106,14 +109,20 @@ function resetObsmap() {
 }
 
 function setupInfoPopupHandlers(infoIcon) {
+    let hoverTimeout;
     // Show popup on mouse over
     infoIcon.addEventListener("mouseover", (e) => {
         e.stopPropagation();
-        showPopup(e.target);
+        if(!isDragging) {
+            hoverTimeout = setTimeout(() => {
+            showPopup(e.target);
+            }, 250);
+        }
     });
 
     // Hide popup after a delay on mouse out
     infoIcon.addEventListener("mouseout", (_) => {
+        clearTimeout(hoverTimeout);
         hidePopup();
     });
 }
