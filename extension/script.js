@@ -92,7 +92,7 @@ function updateObsScreen(data) {
         node.style.height = Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight) + "px"; // obsWindow.height;
 
         // run some calculation for the zIndex -- or do on backend with obsWindow.zIndex
-        node.style.zIndex = Math.max(1000 -parseInt((Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) +
+        node.style.zIndex = Math.max(1000 - parseInt((Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) +
                              Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight))/10),1);
     }
 }
