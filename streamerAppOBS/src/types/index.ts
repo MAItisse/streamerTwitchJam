@@ -6,13 +6,11 @@ export type Boundary = {
     top: number;
 };
 
-// export type BoundaryWithKey = Boundary & { key: string };
-
 export type Boundaries = {
     [key: string]: Boundary;
 };
 export type SourceToBoundaryMap = {
-    [key: string]: string;// | null;
+    [key: string]: string;
 };
 
 export type SourceInfoCard = {
@@ -32,15 +30,6 @@ export type OBSVideoSettings = {
     outputHeight: number;
 }
 
-// export type SceneItems = SceneItem[];
-
-// export type SceneItem = {
-//     sceneItemId: number,
-//     sourceName: string,
-
-// }
-
-
 export type SetSceneItemTransformRequest = {
     sceneName: string;
     sceneItemId: number;
@@ -50,4 +39,12 @@ export type SetSceneItemTransformRequest = {
 export type SceneItemTransform = {
     positionX: number;
     positionY: number;
+    width: number;
+    height: number;
+    scaleX: number;
+    scaleY: number;
+    cropLeft: number;
+    cropRight: number;
+    cropTop: number;
+    cropBottom: number;
 }

@@ -193,7 +193,7 @@ export function useProxyWebSocket() {
         }
 
         const payload = JSON.stringify(JSON.stringify({
-            bounds: bounds //tempBoundaries // TODO: use configStore.boundaries
+            bounds: bounds 
         }))
         await send(payload);
     }
@@ -229,23 +229,20 @@ export function useProxyWebSocket() {
         await send(payload);
     }
 
-    const sendWindowLocations = async (x, y, windowId, sizeOfWindow) => {
-        // likely we need to add some scale factor
-        console.log("sizeOfWindow", sizeOfWindow);
-        const windowWidth = (sizeOfWindow['sceneItemTransform']['width'] - (sizeOfWindow['sceneItemTransform']['cropLeft'] + sizeOfWindow['sceneItemTransform']['cropRight']) * sizeOfWindow['sceneItemTransform']['scaleX']);
-        const windowHeight = (sizeOfWindow['sceneItemTransform']['height'] - (sizeOfWindow['sceneItemTransform']['cropTop'] + sizeOfWindow['sceneItemTransform']['cropBottom']) * sizeOfWindow['sceneItemTransform']['scaleY']);
+    const sendWindowLocations = async (x: number, y: number, windowId: number, sceneItem: any) => {
+        const windowWidth = (sceneItem['sceneItemTransform']['width'] - (sceneItem['sceneItemTransform']['cropLeft'] + sceneItem['sceneItemTransform']['cropRight']) * sceneItem['sceneItemTransform']['scaleX']);
+        const windowHeight = (sceneItem['sceneItemTransform']['height'] - (sceneItem['sceneItemTransform']['cropTop'] + sceneItem['sceneItemTransform']['cropBottom']) * sceneItem['sceneItemTransform']['scaleY']);
         let data = {
             "data": [
                 {
                     "name": windowId,
                     "x": x,
                     "y": y,
-                    "width": windowWidth  + "px",
+                    "width": windowWidth + "px",
                     "height": windowHeight + "px",
                     "info": "some data to register later"
                 }]
         }
-        console.log("the stringified data looks like ", JSON.stringify(data))
         await send(JSON.stringify(data));
     }
 
