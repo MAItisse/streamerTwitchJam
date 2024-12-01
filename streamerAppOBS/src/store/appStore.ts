@@ -60,7 +60,7 @@ export const useAppStore = defineStore({
                 throw e;
             }).then((sceneItems) => {
 
-                this.configStore.obsSceneItems = sceneItems;
+                this.configStore.obsSceneItems = sceneItems.filter(scene => scene.sceneItemEnabled);
 
                 this.proxyWebSocket.connect()
                     .then(() => {
