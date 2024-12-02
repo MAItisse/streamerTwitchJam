@@ -18,8 +18,6 @@
             font-family: Arial, sans-serif;
             overflow: hidden;
             position: relative;
-
-            /* background-image: url("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fassets.change.org%2Fphotos%2F4%2Fdw%2Fbs%2FukdWbStGWSBsTBo-1600x900-noPad.jpg%3F1609977468&f=1&nofb=1&ipt=15b94c20056b770a201772bb214fdfd2182a64e1ad8aeffb5f6cae63ad7bc281&ipo=images"); */
         }
 
         #obs-container {
@@ -62,16 +60,12 @@
             background-color: rgba(255, 255, 255, 0.9);
             border: 1px solid #1b1b33;
             padding: 20px;
-            /* max-width: 200px; */
-            /* max-height: 200px; */
             z-index: 1000;
-            /* Ensure it appears above other elements */
             border-radius: 5px;
             box-shadow: black 8px 8px 8px;
             opacity: 0;
             transition: opacity 10s ease-in-out;
             overflow-y: auto;
-            /* Enable vertical scrolling */
 
             color: white;
             background-color: #0f1023;
@@ -79,7 +73,6 @@
 
         .follow_button {
             background-color: #9146FF;
-            /* Twitch purple */
             border: none;
             color: white;
             padding: 10px 20px;
@@ -119,7 +112,6 @@
             user-select: none;
         }
 
-        /* New Popup Menu Styles */
         .popup-menu {
             position: fixed;
             top: 50px;
@@ -145,22 +137,18 @@
             padding: 10px;
         }
 
-        /* Initially hide the popup menu */
         .popup-menu.hidden {
             opacity: 0;
             visibility: hidden;
         }
 
-        /* Show the popup menu */
         .popup-menu.visible {
             opacity: 1;
             visibility: visible;
         }
 
-        /* Bits Button Styles */
         .bits-button {
             background-color: #9146FF;
-            /* Twitch purple */
             border: none;
             color: white;
             padding: 10px 20px;
@@ -211,13 +199,9 @@
     <div id="obs-container">
     </div>
     <div id="info-popup" class="hidden"></div>
-    <!-- New Popup Menu -->
-    <!-- TODO: ADD BACK HIDDEN -->
-    <!-- TODO: IF THIS IS PUSHED FEEL FREE TO YELL AT VIV -->
-    <!-- TODO: VIV MESSED UP :P :P :P -->
     <div id="top-left-menu" class="popup-menu">
-        <!-- Diamond SVG Icon -->
-        <div id="diamond-icon" class="diamond-icon">
+        <!-- star SVG Icon -->
+        <div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 18L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
                     stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-opacity=".5" stroke-linejoin="round"

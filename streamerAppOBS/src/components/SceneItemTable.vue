@@ -86,7 +86,7 @@ td {
     border-style: solid;
 
     height: 36px;
-    padding: 4px px;
+    padding: 4px 0px;
     vertical-align: middle;
 
     box-sizing: border-box;
