@@ -244,6 +244,13 @@ export function useProxyWebSocket() {
                 }]
         }
         await send(JSON.stringify(data));
+
+        configStore.obsSceneItems.forEach((scene: any, _: number) => {
+            if (scene.sceneItemId == windowId) {
+                scene.sceneItemTransform.positionX = x;
+                scene.sceneItemTransform.positionY = y;
+            }
+        });
     }
 
 
