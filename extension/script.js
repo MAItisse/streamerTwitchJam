@@ -398,6 +398,7 @@ document.addEventListener("mousemove", (e) => {
     }, 5000);
 });
 
+document.getElementById("obs-container").addEventListener("mouseleave", function(event){document.body.classList.remove('visible');});
 
 if (TESTING) {
         const buttonsContainer = document.getElementById('bits-buttons-container');
