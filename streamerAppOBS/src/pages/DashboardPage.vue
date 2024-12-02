@@ -36,7 +36,7 @@ onMounted(() => {
         // console.log("Is proxy still connected?", statusStore.isProxyConnected);
         if (!statusStore.isProxyConnected) {
             console.log("DashboardPage: Found disconnected web proxy... trying to reconnect.");
-            proxyWebSocket.connect();
+            appStore.obsOnOpen();
         }
     }, 10000);
 
