@@ -2,13 +2,17 @@
 import { computed } from 'vue';
 import { useConfigStore } from '../store/configStore';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-
+import { useAppStore } from '../store/appStore';
 
 const configStore = useConfigStore();
+const appStore = useAppStore();
 
 const numSceneItems = computed(() => {
     return Object.keys(configStore.obsSceneItems).length;
 })
+const refreshSources = () => {
+  appStore.obsOnOpen();
+}
 
 </script>
 
@@ -21,6 +25,9 @@ const numSceneItems = computed(() => {
                     <FontAwesomeIcon class="mr-1 text-xl" icon="object-group"></FontAwesomeIcon>
                     Choose Sources
                 </h1>
+                <div class="refresh-button">
+                  <button type="button" @click="refreshSources" class="m-2 px-8 py-1 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">refresh visible sources</button>
+                </div>
                 <div class="font-semibold text-gray-500 text-sm">
                     Choose which OBS Sources that users will be able to move
                 </div>

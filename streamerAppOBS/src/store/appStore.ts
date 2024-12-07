@@ -64,7 +64,7 @@ export const useAppStore = defineStore({
 
                 this.proxyWebSocket.connect()
                     .then(() => {
-
+                        this.configStore.obsSceneItems.sort((a, b) => b.sceneItemIndex - a.sceneItemIndex);
                         // At this point we have all the data we need to repopulate frontend states
                         this.configStore.obsSceneItems.forEach((scene: any, index: number) => {
                             if (scene.sceneItemId in this.configStore.sourceToBoundaryMap) {
