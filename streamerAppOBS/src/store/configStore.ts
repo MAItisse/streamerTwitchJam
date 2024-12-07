@@ -69,10 +69,6 @@ export const useConfigStore = defineStore('config', {
             console.log("saving bounds: ", this.bounds);
             console.log("bounds stringified: ", JSON.stringify(this.bounds))
 
-            // Clear old values first
-            Object.keys(this.sourceToBoundaryMap).forEach(key => { delete this.sourceToBoundaryMap[key]; })
-            Object.keys(this.sourceInfoCards).forEach(key => { delete this.sourceInfoCards[key]; })
-
             // Convert the front-end states into a storable format
             this.obsSceneItems.forEach((scene: any, _: number) => {
                 if (('twitch_movable' in scene) && scene.twitch_movable == true) {
