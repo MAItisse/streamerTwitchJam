@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 const configStore = useConfigStore();
 
 const enabledSceneItems = computed(() => {
+    configStore.obsSceneItems.sort((a, b) => b.sceneItemIndex - a.sceneItemIndex);
     return configStore.obsSceneItems.filter((item: any) => item.twitch_movable == true);
 });
 
