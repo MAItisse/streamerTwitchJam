@@ -2,16 +2,18 @@
 import { computed } from 'vue';
 import { useConfigStore } from '../store/configStore';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { useAppStore } from '../store/appStore';
 
 const configStore = useConfigStore();
-const appStore = useAppStore();
 
 const numSceneItems = computed(() => {
     return Object.keys(configStore.obsSceneItems).length;
-})
-const refreshSources = () => {
-  appStore.obsOnOpen();
+});
+
+function onMovableChange(item: any) {
+  // When the item becomes movable and has no boundary set, default to 'none'
+  if (item.twitch_movable && !item.boundary_key) {
+    item.boundary_key = 'none';
+  }
 }
 
 </script>
@@ -25,9 +27,6 @@ const refreshSources = () => {
                     <FontAwesomeIcon class="mr-1 text-xl" icon="object-group"></FontAwesomeIcon>
                     Choose Sources
                 </h1>
-                <div class="refresh-button">
-                  <button type="button" @click="refreshSources" class="m-2 px-8 py-1 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">refresh visible sources</button>
-                </div>
                 <div class="font-semibold text-gray-500 text-sm">
                     Choose which OBS Sources that users will be able to move
                 </div>
@@ -35,15 +34,9 @@ const refreshSources = () => {
                     <table class="w-full bg-white">
                         <thead>
                             <tr class="bg-gray-300">
-                                <th>
-                                    Source Name
-                                </th>
-                                <th>
-                                    Movable?
-                                </th>
-                                <th>
-                                    Boundary
-                                </th>
+                                <th>Source Name</th>
+                                <th>Movable?</th>
+                                <th>Boundary</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -57,7 +50,7 @@ const refreshSources = () => {
 
                                 <!-- Enabled Checkbox -->
                                 <td>
-                                    <input type="checkbox" v-model="item.twitch_movable"
+                                    <input type="checkbox" v-model="item.twitch_movable" @change="onMovableChange(item)"
                                         class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
                                 </td>
                                 <!-- Boundary Dropdown -->
@@ -66,7 +59,7 @@ const refreshSources = () => {
                                         class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                         <!-- <option disabled value="">Select Boundary</option> -->
                                         <option value="none" selected>None</option>
-                                        <option value="locked" selected>Locked</option>
+                                        <option value="locked">Locked</option>
                                         <option v-for="(_, key, ind) in configStore.bounds" :key="key" :value="key">
                                             #{{ ind + 1 }}
                                         </option>
