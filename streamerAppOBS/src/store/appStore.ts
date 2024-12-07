@@ -62,6 +62,7 @@ export const useAppStore = defineStore({
 
                 this.configStore.obsSceneItems = sceneItems.filter(scene => scene.sceneItemEnabled);
 
+                // will disconnect and reconnect the proxy web socket
                 this.proxyWebSocket.connect()
                     .then(() => {
                         this.configStore.obsSceneItems.sort((a, b) => b.sceneItemIndex - a.sceneItemIndex);
@@ -75,8 +76,7 @@ export const useAppStore = defineStore({
                                 const { title, description } = this.configStore.sourceInfoCards[scene.sceneItemId];
                                 this.configStore.obsSceneItems[index].info_title = title;
                                 this.configStore.obsSceneItems[index].info_description = description;
-
-                                console.log("setting index", index, "to movable, and boundaryKey to:", boundaryKey);
+                                // console.log("setting index", index, "to movable, and boundaryKey to:", boundaryKey);
                             }
                         });
                     })

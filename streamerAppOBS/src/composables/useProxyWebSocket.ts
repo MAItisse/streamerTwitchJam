@@ -41,7 +41,7 @@ export function useProxyWebSocket() {
         const text = await resp.text();
 
         if (text.includes('User not found')) {
-            console.log("useProxyWebSockets: fetchTwitchUserId error: Invalid Twitch Username");
+            // console.log("useProxyWebSockets: fetchTwitchUserId error: Invalid Twitch Username");
             throw new InvalidTwitchUsernameError("Invalid Twitch Username");
         }
         return text;
@@ -124,13 +124,13 @@ export function useProxyWebSocket() {
 
     const send = async (message: string) => {
         if (socket && statusStore.proxyConnectionStatus == ProxyConnectionStatus.Open) {
-            console.log("useProxyWebsockets: send()");
+            // console.log("useProxyWebsockets: send()");
             socket.send(message);
         }
     }
 
     const sendObsSizeConfig = async () => {
-        console.log("useProxyWebSockets: sendObsSizeConfig()");
+        // console.log("useProxyWebSockets: sendObsSizeConfig()");
         /*
             *** NOTE: TODO: note the double-encoded JSON
 
@@ -157,7 +157,7 @@ export function useProxyWebSocket() {
     }
 
     const sendWindowConfig = async () => {
-        console.log("useProxyWebSockets: sendWindowConfig()");
+        // console.log("useProxyWebSockets: sendWindowConfig()");
         /* 
             *** NOTE: TODO: note the double-encoded JSON
 
@@ -199,7 +199,7 @@ export function useProxyWebSocket() {
     }
 
     const sendInfoWindowDataConfig = async () => {
-        console.log("useProxyWebSockets: sendInfoWindowDataConfig()");
+        // console.log("useProxyWebSockets: sendInfoWindowDataConfig()");
         /*
             *** NOTE: TODO: note the double-encoded JSON
 
