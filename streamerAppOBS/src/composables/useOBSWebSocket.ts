@@ -2,9 +2,11 @@ import { ref, onUnmounted, Ref } from 'vue';
 import { OBSConnectionStatus, useStatusStore } from '../store/statusStore';
 import { useConfigStore } from '../store/configStore';
 import OBSWebSocket, { OBSWebSocketError } from 'obs-websocket-js';
+import { useAppStore } from '../store/appStore';
 
 export function useOBSWebSocket() {
 
+    const appStore = useAppStore();
     const statusStore = useStatusStore();
     const configStore = useConfigStore();
     const onOpenCallback: Ref<null | (() => void)> = ref(null);
@@ -30,6 +32,12 @@ export function useOBSWebSocket() {
             if (onOpenCallback.value != null) {
                 onOpenCallback.value();
             }
+        });
+
+        // in the event that someone changes the visibility of a source
+        socket.value.on("SceneItemEnableStateChanged", (data) => {
+            console.log('SceneItemEnableStateChanged event received:', data);
+            appStore.obsOnOpen();
         });
 
         statusStore.obsConnectionStatus = OBSConnectionStatus.Connecting;
