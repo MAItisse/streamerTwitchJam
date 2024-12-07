@@ -37,7 +37,7 @@ export function useOBSWebSocket() {
         // in the event that someone changes the visibility of a source
         socket.value.on("SceneItemEnableStateChanged", (data) => {
             console.log('SceneItemEnableStateChanged event received:', data);
-            appStore.obsOnOpen();
+            appStore.obsOnOpen(true);
         });
 
         statusStore.obsConnectionStatus = OBSConnectionStatus.Connecting;

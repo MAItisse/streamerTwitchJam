@@ -41,9 +41,26 @@ export const useAppStore = defineStore({
             await this.obsWebSocket.connect();
         },
 
+        updateSceneItems() {
+            this.configStore.obsSceneItems.sort((a, b) => b.sceneItemIndex - a.sceneItemIndex);
+            // At this point we have all the data we need to repopulate frontend states
+            this.configStore.obsSceneItems.forEach((scene: any, index: number) => {
+                if (scene.sceneItemId in this.configStore.sourceToBoundaryMap) {
+                    const boundaryKey = this.configStore.sourceToBoundaryMap[scene.sceneItemId];
+                    this.configStore.obsSceneItems[index].twitch_movable = true;
+                    this.configStore.obsSceneItems[index].boundary_key = boundaryKey;
+
+                    const { title, description } = this.configStore.sourceInfoCards[scene.sceneItemId];
+                    this.configStore.obsSceneItems[index].info_title = title;
+                    this.configStore.obsSceneItems[index].info_description = description;
+                    // console.log("setting index", index, "to movable, and boundaryKey to:", boundaryKey);
+                }
+            });
+        },
+
         // obsOnOpen is called after the OBS websocket has connected and identified us and is ready to take commands
         // (Note: it will hang up if we don't let it say hello before we send commands to it)
-        async obsOnOpen() {
+        async obsOnOpen(skipConnect: boolean = false) {
             // Fetch some info that we'll need after OBS finishes connecting
             this.configStore.videoSettings = await this.obsWebSocket.getVideoSettings();
 
@@ -61,36 +78,26 @@ export const useAppStore = defineStore({
             }).then((sceneItems) => {
 
                 this.configStore.obsSceneItems = sceneItems.filter(scene => scene.sceneItemEnabled);
-
-                // will disconnect and reconnect the proxy web socket
-                this.proxyWebSocket.connect()
-                    .then(() => {
-                        this.configStore.obsSceneItems.sort((a, b) => b.sceneItemIndex - a.sceneItemIndex);
-                        // At this point we have all the data we need to repopulate frontend states
-                        this.configStore.obsSceneItems.forEach((scene: any, index: number) => {
-                            if (scene.sceneItemId in this.configStore.sourceToBoundaryMap) {
-                                const boundaryKey = this.configStore.sourceToBoundaryMap[scene.sceneItemId];
-                                this.configStore.obsSceneItems[index].twitch_movable = true;
-                                this.configStore.obsSceneItems[index].boundary_key = boundaryKey;
-
-                                const { title, description } = this.configStore.sourceInfoCards[scene.sceneItemId];
-                                this.configStore.obsSceneItems[index].info_title = title;
-                                this.configStore.obsSceneItems[index].info_description = description;
-                                // console.log("setting index", index, "to movable, and boundaryKey to:", boundaryKey);
+                if (skipConnect) {
+                    this.updateSceneItems();
+                } else {
+                    // will disconnect and reconnect the proxy web socket
+                    this.proxyWebSocket.connect()
+                        .then(() => {
+                            this.updateSceneItems();
+                        })
+                        .catch((e) => {
+                            console.log("appStore: obsOnOpen(): Proxy connection error", e.message);
+                            if (e instanceof InvalidTwitchUsernameError) {
+                                this.statusStore.invalidTwitchUsername = true;
+                            } else if (e instanceof LobbyTakenError) {
+                                this.statusStore.generalErrorMessage = 'Lobby Conflict';
+                            } else {
+                                this.statusStore.generalErrorMessage = e.message;
                             }
+                            this.disconnect();
                         });
-                    })
-                    .catch((e) => {
-                        console.log("appStore: obsOnOpen(): Proxy connection error", e.message);
-                        if (e instanceof InvalidTwitchUsernameError) {
-                            this.statusStore.invalidTwitchUsername = true;
-                        } else if (e instanceof LobbyTakenError) {
-                            this.statusStore.generalErrorMessage = 'Lobby Conflict';
-                        } else {
-                            this.statusStore.generalErrorMessage = e.message;
-                        }
-                        this.disconnect();
-                    });
+                }
 
             }).catch((e) => {
                 console.warn("appStore: obsOnOpen(): Unexpected error:", e);

@@ -44,14 +44,12 @@ function onMovableChange(item: any) {
                                 :class="{ 'hover:bg-gray-50': true, 'bg-blue-200': item.twitch_movable, 'hover:bg-blue-400': item.twitch_movable }">
 
                                 <!-- Source Name -->
-                                <td>
-                                    {{ item.sourceName }}
-                                </td>
+                                <td>{{ item.sourceName }}</td>
 
                                 <!-- Enabled Checkbox -->
                                 <td>
                                     <input type="checkbox" v-model="item.twitch_movable" @change="onMovableChange(item)"
-                                        class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
+                                           class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
                                 </td>
                                 <!-- Boundary Dropdown -->
                                 <td>
