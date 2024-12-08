@@ -177,6 +177,8 @@ export function useProxyWebSocket() {
                 if (boundary_key == "locked") {
                     // Generate a 0-sized boundary for this card to effectively lock it
                     const lockedSceneItemInd = configStore.obsSceneItems.findIndex((item: any) => item.sceneItemId == key);
+                    // there is an item in our memory that isnt in the list of current sources
+                    if (lockedSceneItemInd == -1){ continue; }
                     const lockedSceneItem = configStore.obsSceneItems[lockedSceneItemInd];
                     const transform = lockedSceneItem.sceneItemTransform;
                     const lockedBoundary: Boundary = {
@@ -268,7 +270,7 @@ export function useProxyWebSocket() {
         //     zIndex: 10
         // })
 
-        let sourceData: { name: any; x: any; y: any; width: any; height: any; info: string; zIndex: number; }[] = [];
+        let sourceData: { name: any; x: any; y: any; width: any; height: any; info: string; }[] = [];
 
         configStore.obsSceneItems.forEach((scene: any, _: number) => {
 
@@ -283,8 +285,7 @@ export function useProxyWebSocket() {
                     y: scene.sceneItemTransform.positionY,
                     width: `${width}px`,
                     height: `${height}px`,
-                    info: 'some data to register later',
-                    zIndex: 10
+                    info: 'this window will have info'
                 };
                 sourceData.push(w);
             }
