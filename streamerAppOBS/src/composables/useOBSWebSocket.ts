@@ -37,7 +37,21 @@ export function useOBSWebSocket() {
         // in the event that someone changes the visibility of a source
         socket.value.on("SceneItemEnableStateChanged", (data) => {
             console.log('SceneItemEnableStateChanged event received:', data);
+            appStore.obsOnOpen();//true
+        });
+
+        socket.value.on("CurrentProgramSceneChanged", (data) => {
+            console.log('CurrentProgramSceneChanged event received:', data);
+            configStore.obsSceneName = data['sceneName'];
             appStore.obsOnOpen(true);
+
+            // TODO we want to change the memory mapping so that they are saved by the scenename
+                    // this could mean taking the current name and appending the scene to it
+                    // should remain unique in most cases
+                    // this might just be a bunch of numbers
+            // TODO when we see then change we want to move to the new mapping and drop the old boundaries
+                    // we will need to add in new boundaries or just fully call a hello or something
+
         });
 
         statusStore.obsConnectionStatus = OBSConnectionStatus.Connecting;

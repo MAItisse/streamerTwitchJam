@@ -42,7 +42,7 @@ export const useAppStore = defineStore({
         },
 
         updateSceneItems() {
-            this.configStore.obsSceneItems.sort((a, b) => b.sceneItemIndex - a.sceneItemIndex);
+            this.configStore.obsSceneItems.sort((a: any, b: any) => b.sceneItemIndex - a.sceneItemIndex);
             // At this point we have all the data we need to repopulate frontend states
             this.configStore.obsSceneItems.forEach((scene: any, index: number) => {
                 if (scene.sceneItemId in this.configStore.sourceToBoundaryMap) {
@@ -77,7 +77,7 @@ export const useAppStore = defineStore({
                 throw e;
             }).then((sceneItems) => {
 
-                this.configStore.obsSceneItems = sceneItems.filter(scene => scene.sceneItemEnabled);
+                this.configStore.obsSceneItems = (sceneItems || []).filter(scene => scene.sceneItemEnabled);
                 if (skipConnect) {
                     this.updateSceneItems();
                 } else {
