@@ -268,6 +268,8 @@ function runGameJam(auth) {
                 }
                 if (eventData.hasOwnProperty("obsSize")) {
                     console.log("obsSize data received from websocket: ", eventData.obsSize)
+                    // obsOutputWidth = eventData.obsSize["width"] // target data for this
+                    // obsOutputHeight = eventData.obsSize["height"]
                     obsOutputWidth = eventData.obsSize["obsSize"]["width"]
                     obsOutputHeight = eventData.obsSize["obsSize"]["height"]
                 }

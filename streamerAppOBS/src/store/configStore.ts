@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Boundaries, OBSVideoSettings, SourceInfoCards, SourceToBoundaryMap } from '../types';
+import {Boundaries, AllowListToSource, OBSVideoSettings, SourceInfoCards, SourceToBoundaryMap} from '../types';
 
 // localStorage key constants to avoid potential typos
 const KEY_OBS_HOST = 'obsHost';
@@ -10,6 +10,7 @@ const KEY_OBS_SCENE_NAME = 'obsSceneName';
 const KEY_BOUNDS = 'bounds';
 const KEY_SOURCE_TO_BOUNDARY_MAP = 'sourceToBoundaryMap';
 const KEY_SOURCE_INFO_CARDS = 'sourceInfoCards';
+const KEY_ALLOW_LIST = 'allowList';
 
 export const useConfigStore = defineStore('config', {
     state: () => ({
@@ -24,6 +25,7 @@ export const useConfigStore = defineStore('config', {
         bounds: {} as Boundaries,
         sourceToBoundaryMap: {} as SourceToBoundaryMap,
         sourceInfoCards: {} as SourceInfoCards,
+        allowList: {} as AllowListToSource,
 
         // Misc ephemeral data
         obsSceneItems: [] as any, // TODO: I'd like this to be JsonObject[] ...
@@ -68,6 +70,7 @@ export const useConfigStore = defineStore('config', {
             console.log("configStore: saveSettingsToLocalStorage()")
             console.log("saving bounds: ", this.bounds);
             console.log("bounds stringified: ", JSON.stringify(this.bounds))
+            console.log("saving allow list: ", this.allowList);
 
             // Convert the front-end states into a storable format
             this.obsSceneItems.forEach((scene: any, _: number) => {
@@ -83,6 +86,7 @@ export const useConfigStore = defineStore('config', {
             localStorage.setItem(KEY_BOUNDS, JSON.stringify(this.bounds));
             localStorage.setItem(KEY_SOURCE_INFO_CARDS, JSON.stringify(this.sourceInfoCards));
             localStorage.setItem(KEY_SOURCE_TO_BOUNDARY_MAP, JSON.stringify(this.sourceToBoundaryMap));
+            localStorage.setItem(KEY_ALLOW_LIST, JSON.stringify(this.allowList));
         },
         loadSettingsFromLocalStorage() {
             console.log("configStore: loadSettingsFromLocalStorage()")
@@ -100,6 +104,9 @@ export const useConfigStore = defineStore('config', {
                 Object.keys(this.sourceInfoCards).forEach(key => { delete this.sourceInfoCards[key]; })
                 Object.keys(loadedSourceInfoCards).forEach(key => { this.sourceInfoCards[key] = loadedSourceInfoCards[key]; })
 
+                const loadedAllowLists = JSON.parse(localStorage.getItem(KEY_ALLOW_LIST) || '[]') || [];
+                Object.keys(this.allowList).forEach(key => { delete this.allowList[key]; })
+                Object.keys(loadedAllowLists).forEach(key => { this.allowList[key] = loadedAllowLists[key]; })
             } catch (e) {
                 // If a parse error occurs just ...nuke all the settings back to defaults ._.
                 console.error("configStore: loadSettingsFromLocalStorage error:", e);
@@ -111,10 +118,12 @@ export const useConfigStore = defineStore('config', {
             localStorage.setItem(KEY_BOUNDS, '{}');
             localStorage.setItem(KEY_SOURCE_TO_BOUNDARY_MAP, '{}');
             localStorage.setItem(KEY_SOURCE_INFO_CARDS, '{}');
+            localStorage.setItem(KEY_ALLOW_LIST, '{}');
 
             Object.keys(this.bounds).forEach(key => { delete this.bounds[key]; })
             Object.keys(this.sourceToBoundaryMap).forEach(key => { delete this.sourceToBoundaryMap[key]; })
             Object.keys(this.sourceInfoCards).forEach(key => { delete this.sourceInfoCards[key]; })
+            Object.keys(this.allowList).forEach(key => { delete this.allowList[key]; })
         }
     }
 });

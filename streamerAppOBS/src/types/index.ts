@@ -21,6 +21,14 @@ export type SourceInfoCards = {
     [key: string]: SourceInfoCard;
 };
 
+export type AllowList = {
+    allowed: string;
+}
+
+export type AllowListToSource = {
+    [key: string]: AllowList;
+}
+
 export type OBSVideoSettings = {
     fpsNumerator: number;
     fpsDenominator: number;

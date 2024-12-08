@@ -12,6 +12,7 @@ import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useProxyWebSocket } from '../composables/useProxyWebSocket';
+import AllowList from "@/components/AllowList.vue";
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -99,6 +100,9 @@ function disconnect() {
         <div class="card">
             <BoundaryTable></BoundaryTable>
             <BoundaryViewer></BoundaryViewer>
+        </div>
+        <div class="card">
+            <AllowList></AllowList>
         </div>
         <div class="card">
             <SceneItemTable></SceneItemTable>

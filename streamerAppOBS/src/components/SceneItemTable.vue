@@ -11,8 +11,9 @@ const numSceneItems = computed(() => {
 
 function onMovableChange(item: any) {
   // When the item becomes movable and has no boundary set, default to 'none'
-  if (item.twitch_movable && !item.boundary_key) {
+  if (item.twitch_movable && !item.boundary_key && !item.allowList_key) {
     item.boundary_key = 'none';
+    item.allowList_key = 'everyone';
   }
 }
 
@@ -37,6 +38,7 @@ function onMovableChange(item: any) {
                                 <th>Source Name</th>
                                 <th>Movable?</th>
                                 <th>Boundary</th>
+                                <th>Allow List</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -62,6 +64,16 @@ function onMovableChange(item: any) {
                                             #{{ ind + 1 }}
                                         </option>
                                     </select>
+                                </td>
+                                <!-- Allow List Dropdown -->
+                                <td>
+                                  <select v-if="item.twitch_movable" v-model="item.allowList_key"
+                                          class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    <option value="everyone" selected>Everyone</option>
+                                    <option v-for="(_, key, ind) in configStore.allowList" :key="key" :value="key">
+                                      #{{ ind + 1 }}
+                                    </option>
+                                  </select>
                                 </td>
                             </tr>
                         </tbody>
