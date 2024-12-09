@@ -40,6 +40,7 @@ let windowBounds = {};
 const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
 
 const obsContainer = document.getElementById("obs-container");
+
 function updateObsScreen(data) {
     for (let obsWindow of data) {
         console.log("obsWindow", obsWindow);
@@ -402,6 +403,8 @@ document.addEventListener("mousemove", (e) => {
 
 document.getElementById("obs-container").addEventListener("mouseleave", function(event){document.body.classList.remove('visible');});
 
+
+
 if (TESTING) {
         const buttonsContainer = document.getElementById('bits-buttons-container');
         // Clear any existing buttons, this gets called every reauthorization
@@ -427,6 +430,11 @@ if (TESTING) {
         }
         runGameJam(TestAuth);
 } else {
+    // TODO FIX ME, this pops up every time even though it shouldnt
+    if (!window.Twitch.ext.viewer.isLinked) {
+        window.Twitch.ext.actions.requestIdShare();
+    }
+
     window.Twitch.ext.onContext((context) => {
         // Get the player's width
         let resolutions = context.displayResolution.split("x");
@@ -441,6 +449,9 @@ if (TESTING) {
         }
     });
     window.Twitch.ext.onAuthorized(function (auth) {
+        // TODO this should be validated by the proxy server, for now we will do it this way
+        userId = JSON.parse(atob(auth['token'].split('.')[1]))['user_id']
+
         Twitch.ext.bits.getProducts().then(function (products) {
             console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
             const buttonsContainer = document.getElementById('bits-buttons-container');
