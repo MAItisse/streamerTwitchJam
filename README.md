@@ -7,25 +7,38 @@ Twitch Hackathon project for https://twitchstreamertools.devpost.com/
   - add one of the below options to your obs custom docks
   - ![obsCustomBrowser.png](images%2FobsCustomBrowser.png)
 
-  <details>
+<details>
     <summary>Option 1: Hosted</summary>
-    
-  - `https://stg.chronx.dev/chat-plays-obs/index.html#/`
-  - ![hostedDashboard.png](images%2FhostedDashboard.png)
-  - add that dock to your obs view
-  </details>
-  <details>
-  <summary>Option 2: Local</summary>
-    
-  - clone this project
-  - go to the streamerAppOBS folder
-  - open terminal
-  - `npm install`
-  - `npm run dev`
-  - add `localhost:5173` as the url for the custom dock
-  - ![localDashboard.png](images%2FlocalDashboard.png)
-  - add that dock to your obs view
-  </details>
+    <ul>
+        <li>
+            <a href="https://stg.chronx.dev/chat-plays-obs/index.html#/" target="_blank">https://stg.chronx.dev/chat-plays-obs/index.html#/</a>
+        </li>
+        <li>
+            <img src="images/hostedDashboard.png" alt="Hosted Dashboard" />
+        </li>
+        <li>
+            Add that dock to your OBS view.
+        </li>
+    </ul>
+</details>
+<details>
+    <summary>Option 2: Local</summary>
+    <ul>
+        <li>Clone this project.</li>
+        <li>Go to the <code>streamerAppOBS</code> folder.</li>
+        <li>Open terminal.</li>
+        <li><code>npm install</code></li>
+        <li><code>npm run dev</code></li>
+        <li>Add <code>localhost:5173</code> as the URL for the custom dock.</li>
+        <li>
+            <img src="images/localDashboard.png" alt="Local Dashboard" />
+        </li>
+        <li>
+            Add that dock to your OBS view.
+        </li>
+    </ul>
+</details>
+
     
 
 ## Results
