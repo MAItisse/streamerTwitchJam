@@ -17,9 +17,20 @@ export type SourceInfoCard = {
     title: string | null;
     description: string | null;
 };
+
 export type SourceInfoCards = {
     [key: string]: SourceInfoCard;
 };
+
+
+export type TwitchUser = {
+    name: string;
+    id: string;
+}
+
+export type TwitchNameToIdMap = {
+    [key: string]: TwitchUser[];
+}
 
 export type AllowList = {
     allowed: string;
@@ -27,6 +38,10 @@ export type AllowList = {
 
 export type AllowListToSource = {
     [key: string]: AllowList;
+}
+
+export type SourceToAllowList = {
+    [key: string]: string;
 }
 
 export type OBSVideoSettings = {

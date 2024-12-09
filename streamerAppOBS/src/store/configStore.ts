@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
-import {Boundaries, AllowListToSource, OBSVideoSettings, SourceInfoCards, SourceToBoundaryMap} from '../types';
+import {
+    Boundaries, AllowListToSource, OBSVideoSettings, SourceInfoCards, SourceToBoundaryMap,
+    SourceToAllowList, TwitchNameToIdMap
+} from '../types';
 
 // localStorage key constants to avoid potential typos
 const KEY_OBS_HOST = 'obsHost';
@@ -11,6 +14,8 @@ const KEY_BOUNDS = 'bounds';
 const KEY_SOURCE_TO_BOUNDARY_MAP = 'sourceToBoundaryMap';
 const KEY_SOURCE_INFO_CARDS = 'sourceInfoCards';
 const KEY_ALLOW_LIST = 'allowList';
+const KEY_SOURCE_TO_ALLOW_LIST = 'sourceToAllowList';
+const KEY_TWITCH_NAME_TO_ID = 'twitchNameToId';
 
 export const useConfigStore = defineStore('config', {
     state: () => ({
@@ -26,6 +31,8 @@ export const useConfigStore = defineStore('config', {
         sourceToBoundaryMap: {} as SourceToBoundaryMap,
         sourceInfoCards: {} as SourceInfoCards,
         allowList: {} as AllowListToSource,
+        sourceToAllowList: {} as SourceToAllowList,
+        twitchNameToUserId: {} as TwitchNameToIdMap,
 
         // Misc ephemeral data
         obsSceneItems: [] as any, // TODO: I'd like this to be JsonObject[] ...
@@ -80,6 +87,7 @@ export const useConfigStore = defineStore('config', {
                         title: scene.info_title,
                         description: scene.info_description
                     }
+                    this.sourceToAllowList[scene.sceneItemId] = scene.allowList_key;
                 }
             });
 
@@ -87,6 +95,8 @@ export const useConfigStore = defineStore('config', {
             localStorage.setItem(KEY_SOURCE_INFO_CARDS, JSON.stringify(this.sourceInfoCards));
             localStorage.setItem(KEY_SOURCE_TO_BOUNDARY_MAP, JSON.stringify(this.sourceToBoundaryMap));
             localStorage.setItem(KEY_ALLOW_LIST, JSON.stringify(this.allowList));
+            localStorage.setItem(KEY_SOURCE_TO_ALLOW_LIST, JSON.stringify(this.sourceToAllowList));
+            localStorage.setItem(KEY_TWITCH_NAME_TO_ID, JSON.stringify(this.twitchNameToUserId));
         },
         loadSettingsFromLocalStorage() {
             console.log("configStore: loadSettingsFromLocalStorage()")
@@ -107,6 +117,15 @@ export const useConfigStore = defineStore('config', {
                 const loadedAllowLists = JSON.parse(localStorage.getItem(KEY_ALLOW_LIST) || '[]') || [];
                 Object.keys(this.allowList).forEach(key => { delete this.allowList[key]; })
                 Object.keys(loadedAllowLists).forEach(key => { this.allowList[key] = loadedAllowLists[key]; })
+
+                const loadedSourceToAllowLists = (JSON.parse(localStorage.getItem(KEY_SOURCE_TO_ALLOW_LIST) || '{}') || {}) as SourceToAllowList;
+                Object.keys(this.sourceToAllowList).forEach(key => { delete this.sourceToAllowList[key]; })
+                Object.keys(loadedSourceToAllowLists).forEach(key => { this.sourceToAllowList[key] = loadedSourceToAllowLists[key]; })
+
+                const loadedTwitchNameToId = (JSON.parse(localStorage.getItem(KEY_TWITCH_NAME_TO_ID) || '{}') || {}) as TwitchNameToIdMap;
+                Object.keys(this.twitchNameToUserId).forEach(key => { delete this.twitchNameToUserId[key]; })
+                Object.keys(loadedTwitchNameToId).forEach(key => { this.twitchNameToUserId[key] = loadedTwitchNameToId[key]; })
+
             } catch (e) {
                 // If a parse error occurs just ...nuke all the settings back to defaults ._.
                 console.error("configStore: loadSettingsFromLocalStorage error:", e);
@@ -119,11 +138,15 @@ export const useConfigStore = defineStore('config', {
             localStorage.setItem(KEY_SOURCE_TO_BOUNDARY_MAP, '{}');
             localStorage.setItem(KEY_SOURCE_INFO_CARDS, '{}');
             localStorage.setItem(KEY_ALLOW_LIST, '{}');
+            localStorage.setItem(KEY_SOURCE_TO_ALLOW_LIST, '{}');
+            localStorage.setItem(KEY_TWITCH_NAME_TO_ID, '{}');
 
             Object.keys(this.bounds).forEach(key => { delete this.bounds[key]; })
             Object.keys(this.sourceToBoundaryMap).forEach(key => { delete this.sourceToBoundaryMap[key]; })
             Object.keys(this.sourceInfoCards).forEach(key => { delete this.sourceInfoCards[key]; })
             Object.keys(this.allowList).forEach(key => { delete this.allowList[key]; })
+            Object.keys(this.sourceToAllowList).forEach(key => { delete this.sourceToAllowList[key]; })
+            Object.keys(this.twitchNameToUserId).forEach(key => { delete this.twitchNameToUserId[key]; })
         }
     }
 });

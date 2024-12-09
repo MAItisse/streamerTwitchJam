@@ -17,6 +17,10 @@ function onMovableChange(item: any) {
   }
 }
 
+function onInfoChange(item: any) {
+  console.log(item);
+}
+
 </script>
 
 <template>
@@ -37,6 +41,7 @@ function onMovableChange(item: any) {
                             <tr class="bg-gray-300">
                                 <th>Source Name</th>
                                 <th>Movable?</th>
+                                <th>Has Info</th>
                                 <th>Boundary</th>
                                 <th>Allow List</th>
                             </tr>
@@ -46,11 +51,16 @@ function onMovableChange(item: any) {
                                 :class="{ 'hover:bg-gray-50': true, 'bg-blue-200': item.twitch_movable, 'hover:bg-blue-400': item.twitch_movable }">
 
                                 <!-- Source Name -->
-                                <td>{{ item.sourceName }}</td>
+                              <td class="sourceNames">{{ item.sourceName }}</td>
 
                                 <!-- Enabled Checkbox -->
                                 <td>
                                     <input type="checkbox" v-model="item.twitch_movable" @change="onMovableChange(item)"
+                                           class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
+                                </td>
+                                <!-- Enabled Checkbox for Info -->
+                                <td>
+                                    <input type="checkbox" v-model="item.has_info" @change="onInfoChange(item)"
                                            class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
                                 </td>
                                 <!-- Boundary Dropdown -->
@@ -101,7 +111,7 @@ td {
 
     box-sizing: border-box;
     color: rgb(55, 65, 81);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     line-height: 12px;
     text-align: justify;
@@ -109,7 +119,6 @@ td {
 }
 
 input {
-    width: 48px;
     padding: 0px;
     padding-left: 0px;
     appearance: auto;
@@ -120,5 +129,10 @@ input {
     border-width: 2px;
     border-radius: 8px;
     box-sizing: border-box;
+    align-items: center;
+}
+
+.sourceNames {
+  text-align: center;
 }
 </style>

@@ -38,10 +38,7 @@ function removeBoundary(key: string) {
                 <FontAwesomeIcon class="mr-1 text-xl" icon="object-ungroup"></FontAwesomeIcon>
                 Setup Screen Boundaries
             </h1>
-            <span class="font-semibold text-gray-500 text-sm">Users can't move OBS
-                Sources outside of
-                their
-                assigned boundaries</span>
+            <span class="font-semibold text-gray-500 text-sm">Boundaries that viewers are allowed to move the OBS Sources</span>
         </div>
         <table class="w-full bg-white">
             <thead>

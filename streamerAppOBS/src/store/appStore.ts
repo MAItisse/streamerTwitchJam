@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia';
-import { useStatusStore } from './statusStore';
-import { useConfigStore } from './configStore';
-import { InvalidTwitchUsernameError, LobbyTakenError, useProxyWebSocket } from '../composables/useProxyWebSocket';
-import { useOBSWebSocket } from '../composables/useOBSWebSocket';
+import {defineStore} from 'pinia';
+import {useStatusStore} from './statusStore';
+import {useConfigStore} from './configStore';
+import {InvalidTwitchUsernameError, LobbyTakenError, useProxyWebSocket} from '../composables/useProxyWebSocket';
+import {useOBSWebSocket} from '../composables/useOBSWebSocket';
 
 export const useAppStore = defineStore({
     id: 'app',
@@ -54,6 +54,9 @@ export const useAppStore = defineStore({
                     this.configStore.obsSceneItems[index].info_title = title;
                     this.configStore.obsSceneItems[index].info_description = description;
                     // console.log("setting index", index, "to movable, and boundaryKey to:", boundaryKey);
+                }
+                if (scene.sceneItemId in this.configStore.sourceToAllowList) {
+                    this.configStore.obsSceneItems[index].allowList_key = this.configStore.sourceToAllowList[scene.sceneItemId];
                 }
             });
         },
@@ -136,6 +139,17 @@ export const useAppStore = defineStore({
                 // Verify target window is valid
                 if (!(transformRequest.name in this.configStore.sourceToBoundaryMap)) {
                     throw new Error('Invalid boundary ID: ' + transformRequest.name);
+                }
+
+                // TODO v4 needed for this version to work or the todo below
+                if (this.configStore.sourceToAllowList[transformRequest.name] != "everyone") {
+                    // check to see if user is on allowed list
+                    const allowList = this.configStore.twitchNameToUserId[this.configStore.sourceToAllowList[transformRequest.name]];
+                    // TODO this needs to have the proxy server forward the correct userId (can be spoofed currently), or the frontend needs to do it for now
+                    if (!(allowList.some(user => user.id === transformRequest.userId))) {
+                        console.log("not allowed to use this");
+                        return;
+                    }
                 }
 
                 // Find the associated boundary

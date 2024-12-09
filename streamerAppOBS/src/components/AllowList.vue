@@ -3,6 +3,7 @@ import {onMounted, watch} from 'vue';
 import { useConfigStore } from '../store/configStore';
 import { generateKey } from '../utils';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import {AllowListToSource} from "@/types";
 
 const configStore = useConfigStore();
 
@@ -16,18 +17,56 @@ onMounted(() => {
 function addNewAllowList() {
   const key = generateKey()
   configStore.allowList[key] = {allowed: ""}
-  console.log("allowList = ", configStore.allowList);
+  // console.log("allowList = ", configStore.allowList);
 }
 
 function removeGroup(key: string) {
   delete configStore.allowList[key];
-  console.log("allowList = ", configStore.allowList);
-  console.log(key);
+  // console.log("allowList = ", configStore.allowList);
+  // console.log(key);
+}
+let timeoutId: NodeJS.Timeout | null = null;
+watch(() => configStore.allowList, (newValue, _) => {
+  // console.log("AllowList: watch props.allowList fired.");
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+  // Set a new timeout to trigger the function after 1 second
+  timeoutId = setTimeout(() => {
+      handleTypingDone(newValue);
+  }, 1000);
+}, { deep: true });
+
+interface TwitchUser {
+  name: string;
+  id: string;
 }
 
-watch(() => configStore.allowList, () => {
-  console.log("AllowList: watch props.allowList fired.");
-}, { deep: true });
+function handleTypingDone(allowListKeyMap: AllowListToSource): void {
+  const twitchNameToIdMap: { [key: string]: TwitchUser[] } = {};
+  for(let allowListKey in allowListKeyMap) {
+    configStore.allowList[allowListKey].allowed.split(",").forEach((name) => {
+      // console.log(`https://decapi.me/twitch/id/${name.trim()}`);
+      fetch(`https://decapi.me/twitch/id/${name.trim()}`).then((response) => {
+        if(!response.ok) {
+          throw new Error(`http error ${response.status}`);
+        }
+        return response.text();
+      }).then((id) => {
+        // console.log(id);
+        // console.log(allowListKey);
+        if (!twitchNameToIdMap[allowListKey]) {
+          twitchNameToIdMap[allowListKey] = []; // Initialize the array if it doesn't exist
+        }
+        twitchNameToIdMap[allowListKey].push({'name':name.trim(), 'id':id});
+      }).catch((error) => {
+        console.error("error getting twitch id ", error)
+      })
+    });
+  }
+  configStore.twitchNameToUserId = twitchNameToIdMap;
+  console.log(twitchNameToIdMap);
+}
 
 </script>
 
@@ -39,14 +78,14 @@ watch(() => configStore.allowList, () => {
                 Allow List
             </h1>
             <span class="font-semibold text-gray-500 text-sm">
-              Only users on this list can move the source that this its is added to
+              Only users on the selected list can move a source that it is applied to
             </span>
         </div>
         <table class="w-full bg-white">
             <thead>
                 <tr class="bg-gray-300">
                     <th>#</th>
-                    <th>Allowed Accounts</th>
+                    <th>Allowed Accounts, comma separated</th>
                     <th></th>
                 </tr>
             </thead>
