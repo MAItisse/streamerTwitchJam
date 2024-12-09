@@ -35,6 +35,7 @@ let offsetX = 0;
 let offsetY = 0;
 let draggedElementBounds = null;
 let obsScreenData = [];
+let jwtToken = '';
 
 let windowBounds = {};
 const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
@@ -314,6 +315,7 @@ function runGameJam(auth) {
                 x: x,
                 y: y,
                 userId: userId,
+                jwtToken: jwtToken
             };
             sendMessage(JSON.stringify(data));
 
@@ -449,8 +451,9 @@ if (TESTING) {
         }
     });
     window.Twitch.ext.onAuthorized(function (auth) {
+        jwtToken = auth['token']
         // TODO this should be validated by the proxy server, for now we will do it this way
-        userId = JSON.parse(atob(auth['token'].split('.')[1]))['user_id']
+        userId = JSON.parse(atob(jwtToken.split('.')[1]))['user_id']
 
         Twitch.ext.bits.getProducts().then(function (products) {
             console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
