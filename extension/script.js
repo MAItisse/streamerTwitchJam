@@ -1,6 +1,6 @@
 ﻿// console.log = () => {};
 
-const TestAuth = {userId: 468106723, channelId: 468106723}
+const TestAuth = {channelId: 468106723}
 const TESTING = window.location.hostname === "localhost";
 
 DOMPurify.addHook('afterSanitizeAttributes', function (node) {
@@ -23,7 +23,6 @@ let obsOutputWidth = 1920;
 let obsOutputHeight = 1080;
 
 let infoWindowData = {};
-let userId = ""; // Declare userId in the global scope
 let popupTimeout; // Store the timeout ID
 
 // Add the drag-and-drop functionality for the obs-container
@@ -219,8 +218,6 @@ function keepPopupOpen() {
 }
 
 function runGameJam(auth) {
-    if (userId === "")
-        userId = auth.userId; // Set userId here
     let wsUrl = "wss://websocket.matissetec.dev/lobby/connect?user=" + auth.channelId;
     let socket;
     let reconnectInterval = null; // To store the interval ID for reconnection attempts
@@ -250,16 +247,16 @@ function runGameJam(auth) {
             console.log("has data")
             console.log(event)
             let eventData = JSON.parse(event.data);
-            userId = eventData['userId']
 
             // If the data contains the screen configuration (like the windows to display)
             if (Array.isArray(eventData.data)) {
+            // if (eventData.hasOwnProperty("name")) {
                 obsScreenData = eventData.data;
                 console.log("Screen data received:", obsScreenData);
                 updateObsScreen(obsScreenData);
             } else {
-                eventData = JSON.parse(eventData)
-                console.log(eventData)
+                console.log(eventData);
+                eventData = JSON.parse(eventData);
                 // Check if the data contains window bounds
                 if (eventData.hasOwnProperty("bounds")) {
                     // Update the windowBounds object with the received data
@@ -272,10 +269,8 @@ function runGameJam(auth) {
                 }
                 if (eventData.hasOwnProperty("obsSize")) {
                     console.log("obsSize data received from websocket: ", eventData.obsSize)
-                    // obsOutputWidth = eventData.obsSize["width"] // target data for this
-                    // obsOutputHeight = eventData.obsSize["height"]
-                    obsOutputWidth = eventData.obsSize["obsSize"]["width"]
-                    obsOutputHeight = eventData.obsSize["obsSize"]["height"]
+                    obsOutputWidth = eventData.obsSize["width"];
+                    obsOutputHeight = eventData.obsSize["height"];
                 }
             }
         });
@@ -313,10 +308,9 @@ function runGameJam(auth) {
             const x = parseFloat(draggedElement.style.left) / 100;
             const y = parseFloat(draggedElement.style.top) / 100;
             const data = {
-                name: draggedElement.id, // Assuming each draggableWindow has a unique id
+                name: draggedElement.id,
                 x: x,
                 y: y,
-                userId: userId
             };
             sendMessage(JSON.stringify(data));
 
@@ -453,7 +447,6 @@ if (TESTING) {
     });
     window.Twitch.ext.onAuthorized(function (auth) {
         // TODO this should be validated by the proxy server, for now we will do it this way
-        // userId = JSON.parse(atob(auth['token'].split('.')[1]))['user_id']
 
         Twitch.ext.bits.getProducts().then(function (products) {
             console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
@@ -506,8 +499,6 @@ if (TESTING) {
     window.Twitch.ext.bits.onTransactionComplete(function (transactionObject) {
         console.log("we just completed the transaction")
         // console.log(transactionObject);
-        // userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
-        console.log(userId);
         const data = {
             r: getRandomColor(),
             g: getRandomColor(),
