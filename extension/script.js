@@ -427,11 +427,6 @@ if (TESTING) {
         }
         runGameJam(TestAuth);
 } else {
-    // TODO FIX ME, this pops up every time even though it shouldnt
-    if (!window.Twitch.ext.viewer.isLinked) {
-        window.Twitch.ext.actions.requestIdShare();
-    }
-
     window.Twitch.ext.onContext((context) => {
         // Get the player's width
         let resolutions = context.displayResolution.split("x");
@@ -446,7 +441,9 @@ if (TESTING) {
         }
     });
     window.Twitch.ext.onAuthorized(function (auth) {
-        // TODO this should be validated by the proxy server, for now we will do it this way
+        if (!window.Twitch.ext.viewer.isLinked) {
+            window.Twitch.ext.actions.requestIdShare();
+        }
 
         Twitch.ext.bits.getProducts().then(function (products) {
             console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
