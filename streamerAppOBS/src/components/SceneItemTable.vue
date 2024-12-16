@@ -17,10 +17,6 @@ function onMovableChange(item: any) {
   }
 }
 
-function onInfoChange(item: any) {
-  console.log(item);
-}
-
 </script>
 
 <template>
@@ -41,7 +37,6 @@ function onInfoChange(item: any) {
                             <tr class="bg-gray-300">
                                 <th>Source Name</th>
                                 <th>Movable?</th>
-                                <th>Has Info</th>
                                 <th>Boundary</th>
                                 <th>Allow List</th>
                             </tr>
@@ -56,11 +51,6 @@ function onInfoChange(item: any) {
                                 <!-- Enabled Checkbox -->
                                 <td>
                                     <input type="checkbox" v-model="item.twitch_movable" @change="onMovableChange(item)"
-                                           class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
-                                </td>
-                                <!-- Enabled Checkbox for Info -->
-                                <td>
-                                    <input type="checkbox" v-model="item.has_info" @change="onInfoChange(item)"
                                            class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
                                 </td>
                                 <!-- Boundary Dropdown -->

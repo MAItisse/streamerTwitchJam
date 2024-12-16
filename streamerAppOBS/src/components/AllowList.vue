@@ -33,8 +33,19 @@ watch(() => configStore.allowList, (newValue, _) => {
   }
   // Set a new timeout to trigger the function after 1 second
   timeoutId = setTimeout(() => {
-      handleTypingDone(newValue);
+    handleTypingDone(newValue, configStore.addStreamerToAllLists);
   }, 1000);
+}, { deep: true });
+
+watch(() => configStore.addStreamerToAllLists, () => {
+  // console.log("AllowList: watch props.allowList fired.");
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+  // Set a new timeout to trigger the function after 1 second
+  timeoutId = setTimeout(() => {
+    handleTypingDone(configStore.allowList, configStore.addStreamerToAllLists);
+  }, 250);
 }, { deep: true });
 
 interface TwitchUser {
@@ -42,11 +53,16 @@ interface TwitchUser {
   id: string;
 }
 
-function handleTypingDone(allowListKeyMap: AllowListToSource): void {
+function handleTypingDone(allowListKeyMap: AllowListToSource, addStreamer: boolean): void {
   const twitchNameToIdMap: { [key: string]: TwitchUser[] } = {};
   for(let allowListKey in allowListKeyMap) {
-    configStore.allowList[allowListKey].allowed.split(",").forEach((name) => {
-      // console.log(`https://decapi.me/twitch/id/${name.trim()}`);
+    // TODO After split if addStreamer add the streamer to that list
+    let allowedNames = configStore.allowList[allowListKey].allowed.split(",");
+    if(addStreamer) {
+      allowedNames.push(configStore.twitchUsername);
+    }
+    allowedNames.forEach((name) => {
+      console.log(`https://decapi.me/twitch/id/${name.trim()}`);
       fetch(`https://decapi.me/twitch/id/${name.trim()}`).then((response) => {
         if(!response.ok) {
           throw new Error(`http error ${response.status}`);
@@ -68,6 +84,11 @@ function handleTypingDone(allowListKeyMap: AllowListToSource): void {
   console.log(twitchNameToIdMap);
 }
 
+function onStreamerAdded(event: any) {
+  console.log(event.target.checked);
+  configStore.addStreamerToAllLists = event.target.checked;
+}
+
 </script>
 
 <template>
@@ -80,6 +101,11 @@ function handleTypingDone(allowListKeyMap: AllowListToSource): void {
             <span class="font-semibold text-gray-500 text-sm">
               Only users on the selected list can move a source that it is applied to
             </span>
+          <div class="flex items-center">
+            <label for="addStreamer" class="mr-2">add streamer to all lists</label>
+              <input name="addStreamer" id="addStreamer" type="checkbox" @change="onStreamerAdded($event)"
+                     class="form-checkbox checkbox-lg scale-150 ml-4 h-5 w-5 text-blue-600 transition active:scale-[.95]" />
+          </div>
         </div>
         <table class="w-full bg-white">
             <thead>
@@ -147,9 +173,11 @@ td {
     text-align: center;
     text-indent: 4px;
 }
+td > input {
+  width: 100%;
+}
 
 input {
-    width: 100%;
     padding: 0px;
     padding-left: 0px;
     appearance: auto;

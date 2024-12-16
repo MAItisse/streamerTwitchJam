@@ -33,6 +33,7 @@ export const useConfigStore = defineStore('config', {
         allowList: {} as AllowListToSource,
         sourceToAllowList: {} as SourceToAllowList,
         twitchNameToUserId: {} as TwitchNameToIdMap,
+        addStreamerToAllLists: {} as boolean,
 
         // Misc ephemeral data
         obsSceneItems: [] as any, // TODO: I'd like this to be JsonObject[] ...

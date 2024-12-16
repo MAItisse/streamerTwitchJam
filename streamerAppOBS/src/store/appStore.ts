@@ -50,6 +50,7 @@ export const useAppStore = defineStore({
                     this.configStore.obsSceneItems[index].twitch_movable = true;
                     this.configStore.obsSceneItems[index].boundary_key = boundaryKey;
 
+                    // TODO do we want this to have its own bool?
                     const { title, description } = this.configStore.sourceInfoCards[scene.sceneItemId];
                     this.configStore.obsSceneItems[index].info_title = title;
                     this.configStore.obsSceneItems[index].info_description = description;
@@ -116,7 +117,9 @@ export const useAppStore = defineStore({
         async proxyOnMessage(event: any) {
             const message = event.data;
 
+            // v1 hello server message
             if (typeof message == "string" && message.includes('Hello Server!')) {
+                console.log("this is a hello server request");
                 await this.proxyWebSocket.sendObsSizeConfig();
                 await this.proxyWebSocket.sendWindowConfig();
                 await this.proxyWebSocket.sendInfoWindowDataConfig()
@@ -126,6 +129,17 @@ export const useAppStore = defineStore({
 
             try {
                 const transformRequest = JSON.parse(message);
+
+                //v2 hello server check
+                if (transformRequest.hasOwnProperty("data") && transformRequest.data === "Hello Server!") {
+                    console.log("this is a hello server request");
+                    await this.proxyWebSocket.sendObsSizeConfig();
+                    await this.proxyWebSocket.sendWindowConfig();
+                    await this.proxyWebSocket.sendInfoWindowDataConfig()
+                    await this.proxyWebSocket.runHello()
+                    return;
+                }
+
                 console.log("appStore: proxyOnMessage() received SetSceneTransformItem request from user: ", transformRequest.userId);
                 console.log("transformRequest: ", transformRequest);
 

@@ -32,6 +32,10 @@ export type TwitchNameToIdMap = {
     [key: string]: TwitchUser[];
 }
 
+export type AddStreamerToAllowLists = {
+    [key: string]: boolean;
+}
+
 export type AllowList = {
     allowed: string;
 }
