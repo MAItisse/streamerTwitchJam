@@ -32,17 +32,15 @@
             --r: 125;
             --g: 255;
             --b: 125;
-            background-color: rgba(var(--r), var(--g), var(--b), 0.1);
+            background-color: rgba(var(--r), var(--g), var(--b), 0.075);
             position: absolute;
             box-shadow: black 2px 2px 10px;
             transition: box-shadow 0.3s, backdrop-filter 0.5s ease-in-out, background-color 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
             border-radius: 4px;
-            backdrop-filter: blur(2px);
         }
 
         .draggableWindow:hover {
-            backdrop-filter: blur(5px);
-            background-color: rgba(var(--r), var(--g), var(--b), 0.357);
+            background-color: rgba(var(--r), var(--g), var(--b), 0.2);
             box-shadow: black 10px 10px 10px;
         }
 
