@@ -35,7 +35,6 @@ let offsetX = 0;
 let offsetY = 0;
 let draggedElementBounds = null;
 let obsScreenData = [];
-let jwtToken = '';
 
 let windowBounds = {};
 const defaultBounds = {left: 0, top: 0, right: 1, bottom: 1}; // Full container
@@ -95,7 +94,7 @@ function updateObsScreen(data) {
 
         // run some calculation for the zIndex -- or do on backend with obsWindow.zIndex
         node.style.zIndex = Math.max(1000 - parseInt((Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) +
-                             Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight))/10),1);
+                            Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight))/10),1);
     }
 }
 
@@ -234,7 +233,9 @@ function runGameJam(auth) {
             console.log("Connected to the WebSocket server");
             let container = document.getElementById("obs-container");
             container.style.display = "initial";
-            socket.send("Hello Server!");
+            // v2 send of the hello server as a data
+            socket.send(JSON.stringify({"jwt":auth["token"]}));
+            socket.send(JSON.stringify({"data":"Hello Server!"}));
             if (reconnectInterval) {
                 clearInterval(reconnectInterval); // Clear the reconnect interval on successful connection
                 reconnectInterval = null;
@@ -249,6 +250,7 @@ function runGameJam(auth) {
             console.log("has data")
             console.log(event)
             let eventData = JSON.parse(event.data);
+            userId = eventData['userId']
 
             // If the data contains the screen configuration (like the windows to display)
             if (Array.isArray(eventData.data)) {
@@ -314,8 +316,7 @@ function runGameJam(auth) {
                 name: draggedElement.id, // Assuming each draggableWindow has a unique id
                 x: x,
                 y: y,
-                userId: userId,
-                jwtToken: jwtToken
+                userId: userId
             };
             sendMessage(JSON.stringify(data));
 
@@ -451,9 +452,8 @@ if (TESTING) {
         }
     });
     window.Twitch.ext.onAuthorized(function (auth) {
-        jwtToken = auth['token']
         // TODO this should be validated by the proxy server, for now we will do it this way
-        userId = JSON.parse(atob(jwtToken.split('.')[1]))['user_id']
+        // userId = JSON.parse(atob(auth['token'].split('.')[1]))['user_id']
 
         Twitch.ext.bits.getProducts().then(function (products) {
             console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
@@ -506,7 +506,7 @@ if (TESTING) {
     window.Twitch.ext.bits.onTransactionComplete(function (transactionObject) {
         console.log("we just completed the transaction")
         // console.log(transactionObject);
-        userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
+        // userId = JSON.parse(atob(transactionObject['transactionReceipt'].split('.')[1]))['data']['userId']
         console.log(userId);
         const data = {
             r: getRandomColor(),
