@@ -10,3 +10,4 @@ streamerApp/obsConfig.json
 *._.DS_Store
 *.exe
 *app-info
+proxy/.env

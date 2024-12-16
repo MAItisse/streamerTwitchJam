@@ -50,12 +50,21 @@ use rocket::serde::json::Json;
 use rocket::tokio::sync;
 use rocket::{Request, State};
 use serde::{Deserialize, Serialize};
+use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, TokenData, Validation};
+use std::io;
+use base64::prelude::*;
+
+
+use dotenv::dotenv;
+use std::env;
+use ws::Message;
 
 /// The host we are at
 const HOST: &str = "localhost:8000";
 
 /// Twitch user id
 type UserId = Arc<str>;
+type JwtSecretType = Arc<str>;
 
 /// Holds the communication channels for proxying events between the streamer and the clients
 #[derive(Debug)]
@@ -158,6 +167,17 @@ fn default_catcher(status: Status, _request: &Request) -> Json<GenericError> {
         status: status.code,
         reason: status.reason().map(ToOwned::to_owned),
     })
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct TwitchAuth {
+    jwt: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct JwtData {
+    user_id: String,
+    // is_unlinked: bool,
 }
 
 /// Return a simple message to show we are working
@@ -272,6 +292,7 @@ fn connect_user(
     ws: ws::WebSocket,
     user: &str,
     lobbies: &State<Lobbies>,
+    jwt_auth_key: &State<JwtSecretType>,
 ) -> Result<ws::Channel<'static>, Errors> {
     let channels = lobbies.channels.read().unknown()?;
     let Some(lobby) = channels.get(user) else {
@@ -294,6 +315,7 @@ fn connect_user(
     drop(lobby_channels_lock);
     drop(channels);
 
+    let jwt_auth_key = Arc::clone(jwt_auth_key);
     Ok(ws.channel(move |connection| {
         Box::pin(async move {
             let (mut connection_send, mut connection_recv) = connection.split();
@@ -303,6 +325,7 @@ fn connect_user(
                 // because its a moment in time and not a timestamp (does that make sense?)
                 let mut is_first_message = true;
                 let mut last_accepted_message_time = Instant::now();
+                let mut jwt_data: Option<TokenData<JwtData>> = None;
 
                 while let Some(Ok(message)) = connection_recv.next().await {
                     if !message.is_close() {
@@ -317,9 +340,25 @@ fn connect_user(
                                 .as_millis()
                                 >= 20
                         {
-                            is_first_message = false;
-                            last_accepted_message_time = Instant::now();
-                            let _ = channel_send.send(message).await;
+                            if let Some(jwt_data) = &jwt_data {
+                                is_first_message = false;
+                                last_accepted_message_time = Instant::now();
+
+                                let mut message_data: HashMap<String, serde_json::Value> = serde_json::from_str(message.to_text().unwrap()).unwrap();
+                                message_data.insert("userId".into(), serde_json::Value::String(jwt_data.claims.user_id.clone()));
+                                let _ = channel_send.send(Message::text(serde_json::to_string(&message_data).unwrap())).await;
+                            } else {
+                                jwt_data = parse_jwt_data(&message, &jwt_auth_key);
+
+
+                                ///////
+                                // TODO remove this when v4 is out, we want to just parse the data no do following steps
+                                if jwt_data.is_none() {
+                                    let _ = channel_send.send(message).await;
+                                }
+                                ///////
+
+                            }
                         }
                     }
                 }
@@ -342,10 +381,23 @@ fn connect_user(
     }))
 }
 
+fn parse_jwt_data(message: &Message, jwt_auth_key: &JwtSecretType) -> Option<TokenData<JwtData>> {
+    let twitch_auth: TwitchAuth = serde_json::from_str(message.to_text().ok()?).ok()?;
+    let validation = Validation::new(Algorithm::HS256);
+    Some(decode::<JwtData>(
+        &twitch_auth.jwt,
+        &DecodingKey::from_secret(&*BASE64_STANDARD.decode(jwt_auth_key.as_ref()).ok()?),
+        &validation,
+    ).ok()?)
+}
+
 /// Start the server
 #[launch]
 fn rocket() -> _ {
     let cors = rocket_cors::CorsOptions::default();
+    dotenv().ok(); // Reads the .env file
+    let jwt_auth_key = env::var("JWT_AUTH_KEY")
+        .expect("JWT Auth Key must be set in the environment variables");
     #[allow(clippy::expect_used)]
     rocket::build()
         .mount(
@@ -354,6 +406,7 @@ fn rocket() -> _ {
         )
         .register("/", catchers![default_catcher])
         .manage(Lobbies::default())
+        .manage(JwtSecretType::from(jwt_auth_key))
         .attach(cors.to_cors().expect("Failed to create cors"))
 }
 
