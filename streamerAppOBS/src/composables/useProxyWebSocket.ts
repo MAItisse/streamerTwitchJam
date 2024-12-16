@@ -154,6 +154,14 @@ export function useProxyWebSocket() {
             }
         }))
         await send(payload);
+        // TODO once v4 is released we can remove the above
+        let payload4 = JSON.stringify(JSON.stringify({
+            obsSize: {
+                width: configStore.videoSettings.baseWidth,
+                height: configStore.videoSettings.baseHeight,
+            }
+        }))
+        await send(payload4);
     }
 
     const sendWindowConfig = async () => {
@@ -246,6 +254,15 @@ export function useProxyWebSocket() {
                 }]
         }
         await send(JSON.stringify(data));
+        // let data4 = {
+        //     "name": windowId,
+        //     "x": x,
+        //     "y": y,
+        //     "width": windowWidth + "px",
+        //     "height": windowHeight + "px",
+        //     "info": "some data to register later"
+        // }
+        // await send(JSON.stringify(data4));
 
         configStore.obsSceneItems.forEach((scene: any, _: number) => {
             if (scene.sceneItemId == windowId) {
@@ -267,7 +284,6 @@ export function useProxyWebSocket() {
         //     // copying random stuff from python version
         //     info: 'some data to register later',
         //     // maybe we also have this settable for each window
-        //     zIndex: 10
         // })
 
         let sourceData: { name: any; x: any; y: any; width: any; height: any; info: string; }[] = [];
@@ -279,7 +295,7 @@ export function useProxyWebSocket() {
             const height = (t.sourceHeight - (t.cropTop + t.cropBottom)) * t.scaleY;
 
             if (scene.sceneItemId in configStore.sourceToBoundaryMap) {
-                let w = {
+                let w:{ name: any; x: any; y: any; width: any; height: any; info: string; } = {
                     name: scene.sceneItemId,
                     x: scene.sceneItemTransform.positionX,
                     y: scene.sceneItemTransform.positionY,
@@ -288,6 +304,11 @@ export function useProxyWebSocket() {
                     info: 'this window will have info'
                 };
                 sourceData.push(w);
+                // TODO we want to probably just send these one at a time,
+                //      works fine, but we need to change the other side to allow building this list on that side if needed
+                //      possible workaround would be to gather the windows from the html, and run the array off that
+                // send(JSON.stringify(w))
+                // console.log("sending ", w);
             }
         });
 
