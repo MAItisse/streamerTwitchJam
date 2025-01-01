@@ -41,7 +41,11 @@ extern crate rocket;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::Instant;
+use std::{env, io};
 
+use base64::prelude::*;
+use dotenv::dotenv;
+use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, TokenData, Validation};
 use log::{error, warn};
 use rocket::futures::{SinkExt, StreamExt};
 use rocket::http::Status;
@@ -50,13 +54,6 @@ use rocket::serde::json::Json;
 use rocket::tokio::sync;
 use rocket::{Request, State};
 use serde::{Deserialize, Serialize};
-use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, TokenData, Validation};
-use std::io;
-use base64::prelude::*;
-
-
-use dotenv::dotenv;
-use std::env;
 use ws::Message;
 
 /// The host we are at
@@ -83,7 +80,7 @@ struct Lobby {
     /// Key required for the streamer to connect to the socket
     streamer_key: String,
     /// Channels for communication
-    channels: RwLock<Option<LobbyChannels>>,
+    channels: Option<LobbyChannels>,
 }
 
 impl Lobby {
@@ -92,7 +89,7 @@ impl Lobby {
         Self {
             owner,
             streamer_key: uuid::Uuid::new_v4().to_string(),
-            channels: RwLock::new(None),
+            channels: None,
         }
     }
 }
@@ -216,8 +213,8 @@ fn connect_streamer<'a>(
     key: &str,
     lobbies: &'a State<Lobbies>,
 ) -> Result<ws::Channel<'a>, Errors> {
-    let channels = lobbies.channels.read().unknown()?;
-    let Some(lobby) = channels.get(user) else {
+    let mut channels = lobbies.channels.write().unknown()?;
+    let Some(lobby) = channels.get_mut(user) else {
         log::warn!("Streamer tried to connect to unknown lobby.");
         return Err(Errors::NotFound("You dont have a lobby open".into()));
     };
@@ -230,7 +227,7 @@ fn connect_streamer<'a>(
         return Err(Errors::NotAllowed("Wrong key!".into()));
     }
 
-    let mut lobby_channels = lobby.channels.write().unknown()?;
+    let lobby_channels = &mut lobby.channels;
     if lobby_channels.is_some() {
         log::warn!("Streamer tried to connect but lobby already exsits.");
         return Err(Errors::AlreadyConnected(
@@ -247,7 +244,6 @@ fn connect_streamer<'a>(
     });
 
     // Make sure we dont hold the locks too long
-    drop(lobby_channels);
     drop(channels);
 
     Ok(ws.channel(move |mut connection| {
@@ -299,8 +295,7 @@ fn connect_user(
         return Err(Errors::NotFound("Lobby does not exsit".into()));
     };
 
-    let lobby_channels_lock = lobby.channels.read().unknown()?;
-    let Some(lobby_channels) = lobby_channels_lock.as_ref() else {
+    let Some(lobby_channels) = lobby.channels.as_ref() else {
         log::warn!("Viewer tried to lobby a that doesnt have a streamer connected yet.");
         return Err(Errors::NotFound(
             "The game has not yet connected to this lobby".to_owned(),
@@ -310,8 +305,6 @@ fn connect_user(
     let mut channel_recv = lobby_channels.streamer_to_client.resubscribe();
     let channel_send = lobby_channels.client_to_streamer.clone();
 
-    // Make sure we dont hold the locks too long
-    drop(lobby_channels_lock);
     drop(channels);
 
     let jwt_auth_key = Arc::clone(jwt_auth_key);
@@ -327,7 +320,7 @@ fn connect_user(
                 let mut jwt_data: Option<TokenData<JwtData>> = None;
 
                 while let Some(Ok(message)) = connection_recv.next().await {
-                    if !message.is_close() {
+                    if message.is_close() {
                         if message.len() >= 1000 {
                             warn!("Client sent message of length {}", message.len());
                             continue;
@@ -343,9 +336,17 @@ fn connect_user(
                                 is_first_message = false;
                                 last_accepted_message_time = Instant::now();
 
-                                let mut message_data: HashMap<String, serde_json::Value> = serde_json::from_str(message.to_text().unwrap()).unwrap();
-                                message_data.insert("userId".into(), serde_json::Value::String(jwt_data.claims.user_id.clone()));
-                                let _ = channel_send.send(Message::text(serde_json::to_string(&message_data).unwrap())).await;
+                                let mut message_data: HashMap<String, serde_json::Value> =
+                                    serde_json::from_str(message.to_text().unwrap()).unwrap();
+                                message_data.insert(
+                                    "userId".into(),
+                                    serde_json::Value::String(jwt_data.claims.user_id.clone()),
+                                );
+                                let _ = channel_send
+                                    .send(Message::text(
+                                        serde_json::to_string(&message_data).unwrap(),
+                                    ))
+                                    .await;
                             } else {
                                 jwt_data = parse_jwt_data(&message, &jwt_auth_key);
                                 log::info!("JWT data: {:?}", jwt_data);
@@ -353,7 +354,10 @@ fn connect_user(
                                 // TODO decide if we want to remove this, this is for users that dont
                                 //      have grant access enabled - if they enable after load this also applies
                                 if jwt_data.is_none() {
-                                    log::info!("message data {:?}", message.to_text().unwrap().contains("jwt"));
+                                    log::info!(
+                                        "message data {:?}",
+                                        message.to_text().unwrap().contains("jwt")
+                                    );
                                     if !message.to_text().unwrap().contains("jwt") {
                                         let _ = channel_send.send(message).await;
                                     }
@@ -384,11 +388,14 @@ fn connect_user(
 fn parse_jwt_data(message: &Message, jwt_auth_key: &JwtSecretType) -> Option<TokenData<JwtData>> {
     let twitch_auth: TwitchAuth = serde_json::from_str(message.to_text().ok()?).ok()?;
     let validation = Validation::new(Algorithm::HS256);
-    Some(decode::<JwtData>(
-        &twitch_auth.jwt,
-        &DecodingKey::from_secret(&*BASE64_STANDARD.decode(jwt_auth_key.as_ref()).ok()?),
-        &validation,
-    ).ok()?)
+    Some(
+        decode::<JwtData>(
+            &twitch_auth.jwt,
+            &DecodingKey::from_secret(&*BASE64_STANDARD.decode(jwt_auth_key.as_ref()).ok()?),
+            &validation,
+        )
+        .ok()?,
+    )
 }
 
 /// Start the server
@@ -396,8 +403,8 @@ fn parse_jwt_data(message: &Message, jwt_auth_key: &JwtSecretType) -> Option<Tok
 fn rocket() -> _ {
     let cors = rocket_cors::CorsOptions::default();
     dotenv().ok(); // Reads the .env file
-    let jwt_auth_key = env::var("JWT_AUTH_KEY")
-        .expect("JWT Auth Key must be set in the environment variables");
+    let jwt_auth_key =
+        env::var("JWT_AUTH_KEY").expect("JWT Auth Key must be set in the environment variables");
     #[allow(clippy::expect_used)]
     rocket::build()
         .mount(
