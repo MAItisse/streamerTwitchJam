@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Extension Configuration</title>
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script src="configJs.js"></script>
   <style>
     /* Reset some default styles */
     * {
@@ -129,6 +130,14 @@
         Follow the instructions provided in the newly created dock to complete the setup.
       </li>
     </ol>
+
+    <!-- New Section: Color Selector -->
+    <h2>Window Starting Color</h2>
+    <p>Select a starting color for your OBS window:</p>
+    <label for="window-color">Choose a color:</label>
+    <input type="color" id="window-color" name="window-color" value="#4a90e2">
+    <p>Selected Color: <span id="selected-color">#4a90e2</span></p>
+
     <div class="note">
       <p>If you prefer to run this locally, you can clone the project from the <a href="https://github.com/MAItisse/streamerTwitchJam?tab=readme-ov-file#chat-plays-obs" target="_blank" rel="noreferrer">GitHub repository</a>. Note that you will need <strong>npm</strong> installed to run it locally.</p>
     </div>
