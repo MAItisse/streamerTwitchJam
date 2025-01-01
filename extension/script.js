@@ -440,57 +440,78 @@ if (TESTING) {
             updateObsScreen(obsScreenData);
         }
     });
+
     window.Twitch.ext.onAuthorized(function (auth) {
+        // would now require authed before continuing
         if (!window.Twitch.ext.viewer.isLinked) {
             window.Twitch.ext.actions.requestIdShare();
+            return;
         }
 
-        Twitch.ext.bits.getProducts().then(function (products) {
-            console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
-            const buttonsContainer = document.getElementById('bits-buttons-container');
-            // Clear any existing buttons, this gets called every reauthorization
-            buttonsContainer.innerHTML = '';
+        // TODO check if the channel can be queried for if it can run bits
+        //      if we can easily here then use that to wrap this
+        if (window.Twitch.ext.features.isBitsEnabled) {
+            Twitch.ext.bits.getProducts().then(function (products) {
+                console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
+                const buttonsContainer = document.getElementById('bits-buttons-container');
+                // Clear any existing buttons, this gets called every reauthorization
+                buttonsContainer.innerHTML = '';
 
-            // Iterate through each product and create a button
-            products.forEach(function (product) {
-                const button = document.createElement('button');
+                // Iterate through each product and create a button
+                products.forEach(function (product) {
+                    const button = document.createElement('button');
 
-                const topText = document.createElement('span');
-                topText.classList.add('top-text');
-                topText.textContent = `${product.displayName}`; // Top text (number range)
+                    const topText = document.createElement('span');
+                    topText.classList.add('top-text');
+                    topText.textContent = `${product.displayName}`; // Top text (number range)
 
-                const bottomText = document.createElement('span');
-                bottomText.classList.add('bottom-text');
-                bottomText.textContent = `bits ${product.cost.amount}`; // Top text (number range)
+                    const bottomText = document.createElement('span');
+                    bottomText.classList.add('bottom-text');
+                    bottomText.textContent = `bits ${product.cost.amount}`; // Top text (number range)
 
-                button.appendChild(topText);
-                button.appendChild(document.createElement('br')); // Line break between top and bottom text
-                button.appendChild(bottomText);
-                // Set the button text to display the amount of bits
+                    button.appendChild(topText);
+                    button.appendChild(document.createElement('br')); // Line break between top and bottom text
+                    button.appendChild(bottomText);
+                    // Set the button text to display the amount of bits
 
-                // Assign the SKU as a data attribute for later reference
-                button.dataset.sku = product.sku;
+                    // Assign the SKU as a data attribute for later reference
+                    button.dataset.sku = product.sku;
 
-                // Optionally, add a class for styling
-                button.classList.add('bits-button');
+                    // Optionally, add a class for styling
+                    button.classList.add('bits-button');
 
-                // Add an event listener for button clicks
-                button.addEventListener('click', function () {
-                    // Handle the button click
-                    console.log("just clicked ", this.dataset.sku)
-                    Twitch.ext.bits.useBits(this.dataset.sku);
+                    // Add an event listener for button clicks
+                    button.addEventListener('click', function () {
+                        // Handle the button click
+                        console.log("just clicked ", this.dataset.sku)
+                        Twitch.ext.bits.useBits(this.dataset.sku);
+                    });
+
+                    // Append the button to the container
+                    buttonsContainer.appendChild(button);
                 });
 
-                // Append the button to the container
-                buttonsContainer.appendChild(button);
+                // Make sure the bits buttons container is visible
+                document.getElementById('top-left-menu').classList.add('visible');
+            }).catch(function (error) {
+                console.error('Error fetching Bits products:', error);
             });
+        }
 
-            // Make sure the bits buttons container is visible
-            document.getElementById('top-left-menu').classList.add('visible');
-        }).catch(function (error) {
-            console.error('Error fetching Bits products:', error);
-        });
         runGameJam(auth);
+        const data = {
+            r: getRandomColor(),
+            g: getRandomColor(),
+            b: getRandomColor(),
+        };
+        console.log("new color data:", data);
+        const tWindows = document.getElementsByClassName("draggableWindow");
+        for (let i = 0; i < tWindows.length; i++) {
+            // TODO do a backend call to get the streamer's colors
+            tWindows[i].style.setProperty("--r", data.r);
+            tWindows[i].style.setProperty("--g", data.g);
+            tWindows[i].style.setProperty("--b", data.b);
+        }
     });
 
     window.Twitch.ext.bits.onTransactionComplete(function (transactionObject) {
