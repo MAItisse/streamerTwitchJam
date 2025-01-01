@@ -177,7 +177,6 @@ struct TwitchAuth {
 #[derive(Debug, Serialize, Deserialize)]
 struct JwtData {
     user_id: String,
-    // is_unlinked: bool,
 }
 
 /// Return a simple message to show we are working
@@ -338,7 +337,7 @@ fn connect_user(
                             || Instant::now()
                                 .saturating_duration_since(last_accepted_message_time)
                                 .as_millis()
-                                >= 20
+                                >= 100
                         {
                             if let Some(jwt_data) = &jwt_data {
                                 is_first_message = false;
@@ -349,15 +348,16 @@ fn connect_user(
                                 let _ = channel_send.send(Message::text(serde_json::to_string(&message_data).unwrap())).await;
                             } else {
                                 jwt_data = parse_jwt_data(&message, &jwt_auth_key);
+                                log::info!("JWT data: {:?}", jwt_data);
 
-
-                                ///////
-                                // TODO remove this when v4 is out, we want to just parse the data no do following steps
+                                // TODO decide if we want to remove this, this is for users that dont
+                                //      have grant access enabled - if they enable after load this also applies
                                 if jwt_data.is_none() {
-                                    let _ = channel_send.send(message).await;
+                                    log::info!("message data {:?}", message.to_text().unwrap().contains("jwt"));
+                                    if !message.to_text().unwrap().contains("jwt") {
+                                        let _ = channel_send.send(message).await;
+                                    }
                                 }
-                                ///////
-
                             }
                         }
                     }
