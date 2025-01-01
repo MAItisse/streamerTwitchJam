@@ -132,36 +132,21 @@ export function useProxyWebSocket() {
     const sendObsSizeConfig = async () => {
         // console.log("useProxyWebSockets: sendObsSizeConfig()");
         /*
-            *** NOTE: TODO: note the double-encoded JSON
-
             Extension expects this format:
-
             {
                 obsSize: {
-                    obsSize: {
-                        width: 1920,
-                        height: 1080
-                    }
+                    width: 1920,
+                    height: 1080
                 }
             }
         */
         let payload = JSON.stringify(JSON.stringify({
             obsSize: {
-                obsSize: {
-                    width: configStore.videoSettings.baseWidth,
-                    height: configStore.videoSettings.baseHeight,
-                }
-            }
-        }))
-        await send(payload);
-        // TODO once v4 is released we can remove the above
-        let payload4 = JSON.stringify(JSON.stringify({
-            obsSize: {
                 width: configStore.videoSettings.baseWidth,
                 height: configStore.videoSettings.baseHeight,
             }
         }))
-        await send(payload4);
+        await send(payload);
     }
 
     const sendWindowConfig = async () => {

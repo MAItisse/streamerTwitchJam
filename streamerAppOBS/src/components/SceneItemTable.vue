@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { computed } from 'vue';
 import { useConfigStore } from '../store/configStore';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -16,6 +17,17 @@ function onMovableChange(item: any) {
     item.allowList_key = 'everyone';
   }
 }
+
+// watch(() => configStore., (newValue, _) => {
+//   // console.log("AllowList: watch props.allowList fired.");
+//   if (timeoutId) {
+//     clearTimeout(timeoutId);
+//   }
+//   // Set a new timeout to trigger the function after 1 second
+//   timeoutId = setTimeout(() => {
+//     handleTypingDone(newValue, configStore.addStreamerToAllLists);
+//   }, 1000);
+// }, { deep: true });
 
 </script>
 
@@ -66,15 +78,21 @@ function onMovableChange(item: any) {
                                     </select>
                                 </td>
                                 <!-- Allow List Dropdown -->
-                                <td>
-                                  <select v-if="item.twitch_movable" v-model="item.allowList_key"
-                                          class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                                    <option value="everyone" selected>Everyone</option>
-                                    <option v-for="(_, key, ind) in configStore.allowList" :key="key" :value="key">
-                                      #{{ ind + 1 }}
-                                    </option>
-                                  </select>
-                                </td>
+                              <td>
+                                <select
+                                    v-if="item.twitch_movable"
+                                    v-model="item.allowList_key"
+                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+
+                                  <option value="everyone" selected>Everyone</option>
+                                  <option value="#mods">Moderators</option>
+                                  <option value="#vips">VIPs</option>
+                                  <option v-for="(listData, key, ind) in configStore.allowList" :key="key" :value="key">
+                                    #{{ ind + 1 }}
+                                  </option>
+                                </select>
+                              </td>
+
                             </tr>
                         </tbody>
                     </table>

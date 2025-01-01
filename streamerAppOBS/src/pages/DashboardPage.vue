@@ -74,7 +74,8 @@ const saveConfig = () => {
         "theme": "dark",
         "type": "default",
         "transition": "flip",
-        "dangerouslyHTMLString": true
+        "dangerouslyHTMLString": true,
+        "autoClose": 500 ,
     })
 }
 

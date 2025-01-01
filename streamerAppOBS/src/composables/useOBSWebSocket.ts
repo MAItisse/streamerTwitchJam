@@ -54,6 +54,69 @@ export function useOBSWebSocket() {
 
         });
 
+        socket.value.on("CustomEvent", (data) => {
+            if("chatPlaysObs" in data) {
+                let apiData: any = data.chatPlaysObs;
+                console.log('CustomEvent event received:', apiData);
+                // TODO we want to define the api here and allow for people to hit different parts of the script'
+                if ("AppendToAllowList" in apiData) {
+                    configStore.allowList["pf4ireo"].allowed = configStore.allowList["pf4ireo"].allowed + ", " + apiData.AppendToAllowList["name"];
+                }
+                if ("EditInfoCard" in apiData) {
+                    configStore.sourceInfoCards["110"]["title"] = apiData.EditInfoCard["title"];
+                    configStore.sourceInfoCards["110"]["description"] = apiData.EditInfoCard["description"];
+                    appStore.resetWindowConfig();
+                }
+                //"pwypmbn":{"left":0,"top":0.256,"right":1,"bottom":1.001}}
+                if ("EditBoundaryData" in apiData) {
+                    for (let i = 0; i < configStore.obsSceneItems.length; i++) {
+                        if(configStore.obsSceneItems[i].sourceName == apiData.EditBoundaryData["sourceName"]) {
+                            // configStore.obsSceneItems[i] = apiData.EditBoundary["movable"];
+                            console.log("found the sourcename: " + apiData.EditBoundaryData["sourceName"]);
+                            if(configStore.obsSceneItems[i].boundary_key in ["none", "locked"]) {
+                                // Ignore for now
+                            } else {
+                                // {"2":"none","84":"xu8uffo","96":"none","97":"k08iunx","104":"none","105":"6tot8qm",
+                                // "119":"none","121":"none","128":"6tot8qm","135":"locked"}
+                                let boundaryId = configStore.sourceToBoundaryMap[configStore.obsSceneItems[i].sceneItemId];
+                                // {"o7trukd":{"left":0,"top":0.2,"right":0.538,"bottom":0.872},
+                                // "6tot8qm":{"left":0.066,"top":0.734,"right":0.909,"bottom":0.931}}
+                                configStore.bounds[boundaryId] = {"left":apiData.EditBoundaryData["left"],"top":apiData.EditBoundaryData["top"],
+                                    "right":apiData.EditBoundaryData["right"],"bottom":apiData.EditBoundaryData["bottom"]};
+                            }
+                        }
+                    }
+                    configStore.bounds["pwypmbn"] = {"left":apiData.EditBoundaryData["left"],"top":apiData.EditBoundaryData["top"],
+                                                     "right":apiData.EditBoundaryData["right"],"bottom":apiData.EditBoundaryData["bottom"]};
+                    appStore.resetInfoCards();
+                }
+                if ("EditMovable" in apiData) {
+                    for (let i = 0; i < configStore.obsSceneItems.length; i++) {
+                        if(configStore.obsSceneItems[i].sourceName == apiData.EditMovable["sourceName"]) {
+                            configStore.obsSceneItems[i].twitch_movable = apiData.EditMovable["movable"];
+                        }
+                    }
+                }
+                if ("EditBoundary" in apiData) {
+
+                }
+                if ("EditAllowList" in apiData) {
+                    console.log(configStore.obsSceneItems);
+                    console.log(configStore.obsSceneItems[1].sourceName);
+                    console.log(configStore.obsSceneItems[1].sceneItemId);
+                    console.log(configStore.obsSceneItems[1].allowList_key);
+                }
+
+
+                if ("SaveSettings" in apiData) {
+                    configStore.saveSettingsToLocalStorage();
+                }
+            }
+            else {
+                console.log('not our customEvent');
+            }
+        });
+
         statusStore.obsConnectionStatus = OBSConnectionStatus.Connecting;
         await socket.value.connect(address, configStore.obsPassword).catch((e) => {
             console.warn("caught error:", e, e.code, e.name, e.message);

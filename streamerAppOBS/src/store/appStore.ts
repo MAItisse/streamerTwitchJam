@@ -62,10 +62,21 @@ export const useAppStore = defineStore({
             });
         },
 
+        async resetWindowConfig() {
+            await this.proxyWebSocket.sendWindowConfig();
+        },
+        async resetInfoCards() {
+            await this.proxyWebSocket.sendInfoWindowDataConfig()
+        },
+
         // obsOnOpen is called after the OBS websocket has connected and identified us and is ready to take commands
         // (Note: it will hang up if we don't let it say hello before we send commands to it)
-        async obsOnOpen(skipConnect: boolean = false) {
+        async obsOnOpen(skipProxyConnect: boolean = false, skipObsConnect: boolean = false) {
             // Fetch some info that we'll need after OBS finishes connecting
+
+            // TODO we want to have it so we can skip the obs connection and just stay on the current one
+            if (skipObsConnect) {}
+            else {}
             this.configStore.videoSettings = await this.obsWebSocket.getVideoSettings();
 
             /**
@@ -82,7 +93,7 @@ export const useAppStore = defineStore({
             }).then((sceneItems) => {
 
                 this.configStore.obsSceneItems = (sceneItems || []).filter(scene => scene.sceneItemEnabled);
-                if (skipConnect) {
+                if (skipProxyConnect) {
                     this.updateSceneItems();
                 } else {
                     // will disconnect and reconnect the proxy web socket
@@ -155,11 +166,11 @@ export const useAppStore = defineStore({
                     throw new Error('Invalid boundary ID: ' + transformRequest.name);
                 }
 
-                // TODO v4 needed for this version to work or the todo below
+                // TODO lets remove this from being a string in the future
+                //      should contain 1 more layer of misdirection - an enum const somewhere that front and backend call
                 if (this.configStore.sourceToAllowList[transformRequest.name] != "everyone") {
                     // check to see if user is on allowed list
                     const allowList = this.configStore.twitchNameToUserId[this.configStore.sourceToAllowList[transformRequest.name]];
-                    // TODO this needs to have the proxy server forward the correct userId (can be spoofed currently), or the frontend needs to do it for now
                     if (!(allowList.some(user => user.id === transformRequest.userId))) {
                         console.log("not allowed to use this");
                         return;
@@ -196,6 +207,8 @@ export const useAppStore = defineStore({
                 console.log("appStore: invalid sceneItem transform request: ", e);
             }
         },
+
+        // sendMessage(
 
         // proxyOnClose is called from onclose in the proxyWebSocket
         proxyOnClose() {

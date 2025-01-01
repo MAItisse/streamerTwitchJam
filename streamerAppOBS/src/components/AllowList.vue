@@ -9,13 +9,20 @@ const configStore = useConfigStore();
 
 
 onMounted(() => {
-    if (Object.keys(configStore.allowList).length == 0) {
-      addNewAllowList();
-    }
+  if (!Object.keys(configStore.allowList).includes("mods")) {
+    addNewAllowList("mods");
+  }
+  if (!Object.keys(configStore.allowList).includes("vips")) {
+    addNewAllowList("vips");
+  }
+  if (Object.keys(configStore.allowList).length == 0) {
+    addNewAllowList();
+  }
+  configStore.addStreamerToAllLists = false;
 });
 
-function addNewAllowList() {
-  const key = generateKey()
+function addNewAllowList(key: string = generateKey()) {
+  // const key = generateKey()
   configStore.allowList[key] = {allowed: ""}
   // console.log("allowList = ", configStore.allowList);
 }
@@ -56,7 +63,6 @@ interface TwitchUser {
 function handleTypingDone(allowListKeyMap: AllowListToSource, addStreamer: boolean): void {
   const twitchNameToIdMap: { [key: string]: TwitchUser[] } = {};
   for(let allowListKey in allowListKeyMap) {
-    // TODO After split if addStreamer add the streamer to that list
     let allowedNames = configStore.allowList[allowListKey].allowed.split(",");
     if(addStreamer) {
       allowedNames.push(configStore.twitchUsername);
@@ -117,8 +123,10 @@ function onStreamerAdded(event: any) {
             </thead>
             <transition-group name="fade" tag="tbody">
                 <tr v-for="(listData, key, ind) in configStore.allowList" :key="key" class="hover:bg-gray-50 fade-row">
-                    <td>
-                        {{ ind + 1 }}
+                    <td v-if="ind === 0">Moderators</td>
+                    <td v-if="ind === 1">VIPs</td>
+                    <td v-else-if="ind >= 2">
+                        {{ ind - 1 }}
                     </td>
 
                     <!-- Position -->
