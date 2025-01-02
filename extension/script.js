@@ -300,8 +300,7 @@ function runGameJam(auth) {
 
     connectWebSocket();
 
-    // Function to stop dragging
-    window.addEventListener("mouseup", () => {
+    function handleDragEnd(e) {
         // console.log("Mouse released");
         if (isDragging && draggedElement) {
             // Send the final position to the server
@@ -321,7 +320,11 @@ function runGameJam(auth) {
         document.body.style.cursor = ''; // Reset cursor
         dragCooldown = true; // Set cooldown
         setTimeout(() => {dragCooldown = false;}, 100); // Cooldown for 100ms
-    });
+    }
+
+    // Function to stop dragging
+    window.addEventListener("mouseup", (e) => handleDragEnd(e));
+    window.addEventListener("touchend", (e) => handleDragEnd(e));
 
     function sendMessage(message) {
         if (socket.readyState === WebSocket.OPEN) {
@@ -335,10 +338,17 @@ function runGameJam(auth) {
     }
 }
 
-// Function to handle dragging
-document.addEventListener("mousedown", (e) => {
+function getEventCoordinates(event) {
+    if (event.touches && event.touches.length > 0) {
+        return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    }
+    return { x: event.clientX, y: event.clientY };
+}
+
+function handleDragStart(e) {
     if (dragCooldown) return;
 
+    const { x, y } = getEventCoordinates(e);
     let obsCont;
     // Ensure the draggableWindow is correctly identified even if a child element (like infoIcon) is clicked
     let target = e.target.closest(".draggableWindow");
@@ -351,8 +361,8 @@ document.addEventListener("mousedown", (e) => {
 
         // Calculate the offset
         const elemRect = draggedElement.getBoundingClientRect();
-        offsetX = e.clientX - elemRect.left;
-        offsetY = e.clientY - elemRect.top;
+        offsetX = x - elemRect.left;
+        offsetY = y - elemRect.top;
 
         // Store the initial position of the draggedElement
         draggedElement.initialX = parseFloat(draggedElement.style.left) / 100;
@@ -362,11 +372,15 @@ document.addEventListener("mousedown", (e) => {
         console.log("this is the window bounds", windowBounds);
         draggedElementBounds = windowBounds[windowID] || defaultBounds;
     }
-});
+}
+
+// Function to handle dragging
+document.addEventListener("mousedown", (e) => handleDragStart(e));
+document.addEventListener("touchstart", (e) => handleDragStart(e));
 
 let mouseTimer;
 
-document.addEventListener("mousemove", (e) => {
+function handleDragMove(e){
     if (isDragging && draggedElement) {
         const x = (e.clientX - rect.left - offsetX) / rect.width;
         const y = (e.clientY - rect.top - offsetY) / rect.height;
@@ -396,7 +410,10 @@ document.addEventListener("mousemove", (e) => {
     mouseTimer = setTimeout(() => {
         document.body.classList.remove('visible');
     }, 5000);
-});
+}
+
+document.addEventListener("mousemove", (e) => handleDragMove(e));
+document.addEventListener("touchmove", (e) => handleDragMove(e));
 
 document.getElementById("obs-container").addEventListener("mouseleave", function(event){document.body.classList.remove('visible');});
 
