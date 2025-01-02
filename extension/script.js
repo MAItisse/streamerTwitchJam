@@ -88,12 +88,22 @@ function updateObsScreen(data) {
         console.log(obsWindow);
         console.log("width data: ", obsWindow.width, playerWidth, obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth);
         console.log("height data: ", obsWindow.height, playerHeight, obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight);
-        node.style.width = Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) + "px"; // obsWindow.width;
-        node.style.height = Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight) + "px"; // obsWindow.height;
+        node.style.width = Math.min(
+            Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0),
+            obsOutputWidth
+        ) + "px";
+        node.style.height = Math.min(
+            Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0),
+            obsOutputHeight
+        ) + "px";
 
         // run some calculation for the zIndex -- or do on backend with obsWindow.zIndex
-        node.style.zIndex = Math.max(1000 - parseInt((Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) +
-                            Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight))/10),1);
+        node.style.zIndex = Math.max(
+            1000 - parseInt((
+                Math.min(Math.max(obsWindow.width.split('p')[0] / obsOutputWidth * playerWidth, 0), obsOutputWidth) +
+                Math.min(Math.max(obsWindow.height.split('p')[0] / obsOutputHeight * playerHeight, 0), obsOutputHeight)
+            )/10),1
+        );
     }
 }
 
@@ -115,7 +125,7 @@ function setupInfoPopupHandlers(infoIcon) {
         e.stopPropagation();
         if(!isDragging) {
             hoverTimeout = setTimeout(() => {
-            showPopup(e.target);
+                showPopup(e.target);
             }, 250);
         }
     });
@@ -150,7 +160,7 @@ ${info.description}`;
         marked.setOptions({
             gfm: true,       // Enable GitHub flavored markdown
             breaks: true,    // Enable line breaks
-            sanitize: true, // Allow HTML tags
+            sanitize: true,  // Allow HTML tags
         });
         marked.use({
             renderer: {
@@ -180,19 +190,19 @@ ${info.description}`;
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        // Default position: above the info icon
+        // Default position: center of the info window
         let popupLeft = windowRect.left + (windowRect.width - popupRect.width) / 2;
         let popupTop = windowRect.top + (windowRect.height - popupRect.height) / 2;
 
         // Adjust position if the popup goes off-screen horizontally
         if (popupLeft < 5) {
-            popupLeft = 5; // Minimum 5px from the left edge
+            popupLeft = 5;
         } else if (popupLeft + popupRect.width > viewportWidth - 5) {
-            popupLeft = viewportWidth - popupRect.width - 5; // Minimum 5px from the right edge
+            popupLeft = viewportWidth - popupRect.width - 5;
         }
 
         // Adjust position if the popup goes off-screen vertically
-        if (popupTop < 5) { // 5px padding
+        if (popupTop < 5) {
             popupTop = 5;
         } else if (popupTop + popupRect.height > viewportHeight - 5) {
             popupTop = viewportHeight - popupRect.height - 5;
@@ -250,7 +260,6 @@ function runGameJam(auth) {
 
             // If the data contains the screen configuration (like the windows to display)
             if (Array.isArray(eventData.data)) {
-            // if (eventData.hasOwnProperty("name")) {
                 obsScreenData = eventData.data;
                 console.log("Screen data received:", obsScreenData);
                 updateObsScreen(obsScreenData);
@@ -259,7 +268,6 @@ function runGameJam(auth) {
                 eventData = JSON.parse(eventData);
                 // Check if the data contains window bounds
                 if (eventData.hasOwnProperty("bounds")) {
-                    // Update the windowBounds object with the received data
                     console.log("Bounds data received from WebSocket:", eventData.bounds);
                     windowBounds = eventData.bounds; // This updates the global windowBounds object
                 }
@@ -301,7 +309,6 @@ function runGameJam(auth) {
     connectWebSocket();
 
     function handleDragEnd(e) {
-        // console.log("Mouse released");
         if (isDragging && draggedElement) {
             // Send the final position to the server
             const x = parseFloat(draggedElement.style.left) / 100;
@@ -312,19 +319,17 @@ function runGameJam(auth) {
                 y: y,
             };
             sendMessage(JSON.stringify(data));
-
         }
         isDragging = false;
         draggedElement = null;
         draggedElementBounds = null; // Reset bounds
         document.body.style.cursor = ''; // Reset cursor
         dragCooldown = true; // Set cooldown
-        setTimeout(() => {dragCooldown = false;}, 100); // Cooldown for 100ms
+        setTimeout(() => { dragCooldown = false; }, 100); // Cooldown for 100ms
     }
 
-    // Function to stop dragging
-    window.addEventListener("mouseup", (e) => handleDragEnd(e));
-    window.addEventListener("touchend", (e) => handleDragEnd(e));
+    // Pointer up -> stop drag
+    window.addEventListener("pointerup", handleDragEnd, { passive: false });
 
     function sendMessage(message) {
         if (socket.readyState === WebSocket.OPEN) {
@@ -338,117 +343,126 @@ function runGameJam(auth) {
     }
 }
 
-function getEventCoordinates(event) {
-    if (event.touches && event.touches.length > 0) {
-        return { x: event.touches[0].clientX, y: event.touches[0].clientY };
-    }
-    return { x: event.clientX, y: event.clientY };
+// Helper to get pointer coordinates
+function getPointerCoordinates(e) {
+    return {
+      x: e.clientX,
+      y: e.clientY
+    };
 }
 
-function handleDragStart(e) {
+function handlePointerDown(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (dragCooldown) return;
 
-    const { x, y } = getEventCoordinates(e);
-    let obsCont;
-    // Ensure the draggableWindow is correctly identified even if a child element (like infoIcon) is clicked
-    let target = e.target.closest(".draggableWindow");
-    if (target) {
-        isDragging = true;
-        draggedElement = target;
-        obsCont = document.getElementById("obs-container");
-        rect = obsCont.getBoundingClientRect();
-        document.body.style.cursor = 'grabbing';
+    // Figure out if the user touched/clicked a draggableWindow
+    const target = e.target.closest(".draggableWindow");
+    if (!target) return;
 
-        // Calculate the offset
-        const elemRect = draggedElement.getBoundingClientRect();
-        offsetX = x - elemRect.left;
-        offsetY = y - elemRect.top;
+    isDragging = true;
+    draggedElement = target;
 
-        // Store the initial position of the draggedElement
-        draggedElement.initialX = parseFloat(draggedElement.style.left) / 100;
-        draggedElement.initialY = parseFloat(draggedElement.style.top) / 100;
+    // **Capture** this pointer so we keep receiving pointermove events
+    draggedElement.setPointerCapture(e.pointerId);
 
-        const windowID = draggedElement.id;
-        console.log("this is the window bounds", windowBounds);
-        draggedElementBounds = windowBounds[windowID] || defaultBounds;
-    }
+    const obsCont = document.getElementById("obs-container");
+    rect = obsCont.getBoundingClientRect();
+    document.body.style.cursor = 'grabbing';
+
+    const elemRect = draggedElement.getBoundingClientRect();
+    const { x, y } = getPointerCoordinates(e);
+
+    offsetX = x - elemRect.left;
+    offsetY = y - elemRect.top;
+
+    draggedElement.initialX = parseFloat(draggedElement.style.left) / 100;
+    draggedElement.initialY = parseFloat(draggedElement.style.top) / 100;
+
+    const windowID = draggedElement.id;
+    console.log("this is the window bounds", windowBounds);
+    draggedElementBounds = windowBounds[windowID] || defaultBounds;
 }
 
-// Function to handle dragging
-document.addEventListener("mousedown", (e) => handleDragStart(e));
-document.addEventListener("touchstart", (e) => handleDragStart(e));
+function handlePointerMove(e) {
+    // If not dragging, do nothing
+    if (!isDragging || !draggedElement) return;
 
-let mouseTimer;
+    e.preventDefault();
+    e.stopPropagation();
 
-function handleDragMove(e){
-    if (isDragging && draggedElement) {
-        const x = (e.clientX - rect.left - offsetX) / rect.width;
-        const y = (e.clientY - rect.top - offsetY) / rect.height;
+    const { x, y } = getPointerCoordinates(e);
 
-        // Get the element's size relative to the container
-        const elemWidth = draggedElement.offsetWidth / rect.width;
-        const elemHeight = draggedElement.offsetHeight / rect.height;
+    // The container bounding box
+    const elemWidth = draggedElement.offsetWidth / rect.width;
+    const elemHeight = draggedElement.offsetHeight / rect.height;
 
-        // Calculate the constraints based on bounds
-        const minX = draggedElementBounds.left;
-        const maxX = draggedElementBounds.right - elemWidth;
-        const minY = draggedElementBounds.top;
-        const maxY = draggedElementBounds.bottom - elemHeight;
+    // Calculate the constraints based on bounds
+    const minX = draggedElementBounds.left;
+    const maxX = draggedElementBounds.right - elemWidth;
+    const minY = draggedElementBounds.top;
+    const maxY = draggedElementBounds.bottom - elemHeight;
 
-        // Constrain x and y within the calculated bounds
-        const constrainedX = Math.max(minX, Math.min(maxX, x));
-        const constrainedY = Math.max(minY, Math.min(maxY, y));
+    // Convert from absolute coords -> fraction of container
+    const containerX = (x - rect.left - offsetX) / rect.width;
+    const containerY = (y - rect.top - offsetY) / rect.height;
 
-        // Update the position of the dragged element
-        draggedElement.style.left = constrainedX * 100 + "%";
-        draggedElement.style.top = constrainedY * 100 + "%";
-    }
+    // Constrain x and y
+    const constrainedX = Math.max(minX, Math.min(maxX, containerX));
+    const constrainedY = Math.max(minY, Math.min(maxY, containerY));
+
+    // Update the position of the dragged element
+    draggedElement.style.left = constrainedX * 100 + "%";
+    draggedElement.style.top  = constrainedY * 100 + "%";
+
+    // Show/hide the windows after inactivity
     document.body.classList.add('visible');
-
     clearTimeout(mouseTimer);
-    // set a timer until windows disappear
     mouseTimer = setTimeout(() => {
         document.body.classList.remove('visible');
     }, 5000);
 }
 
-document.addEventListener("mousemove", (e) => handleDragMove(e));
-document.addEventListener("touchmove", (e) => handleDragMove(e));
+document.addEventListener("pointerdown", handlePointerDown, { passive: false });
+document.addEventListener("pointermove", handlePointerMove, { passive: false });
 
-document.getElementById("obs-container").addEventListener("mouseleave", function(event){document.body.classList.remove('visible');});
+let mouseTimer;
 
-
+document.getElementById("obs-container").addEventListener("mouseleave", function(event) {
+    document.body.classList.remove('visible');
+});
 
 if (TESTING) {
-        const buttonsContainer = document.getElementById('bits-buttons-container');
-        // Clear any existing buttons, this gets called every reauthorization
-        buttonsContainer.innerHTML = '';
+    const buttonsContainer = document.getElementById('bits-buttons-container');
+    // Clear any existing buttons, this gets called every reauthorization
+    buttonsContainer.innerHTML = '';
 
-        for (let i = 0; i < 3; i++) {
-            // Iterate through each product and create a button
-            const button = document.createElement('button');
+    for (let i = 0; i < 3; i++) {
+        // Iterate through each product and create a button
+        const button = document.createElement('button');
 
-            const topText = document.createElement('span');
-            topText.classList.add('top-text');
-            topText.textContent = `TEST BIT`; // Top text (number range)
+        const topText = document.createElement('span');
+        topText.classList.add('top-text');
+        topText.textContent = `TEST BIT`; // Top text (number range)
 
-            const bottomText = document.createElement('span');
-            bottomText.classList.add('bottom-text');
-            bottomText.textContent = `bits 3794`; // Top text (number range)
-            button.classList.add('bits-button');
+        const bottomText = document.createElement('span');
+        bottomText.classList.add('bottom-text');
+        bottomText.textContent = `bits 3794`; // Top text (number range)
+        button.classList.add('bits-button');
 
-            button.appendChild(topText);
-            button.appendChild(document.createElement('br')); // Line break between top and bottom text
-            button.appendChild(bottomText);
-            buttonsContainer.appendChild(button);
-        }
-        runGameJam(TestAuth);
+        button.appendChild(topText);
+        button.appendChild(document.createElement('br')); // Line break
+        button.appendChild(bottomText);
+        buttonsContainer.appendChild(button);
+    }
+    runGameJam(TestAuth);
 } else {
     window.Twitch.ext.onContext((context) => {
         // Get the player's width
         let resolutions = context.displayResolution.split("x");
-        let newWidth = parseInt(resolutions[0], 10);  // Update playerWidth
-        let newHeight = parseInt(resolutions[1], 10); // Update playerHeight
+        let newWidth = parseInt(resolutions[0], 10);
+        let newHeight = parseInt(resolutions[1], 10);
         if (newWidth !== playerWidth || newHeight !== playerHeight) {
             playerWidth = newWidth;
             playerHeight = newHeight;
@@ -465,8 +479,7 @@ if (TESTING) {
             return;
         }
 
-        // TODO check if the channel can be queried for if it can run bits
-        //      if we can easily here then use that to wrap this
+        // If bits are enabled, show the bits products
         if (window.Twitch.ext.features.isBitsEnabled) {
             Twitch.ext.bits.getProducts().then(function (products) {
                 console.log(products); // [ { sku: 'abc123', cost: { type: 'bits', amount: '10' } } ]
@@ -480,35 +493,27 @@ if (TESTING) {
 
                     const topText = document.createElement('span');
                     topText.classList.add('top-text');
-                    topText.textContent = `${product.displayName}`; // Top text (number range)
+                    topText.textContent = `${product.displayName}`;
 
                     const bottomText = document.createElement('span');
                     bottomText.classList.add('bottom-text');
-                    bottomText.textContent = `bits ${product.cost.amount}`; // Top text (number range)
+                    bottomText.textContent = `bits ${product.cost.amount}`;
 
                     button.appendChild(topText);
-                    button.appendChild(document.createElement('br')); // Line break between top and bottom text
+                    button.appendChild(document.createElement('br'));
                     button.appendChild(bottomText);
-                    // Set the button text to display the amount of bits
-
-                    // Assign the SKU as a data attribute for later reference
                     button.dataset.sku = product.sku;
-
-                    // Optionally, add a class for styling
                     button.classList.add('bits-button');
 
                     // Add an event listener for button clicks
                     button.addEventListener('click', function () {
-                        // Handle the button click
                         console.log("just clicked ", this.dataset.sku)
                         Twitch.ext.bits.useBits(this.dataset.sku);
                     });
 
-                    // Append the button to the container
                     buttonsContainer.appendChild(button);
                 });
 
-                // Make sure the bits buttons container is visible
                 document.getElementById('top-left-menu').classList.add('visible');
             }).catch(function (error) {
                 console.error('Error fetching Bits products:', error);
@@ -516,6 +521,7 @@ if (TESTING) {
         }
 
         runGameJam(auth);
+
         const data = {
             r: getRandomColor(),
             g: getRandomColor(),
@@ -524,7 +530,6 @@ if (TESTING) {
         console.log("new color data:", data);
         const tWindows = document.getElementsByClassName("draggableWindow");
         for (let i = 0; i < tWindows.length; i++) {
-            // TODO do a backend call to get the streamer's colors
             tWindows[i].style.setProperty("--r", data.r);
             tWindows[i].style.setProperty("--g", data.g);
             tWindows[i].style.setProperty("--b", data.b);
@@ -533,7 +538,6 @@ if (TESTING) {
 
     window.Twitch.ext.bits.onTransactionComplete(function (transactionObject) {
         console.log("we just completed the transaction")
-        // console.log(transactionObject);
         const data = {
             r: getRandomColor(),
             g: getRandomColor(),
