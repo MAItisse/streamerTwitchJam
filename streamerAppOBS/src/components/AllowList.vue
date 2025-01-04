@@ -9,14 +9,10 @@ const configStore = useConfigStore();
 
 
 onMounted(() => {
-  if (!Object.keys(configStore.allowList).includes("mods")) {
-    addNewAllowList("mods");
-  }
-  if (!Object.keys(configStore.allowList).includes("vips")) {
-    addNewAllowList("vips");
-  }
   if (Object.keys(configStore.allowList).length == 0) {
-    addNewAllowList();
+    addNewAllowList("mods");
+    addNewAllowList("vips");
+    addNewAllowList("new group");
   }
   configStore.addStreamerToAllLists = false;
 });
@@ -123,10 +119,8 @@ function onStreamerAdded(event: any) {
             </thead>
             <transition-group name="fade" tag="tbody">
                 <tr v-for="(listData, key, ind) in configStore.allowList" :key="key" class="hover:bg-gray-50 fade-row">
-                    <td v-if="ind === 0">Moderators</td>
-                    <td v-if="ind === 1">VIPs</td>
-                    <td v-else-if="ind >= 2">
-                        {{ ind - 1 }}
+                    <td>
+                        {{ key }}
                     </td>
 
                     <!-- Position -->
