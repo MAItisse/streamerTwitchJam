@@ -138,15 +138,19 @@ function onStreamerAdded(event: any) {
                     </td>
                 </tr>
                 <tr key="add-btn">
-                    <td colspan="9">
-                      <tr>
-                        <input type="text" placeholder="new group name" v-model="newAllowListItem"
-                               class="mr-2 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <td colspan="14">
+                      <tr class="content-center">
+                        <td class="w-2/5 text-center align-middle">
+                          <input type="text" placeholder="new group name" v-model="newAllowListItem"
+                                 class="mr-auto px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        </td>
+                        <td class="w-3/5 text-center align-middle">
                         <button type="button" @click="addNewAllowList(newAllowListItem)"
-                            class="m-2 px-8 py-1 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
+                            class="px-10 py-1 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
                             <FontAwesomeIcon class="mr-2" icon="plus"></FontAwesomeIcon>
                             Add new allow list
                         </button>
+                        </td>
                       </tr>
                     </td>
                 </tr>
