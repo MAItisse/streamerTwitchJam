@@ -85,10 +85,8 @@ function onMovableChange(item: any) {
                                     class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
 
                                   <option value="everyone" selected>Everyone</option>
-<!--                                  <option value="#mods">Moderators</option>-->
-<!--                                  <option value="#vips">VIPs</option>-->
                                   <option v-for="(listData, key, ind) in configStore.allowList" :key="key" :value="key">
-                                    #{{ key }}
+                                    {{ key }}
                                   </option>
                                 </select>
                               </td>

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import {onMounted, watch} from 'vue';
 import { useConfigStore } from '../store/configStore';
-import { generateKey } from '../utils';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {AllowListToSource} from "@/types";
 
 const configStore = useConfigStore();
-
+let newAllowListItem = '';
 
 onMounted(() => {
   if (Object.keys(configStore.allowList).length == 0) {
@@ -17,9 +16,11 @@ onMounted(() => {
   configStore.addStreamerToAllLists = false;
 });
 
-function addNewAllowList(key: string = generateKey()) {
-  // const key = generateKey()
+function addNewAllowList(key: string = "") {
+  // TODO change this logic to get the first next available key, or use a proper name
+  if(key == "") key = Object.keys(configStore.allowList).length - 1 + ""
   configStore.allowList[key] = {allowed: ""}
+  newAllowListItem = "";
   // console.log("allowList = ", configStore.allowList);
 }
 
@@ -120,7 +121,8 @@ function onStreamerAdded(event: any) {
             <transition-group name="fade" tag="tbody">
                 <tr v-for="(listData, key, ind) in configStore.allowList" :key="key" class="hover:bg-gray-50 fade-row">
                     <td>
-                        {{ key }}
+                      {{ key }}
+<!--                      <input v-model.lazy="listData.">-->
                     </td>
 
                     <!-- Position -->
@@ -130,18 +132,22 @@ function onStreamerAdded(event: any) {
                     <td class="">
                         <button type="button" @click="removeGroup(key as string)" class="focus:outline-none text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300
                             font-medium rounded-lg text-md px-2.5 py-2 transition active:scale-[.95]"
-                                :class="{ 'invisible': Object.keys(configStore.allowList).length == 1 }">
+                                :class="{ 'invisible': Object.keys(configStore.allowList).length == 0 }">
                             <FontAwesomeIcon icon="times"></FontAwesomeIcon>
                         </button>
                     </td>
                 </tr>
                 <tr key="add-btn">
-                    <td colspan="6">
-                        <button type="button" @click="addNewAllowList"
+                    <td colspan="9">
+                      <tr>
+                        <input type="text" placeholder="new group name" v-model="newAllowListItem"
+                               class="mr-2 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <button type="button" @click="addNewAllowList(newAllowListItem)"
                             class="m-2 px-8 py-1 font-semibold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition active:scale-[.95]">
                             <FontAwesomeIcon class="mr-2" icon="plus"></FontAwesomeIcon>
                             Add new allow list
                         </button>
+                      </tr>
                     </td>
                 </tr>
             </transition-group>
