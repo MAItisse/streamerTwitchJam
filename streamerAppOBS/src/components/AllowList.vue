@@ -9,9 +9,8 @@ let newAllowListItem = '';
 
 onMounted(() => {
   if (Object.keys(configStore.allowList).length == 0) {
-    addNewAllowList("mods");
     addNewAllowList("vips");
-    addNewAllowList("new group");
+    addNewAllowList("mods");
   }
   configStore.addStreamerToAllLists = false;
 });
