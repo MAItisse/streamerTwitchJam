@@ -21,17 +21,15 @@ const statusStore = useStatusStore();
 
 const proxyWebSocket = useProxyWebSocket();
 
-type CardName = 'disconnect' | 'boundary' | 'allowList' | 'sceneItemTable' | 'sceneItemPopupEditor' | 'confirmSettings';
+type CardName = 'boundary' | 'allowList' | 'sceneItemTable' | 'sceneItemPopupEditor';
 
 let proxyReconnectIntervalId: NodeJS.Timeout | null = null;
 let obsStatusCheckIntervalId: NodeJS.Timeout | null = null;
 let isMinimized = reactive<Record<CardName, boolean>>({
-  disconnect: false,
   boundary: false,
   allowList: false,
   sceneItemTable: false,
   sceneItemPopupEditor: false,
-  confirmSettings: false,
 });
 
 onMounted(() => {
@@ -105,11 +103,6 @@ function toggleCard(cardName: CardName) {
   <div class="card-collection">
     <!-- Disconnect Card -->
     <div class="card">
-        <FontAwesomeIcon
-            :icon="isMinimized.disconnect ? 'chevron-down' : 'chevron-up'"
-            class="toggle-icon"
-        />
-      <div class="card-content" v-show="!isMinimized.disconnect">
         <button
             type="button"
             @click="disconnect"
@@ -118,7 +111,6 @@ function toggleCard(cardName: CardName) {
           <FontAwesomeIcon icon="power-off" class="mr-2"></FontAwesomeIcon>
           Disconnect
         </button>
-      </div>
     </div>
 
     <!-- Boundary Table Card -->
@@ -180,7 +172,6 @@ function toggleCard(cardName: CardName) {
 
     <!-- Confirm Settings Card -->
     <div class="card">
-      <div class="w-full py-2 font-bold text-2xl text-white bg-green-600 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-green-800 transition active:scale-[.98]" v-show="!isMinimized.confirmSettings">
         <button
             type="button"
             @click="saveConfig"
@@ -190,7 +181,6 @@ function toggleCard(cardName: CardName) {
           <FontAwesomeIcon icon="rocket" class="ml-2"></FontAwesomeIcon>
         </button>
         <!-- TODO: add "save" confirmation messages -->
-      </div>
     </div>
   </div>
 </template>
@@ -211,7 +201,7 @@ function toggleCard(cardName: CardName) {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
-    background-color: #f3f4f6; /* Light gray background */
+    background-color: #97abd3; /* Light gray background */
     cursor: pointer;
   }
 
@@ -252,7 +242,7 @@ function toggleCard(cardName: CardName) {
 
   .confirm-button {
     background-color: #16a34a; /* Green */
-    font-size: 2rem;
+    font-size: 1rem;
   }
 
   .confirm-button:hover {
