@@ -11,7 +11,7 @@ Twitch Hackathon project for https://twitchstreamertools.devpost.com/
     <summary>Option 1: Hosted</summary>
     <ul>
         <li>
-            <a href="https://chronx.dev/chat-plays-obs/embed.html" target="_blank">https://stg.chronx.dev/chat-plays-obs/index.html#/</a>
+            <a href="https://chronx.dev/chat-plays-obs/embed.html" target="_blank">/</a>
         </li>
         <li>
             <img src="images/hostedDashboard.png" alt="Hosted Dashboard" />
